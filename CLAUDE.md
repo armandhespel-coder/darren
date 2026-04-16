@@ -9,13 +9,27 @@ Stack : Next.js 16 App Router + Tailwind CSS + Supabase + Stripe (à venir).
 
 ## Permissions permanentes — ne jamais demander confirmation
 
-- **Push / déploiement** : `git add -A && git commit -m "..." && git push` directement.
+- **Push / déploiement** : permission permanente, aucune confirmation. Séquence exacte ci-dessous.
 - **Bash / npm / git** : toutes les commandes autorisées sans confirmation.
 - **Ouvrir Chrome** : `start chrome "<url>"` directement.
+
+## Procédure push — séquence exacte (ne jamais dévier)
+
+```bash
+cd "c:\Users\arman\Documents\GitHub\darren"
+git add -A && git commit -m "feat: ..." && git push
+```
+
+Règles absolues :
+1. **Toujours `cd` dans le projet d'abord** — le git root de `C:/Users/arman` est un repo parasite, ne jamais pusher depuis là.
+2. **Jamais en background** (`run_in_background`) pour les commandes git → risque de lock file.
+3. **Jamais de `sleep`** entre les commandes git.
+4. Si lock file détecté : `powershell -Command "Get-Process git -ErrorAction SilentlyContinue | Stop-Process -Force; Remove-Item 'C:\Users\arman\.git\index.lock' -Force -ErrorAction SilentlyContinue"` puis relancer.
 
 ## Efficacité tokens — règles strictes
 
 1. **Batch ALL reads** : regrouper TOUS les fichiers à lire dans un seul appel parallèle. Jamais séquentiellement.
+9. **Vérification git root** : avant tout push dans un nouveau repo, lancer `git rev-parse --show-toplevel` pour confirmer le bon dossier. 1 commande = évite tout le chaos de lock file / mauvais remote.
 2. **Dev server** : supposer qu'il tourne déjà sur port 3000 depuis la session précédente. Vérifier avec `curl -s http://localhost:3000 > /dev/null 2>&1` avant de lancer. Ne pas lancer si déjà actif.
 3. **Pas de `sleep`** : commande bloquée, inutile. Ne jamais l'utiliser.
 4. **Edit ciblé** : `old_string` = string le plus court et unique. Éviter les blocs SVG/HTML longs → risque d'échec + tokens perdus.
