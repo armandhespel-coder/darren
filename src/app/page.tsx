@@ -324,21 +324,7 @@ export default function HomePage() {
       >
         {/* Logo */}
         <div className="flex items-center gap-3 cursor-pointer">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm"
-            style={{ background: "var(--grad2)" }}
-          >
-            CE
-          </div>
-          <div style={{ fontFamily: "var(--font-raleway)", fontWeight: 900, fontSize: "1.15rem" }}>
-            <span style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-              CONNECT
-            </span>
-            <span className="block text-[10px] font-bold tracking-widest uppercase"
-              style={{ background: "var(--grad2)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-              EVENT
-            </span>
-          </div>
+          <img src="/logo.png" alt="Connect Event" className="h-10 w-auto object-contain" />
         </div>
 
         {/* Nav links */}

@@ -32,13 +32,8 @@ export default function LoginPage() {
     >
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2.5 mb-8">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3l14 9-14 9V3z" />
-            </svg>
-          </div>
-          <span className="text-white font-bold text-xs uppercase tracking-widest">Connect Event</span>
+        <div className="flex items-center justify-center mb-8">
+          <img src="/logo.png" alt="Connect Event" className="h-10 w-auto object-contain" />
         </div>
 
         <div className="glass rounded-2xl p-8">
