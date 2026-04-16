@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect Event — Réservation de Services</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&family=Raleway:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #2D9FE8;
+      --blue2: #4A6CF7;
+      --purple: #7B3FDB;
+      --pink: #D93FB5;
+      --orange: #F5842A;
+      --yellow: #F5A623;
+      --grad: linear-gradient(135deg, #2D9FE8 0%, #7B3FDB 40%, #D93FB5 70%, #F5842A 100%);
+      --grad2: linear-gradient(135deg, #4A6CF7, #D93FB5);
+      --grad3: linear-gradient(135deg, #F5842A, #F5A623);
+      --white: #FFFFFF;
+      --bg: #F7F8FC;
+      --bg2: #ECEEF6;
+      --dark: #12112A;
+      --dark2: #1E1C3A;
+      --text: #2C2B4B;
+      --muted: #8887A8;
+      --card: #FFFFFF;
+      --border: rgba(74,108,247,0.12);
+      --shadow: 0 8px 32px rgba(74,108,247,0.12);
+      --shadow2: 0 4px 16px rgba(0,0,0,0.08);
+      --danger: #DC2626;
+      --success: #16A34A;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--blue2); border-radius: 3px; }
+
+    .navbar {
+      position: sticky; top: 0; z-index: 600;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 20px rgba(74,108,247,0.08);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px; height: 72px;
+    }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 12px; cursor: pointer;
+    }
+    .nav-logo-img {
+      width: 44px; height: 44px; object-fit: contain;
+    }
+    .nav-logo-text {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 900; font-size: 1.25rem; line-height: 1.1;
+      background: var(--grad);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-logo-text span {
+      display: block; font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      background: var(--grad2);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links { display: flex; gap: 4px; align-items: center; }
+    .nav-btn {
+      background: none; border: none;
+      padding: 8px 18px; cursor: pointer;
+      font-family: 'Nunito', sans-serif; font-size: 0.82rem;
+      font-weight: 700; letter-spacing: 0.06em;
+      color: var(--muted); border-radius: 30px;
+      transition: all 0.25s; white-space: nowrap;
+    }
+    .nav-btn:hover { color: var(--blue2); background: rgba(74,108,247,0.07); }
+    .nav-btn.active { color: white; background: var(--grad2); box-shadow: 0 4px 14px rgba(74,108,247,0.35); }
+
+    .nav-contact {
+      display: flex; align-items: center; gap: 16px;
+    }
+    .nav-contact a {
+      font-size: 0.75rem; color: var(--muted); text-decoration: none;
+      font-weight: 600; transition: color 0.2s;
+    }
+    .nav-contact a:hover { color: var(--blue2); }
+
+    .nav-res-badge {
+      background: var(--grad); color: white;
+      font-size: 0.7rem; font-weight: 800;
+      padding: 4px 12px; border-radius: 30px;
+      cursor: pointer; white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(217,63,181,0.3);
+      transition: all 0.2s; display: none;
+      margin-left: 6px;
+    }
+
+    .hero {
+      position: relative; overflow: hidden;
+      background: var(--dark2);
+      padding: 80px 48px 90px;
+      text-align: center;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, #12112A 0%, #1E1C3A 50%, #2A1042 100%);
+    }
+    .hero-orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); opacity: 0.35;
+    }
+    .hero-orb-1 { width: 500px; height: 500px; background: #4A6CF7; top: -200px; left: -100px; }
+    .hero-orb-2 { width: 400px; height: 400px; background: #D93FB5; bottom: -200px; right: -100px; }
+    .hero-orb-3 { width: 300px; height: 300px; background: #F5842A; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+    .hero-content { position: relative; z-index: 1; }
+
+    .hero-logo-wrap {
+      display: flex; justify-content: center; margin-bottom: 24px;
+      animation: popIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .hero-logo {
+      width: 90px; height: 90px; object-fit: contain;
+      filter: drop-shadow(0 8px 32px rgba(45,159,232,0.5));
+    }
+
+    .hero h1 {
+      font-family: 'Raleway', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      font-weight: 900; line-height: 1.1; color: white;
+      margin-bottom: 16px;
+      animation: up 0.7s 0.15s ease both;
+    }
+    .hero h1 em {
+      font-style: italic;
+      background: var(--grad);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 1rem; color: rgba(255,255,255,0.6);
+      max-width: 500px; margin: 0 auto 36px;
+      line-height: 1.75; font-weight: 400;
+      animation: up 0.7s 0.25s ease both;
+    }
+
+    .hero-stats {
+      display: flex; gap: 40px; justify-content: center;
+      animation: up 0.7s 0.35s ease both;
+      flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-size: 1.8rem; font-weight: 900; color: white;
+      background: var(--grad);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label {
+      font-size: 0.72rem; color: rgba(255,255,255,0.45);
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+
+    .filter-bar {
+      position: relative; z-index: 10;
+      max-width: 1200px; margin: -36px auto 0;
+      padding: 0 24px;
+      animation: up 0.7s 0.45s ease both;
+    }
+    .filter-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(74,108,247,0.18);
+      padding: 24px 28px;
+      display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;
+    }
+
+    .filter-group { flex: 1; min-width: 160px; }
+    .filter-label {
+      font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--blue2); margin-bottom: 8px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .filter-control {
+      width: 100%; padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-family: 'Nunito', sans-serif; font-size: 0.87rem; font-weight: 600;
+      color: var(--text); background: var(--bg);
+      outline: none; cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+    }
+    .filter-control:focus {
+      border-color: var(--blue2);
+      box-shadow: 0 0 0 3px rgba(74,108,247,0.12);
+    }
+
+    .filter-search {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 4px 14px; flex: 2; min-width: 200px;
+      transition: border-color 0.2s;
+    }
+    .filter-search:focus-within { border-color: var(--blue2); }
+    .filter-search input {
+      flex: 1; border: none; background: transparent;
+      font-family: 'Nunito', sans-serif; font-size: 0.87rem; font-weight: 600;
+      color: var(--text); outline: none; padding: 7px 0;
+    }
+    .filter-search span { color: var(--muted); font-size: 1.1rem; }
+
+    .btn-search, .btn-reset, .btn-admin, .btn-save, .btn-danger, .btn-small {
+      border: none;
+      border-radius: 12px;
+      font-family: 'Nunito', sans-serif;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .btn-search {
+      background: var(--grad); color: white;
+      padding: 12px 28px;
+      font-size: 0.85rem; font-weight: 800;
+      letter-spacing: 0.06em;
+      box-shadow: 0 6px 20px rgba(74,108,247,0.35);
+      white-space: nowrap;
+    }
+    .btn-search:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(74,108,247,0.45); }
+
+    .btn-reset {
+      background: var(--bg2); color: var(--muted);
+      padding: 12px 18px;
+      font-size: 0.82rem; font-weight: 700;
+    }
+
+    .btn-admin {
+      background: var(--dark2);
+      color: white;
+      padding: 10px 16px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+    }
+
+    .btn-save {
+      background: var(--grad2);
+      color: white;
+      padding: 10px 16px;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .btn-danger {
+      background: rgba(220,38,38,0.12);
+      color: var(--danger);
+      padding: 10px 14px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      border: 1px solid rgba(220,38,38,0.18);
+    }
+
+    .btn-small {
+      background: var(--bg2);
+      color: var(--text);
+      padding: 8px 12px;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .main {
+      max-width: 1200px; margin: 50px auto 0;
+      padding: 0 24px 80px;
+    }
+
+    .cat-tabs {
+      display: flex; gap: 8px; overflow-x: auto;
+      scrollbar-width: none; padding-bottom: 2px; margin-bottom: 36px;
+    }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab {
+      flex-shrink: 0; display: flex; align-items: center; gap: 9px;
+      background: white; border: 1.5px solid var(--border);
+      padding: 10px 22px; border-radius: 40px; cursor: pointer;
+      font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 700;
+      color: var(--muted); transition: all 0.25s; white-space: nowrap;
+    }
+    .cat-tab .tab-icon { font-size: 1.1rem; }
+    .cat-tab:hover { border-color: var(--blue2); color: var(--blue2); }
+    .cat-tab.active {
+      background: var(--grad2); color: white; border-color: transparent;
+      box-shadow: 0 6px 20px rgba(74,108,247,0.3);
+    }
+    .cat-count {
+      background: rgba(255,255,255,0.25); padding: 2px 8px;
+      border-radius: 20px; font-size: 0.68rem;
+    }
+    .cat-tab:not(.active) .cat-count { background: var(--bg2); color: var(--muted); }
+
+    .section-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .section-title {
+      font-family: 'Raleway', sans-serif;
+      font-size: 1.7rem; font-weight: 900; color: var(--dark);
+    }
+    .section-title span {
+      background: var(--grad);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .section-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .result-count {
+      font-size: 0.8rem; color: var(--muted); font-weight: 600;
+      background: var(--bg2); padding: 6px 14px; border-radius: 20px;
+    }
+
+    .providers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+    }
+
+    .pcard {
+      background: white; border-radius: 20px;
+      border: 1px solid var(--border);
+      overflow: hidden; transition: all 0.3s ease;
+      box-shadow: var(--shadow2);
+      animation: up 0.5s ease both;
+    }
+    .pcard:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(74,108,247,0.18);
+      border-color: rgba(74,108,247,0.25);
+    }
+
+    .pcard-media { position: relative; height: 210px; overflow: hidden; }
+    .pcard-media img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .pcard:hover .pcard-media img { transform: scale(1.07); }
+    .pcard-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(18,17,42,0.75) 0%, transparent 55%);
+    }
+
+    .pcard-origin {
+      position: absolute; top: 14px; left: 14px;
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(8px);
+      border-radius: 30px; padding: 5px 12px;
+      font-size: 0.68rem; font-weight: 800; color: var(--dark);
+      letter-spacing: 0.06em;
+    }
+    .origin-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+
+    .pcard-badge {
+      position: absolute; top: 14px; right: 14px;
+      background: var(--grad); color: white;
+      font-size: 0.62rem; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; padding: 5px 12px; border-radius: 30px;
+      box-shadow: 0 4px 14px rgba(217,63,181,0.4);
+    }
+
+    .pcard-rating {
+      position: absolute; bottom: 14px; right: 14px;
+      display: flex; align-items: center; gap: 5px;
+      color: white; font-size: 0.8rem; font-weight: 700;
+    }
+    .stars { color: #FFD700; }
+
+    .video-overlay-btn {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(8px);
+      border: 2px solid rgba(255,255,255,0.5);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; opacity: 0; transition: all 0.25s;
+      font-size: 1.3rem; color: white;
+    }
+    .pcard:hover .video-overlay-btn { opacity: 1; }
+    .video-overlay-btn:hover {
+      background: var(--grad); border-color: transparent;
+      transform: translate(-50%,-50%) scale(1.1);
+    }
+
+    .avail-ribbon {
+      position: absolute; bottom: 14px; left: 14px;
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(18,17,42,0.7); backdrop-filter: blur(8px);
+      border-radius: 30px; padding: 5px 12px;
+      font-size: 0.68rem; font-weight: 700; color: white;
+    }
+    .avail-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .avail-dot.green { background: #4ADE80; box-shadow: 0 0 6px #4ADE80; }
+    .avail-dot.orange { background: #FB923C; box-shadow: 0 0 6px #FB923C; }
+
+    .pcard-body { padding: 20px 22px; }
+
+    .pcard-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; gap: 12px; }
+    .pcard-name { font-size: 1.05rem; font-weight: 800; color: var(--dark); }
+    .pcard-company { font-size: 0.74rem; color: var(--muted); font-weight: 600; }
+    .pcard-price { text-align: right; }
+    .pcard-price-val { font-size: 1rem; font-weight: 800; color: var(--blue2); }
+    .pcard-price-note { font-size: 0.62rem; color: var(--muted); font-weight: 600; }
+
+    .pcard-country {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.74rem; color: var(--muted); font-weight: 600; margin-bottom: 10px;
+    }
+
+    .pcard-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+    .ptag {
+      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em;
+      padding: 4px 10px; border-radius: 20px;
+      background: var(--bg2); color: var(--muted);
+    }
+    .ptag.accent { background: rgba(74,108,247,0.1); color: var(--blue2); }
+
+    .pcard-desc { font-size: 0.79rem; color: var(--muted); line-height: 1.65; font-weight: 600; margin-bottom: 16px; }
+
+    .pcard-actions { display: flex; gap: 8px; }
+    .btn-cal {
+      flex: 1; background: var(--bg2); color: var(--text); border: none;
+      padding: 11px; border-radius: 12px;
+      font-family: 'Nunito', sans-serif; font-size: 0.73rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-cal:hover { background: var(--bg2); border: 1px solid var(--blue2); color: var(--blue2); }
+    .btn-book2 {
+      flex: 2; background: var(--grad2); color: white; border: none;
+      padding: 11px; border-radius: 12px;
+      font-family: 'Nunito', sans-serif; font-size: 0.73rem; font-weight: 800;
+      cursor: pointer; transition: all 0.25s;
+      box-shadow: 0 4px 14px rgba(74,108,247,0.3);
+    }
+    .btn-book2:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(74,108,247,0.4); }
+
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 700;
+      background: rgba(18,17,42,0.7); backdrop-filter: blur(12px);
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .cal-modal {
+      background: white; border-radius: 24px;
+      max-width: 520px; width: 100%;
+      box-shadow: 0 30px 80px rgba(74,108,247,0.25);
+      animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+      overflow: hidden;
+    }
+    .cal-header {
+      background: var(--dark2); padding: 24px 28px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .cal-header-info h3 {
+      font-family: 'Raleway', sans-serif;
+      font-size: 1.2rem; font-weight: 900; color: white;
+    }
+    .cal-header-info p { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 3px; }
+    .close-btn {
+      background: rgba(255,255,255,0.1); border: none; color: white;
+      width: 34px; height: 34px; border-radius: 50%; font-size: 1rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .close-btn:hover { background: rgba(255,255,255,0.2); }
+
+    .cal-body { padding: 24px 28px; }
+
+    .cal-nav {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px;
+    }
+    .cal-month {
+      font-family: 'Raleway', sans-serif;
+      font-size: 1rem; font-weight: 900; color: var(--dark);
+    }
+    .cal-arrow {
+      background: var(--bg2); border: none; color: var(--text);
+      width: 34px; height: 34px; border-radius: 10px;
+      cursor: pointer; font-size: 1rem; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cal-arrow:hover { background: var(--blue2); color: white; }
+
+    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+    .cal-day-name {
+      text-align: center; font-size: 0.65rem; font-weight: 800;
+      letter-spacing: 0.08em; color: var(--muted); padding: 6px 0;
+    }
+    .cal-day {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      font-size: 0.82rem; font-weight: 700; border-radius: 10px; cursor: pointer;
+      transition: all 0.2s; color: var(--text);
+    }
+    .cal-day:hover:not(.empty):not(.past) { background: rgba(74,108,247,0.1); color: var(--blue2); }
+    .cal-day.empty { pointer-events: none; }
+    .cal-day.past { color: var(--bg2); pointer-events: none; }
+    .cal-day.available { background: rgba(74,222,128,0.15); color: #16A34A; }
+    .cal-day.available:hover { background: rgba(74,222,128,0.3); }
+    .cal-day.booked { background: rgba(249,115,22,0.12); color: #EA580C; pointer-events: none; }
+    .cal-day.selected { background: var(--grad2) !important; color: white !important; box-shadow: 0 4px 14px rgba(74,108,247,0.4); }
+    .cal-day.today { border: 2px solid var(--blue2); }
+
+    .cal-legend {
+      display: flex; gap: 18px; margin-top: 16px; flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.7rem; font-weight: 700; color: var(--muted);
+    }
+    .legend-dot {
+      width: 10px; height: 10px; border-radius: 4px;
+    }
+    .ld-avail { background: rgba(74,222,128,0.4); border: 1px solid #16A34A; }
+    .ld-booked { background: rgba(249,115,22,0.3); border: 1px solid #EA580C; }
+    .ld-selected { background: var(--blue2); }
+
+    .cal-footer { padding: 0 28px 24px; }
+    .selected-date-info {
+      background: var(--bg2); border-radius: 14px; padding: 14px 18px;
+      margin-bottom: 16px; min-height: 48px;
+      font-size: 0.82rem; color: var(--muted); font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .selected-date-info.has-date { color: var(--blue2); }
+    .btn-book-date {
+      width: 100%; background: var(--grad); color: white; border: none;
+      padding: 14px; border-radius: 14px;
+      font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 800;
+      letter-spacing: 0.06em; cursor: pointer;
+      box-shadow: 0 6px 20px rgba(217,63,181,0.3);
+      transition: all 0.25s;
+    }
+    .btn-book-date:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(217,63,181,0.4); }
+
+    .booking-modal {
+      background: white; border-radius: 24px;
+      max-width: 570px; width: 100%; max-height: 94vh;
+      overflow-y: auto; box-shadow: 0 30px 80px rgba(74,108,247,0.25);
+      animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .booking-modal::-webkit-scrollbar { width: 4px; }
+    .booking-modal::-webkit-scrollbar-thumb { background: var(--blue2); border-radius: 2px; }
+
+    .bm-header {
+      background: linear-gradient(135deg, var(--dark2), #2A1042);
+      padding: 28px 32px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+    .bm-header-info h2 {
+      font-family: 'Raleway', sans-serif;
+      font-size: 1.5rem; font-weight: 900; color: white;
+    }
+    .bm-header-info p { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+    .bm-provider-preview {
+      display: flex; gap: 14px; align-items: center;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px; padding: 14px 18px; margin: 0 32px 24px;
+      margin-top: -14px; position: relative; z-index: 1;
+    }
+    .bm-provider-img {
+      width: 52px; height: 52px; object-fit: cover; border-radius: 10px; flex-shrink: 0;
+    }
+    .bm-provider-details h4 { font-size: 0.9rem; font-weight: 800; color: var(--dark); }
+    .bm-provider-details p { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+    .bm-provider-price {
+      margin-left: auto; text-align: right;
+      font-size: 1rem; font-weight: 800; color: var(--blue2); white-space: nowrap;
+    }
+    .bm-provider-price small { display: block; font-size: 0.6rem; color: var(--muted); font-weight: 600; }
+
+    .bm-date-selected {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(74,108,247,0.08); border: 1.5px solid rgba(74,108,247,0.2);
+      border-radius: 10px; padding: 10px 16px; margin: 0 32px 20px;
+      font-size: 0.8rem; font-weight: 700; color: var(--blue2);
+    }
+
+    .bm-body { padding: 0 32px 32px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      font-size: 0.67rem; font-weight: 800; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--blue2); margin-bottom: 7px; display: block;
+    }
+    .form-input {
+      width: 100%; background: var(--bg);
+      border: 1.5px solid var(--border); border-radius: 12px;
+      padding: 12px 15px; color: var(--text);
+      font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 600;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+    }
+    .form-input:focus {
+      border-color: var(--blue2);
+      box-shadow: 0 0 0 3px rgba(74,108,247,0.1);
+    }
+    textarea.form-input { resize: vertical; min-height: 80px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .btn-confirm {
+      width: 100%; background: var(--grad); color: white; border: none;
+      padding: 15px; border-radius: 14px;
+      font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 800;
+      letter-spacing: 0.08em; cursor: pointer;
+      box-shadow: 0 6px 22px rgba(217,63,181,0.3);
+      transition: all 0.25s; margin-top: 8px;
+    }
+    .btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(217,63,181,0.4); }
+
+    .success-view { display: none; padding: 56px 40px; text-align: center; }
+    .success-view.show { display: block; }
+    .success-anim {
+      width: 80px; height: 80px; margin: 0 auto 20px;
+      border-radius: 50%; background: var(--grad);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 8px 28px rgba(217,63,181,0.4);
+      animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .success-view h2 {
+      font-family: 'Raleway', sans-serif; font-size: 1.8rem; font-weight: 900;
+      color: var(--dark); margin-bottom: 12px;
+    }
+    .success-view p { font-size: 0.85rem; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+
+    .reservations-page,
+    .admin-page {
+      max-width: 1200px; margin: 0 auto; padding: 60px 24px 80px;
+    }
+
+    .res-item {
+      display: flex; gap: 18px; align-items: center;
+      background: white; border-radius: 18px;
+      border: 1px solid var(--border);
+      padding: 18px 22px; margin-bottom: 12px;
+      box-shadow: var(--shadow2);
+      animation: up 0.4s ease;
+      transition: box-shadow 0.2s;
+    }
+    .res-item:hover { box-shadow: 0 12px 36px rgba(74,108,247,0.14); }
+    .res-item-img { width: 62px; height: 62px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
+    .res-item-info { flex: 1; }
+    .res-item-info h4 { font-size: 0.94rem; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
+    .res-item-info p { font-size: 0.74rem; color: var(--muted); font-weight: 600; line-height: 1.55; }
+    .res-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .res-status-badge {
+      background: linear-gradient(135deg, rgba(74,222,128,0.15), rgba(74,222,128,0.08));
+      border: 1px solid rgba(74,222,128,0.4);
+      color: #16A34A; font-size: 0.67rem; font-weight: 800;
+      padding: 5px 12px; border-radius: 30px; white-space: nowrap;
+    }
+    .res-price { font-size: 0.9rem; font-weight: 800; color: var(--blue2); }
+    .btn-cancel-r {
+      background: none; border: 1px solid rgba(220,38,38,0.2);
+      color: rgba(220,38,38,0.6); padding: 6px 12px; border-radius: 8px;
+      font-size: 0.67rem; font-weight: 700; cursor: pointer;
+      font-family: 'Nunito', sans-serif; transition: all 0.2s;
+    }
+    .btn-cancel-r:hover { background: rgba(220,38,38,0.08); color: #DC2626; }
+
+    .empty-state {
+      text-align: center; padding: 70px 30px;
+      background: white; border-radius: 20px;
+      border: 2px dashed var(--border);
+    }
+    .empty-icon { font-size: 3rem; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 1.1rem; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+    .empty-state p { font-size: 0.82rem; color: var(--muted); }
+
+    .admin-auth-box,
+    .admin-card,
+    .admin-list-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow2);
+    }
+
+    .admin-auth-wrap {
+      max-width: 460px;
+      margin: 0 auto;
+    }
+
+    .admin-auth-box {
+      padding: 32px;
+    }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .admin-card { padding: 22px; }
+    .admin-list-card { padding: 22px; overflow: hidden; }
+
+    .admin-title {
+      font-family: 'Raleway', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--dark);
+      margin-bottom: 6px;
+    }
+
+    .admin-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .admin-toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .admin-table-wrap {
+      overflow: auto;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+      background: white;
+    }
+
+    .admin-table th,
+    .admin-table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 0.78rem;
+      vertical-align: top;
+    }
+
+    .admin-table th {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--blue2);
+      background: #F9FAFF;
+      font-weight: 900;
+    }
+
+    .admin-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      background: var(--bg2);
+      color: var(--muted);
+    }
+
+    .status-yes {
+      background: rgba(22,163,74,0.1);
+      color: var(--success);
+    }
+
+    .status-no {
+      background: rgba(249,115,22,0.12);
+      color: #EA580C;
+    }
+
+    .admin-actions-cell {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .admin-note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: var(--bg2);
+      padding: 10px 12px;
+      border-radius: 12px;
+      margin-bottom: 14px;
+    }
+
+    .admin-login-state {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(74,108,247,0.1);
+      color: var(--blue2);
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+    }
+
+    .contact-band {
+      background: var(--dark2); padding: 40px 48px;
+      display: flex; flex-wrap: wrap; gap: 24px;
+      align-items: center; justify-content: space-between;
+      margin-top: 40px;
+    }
+    .contact-band-logo {
+      display: flex; align-items: center; gap: 14px;
+    }
+    .contact-band-logo img { width: 48px; height: 48px; object-fit: contain; }
+    .contact-brand { font-family: 'Raleway', sans-serif; font-weight: 900; color: white; font-size: 1.1rem; }
+    .contact-items { display: flex; flex-wrap: wrap; gap: 24px; }
+    .contact-item {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .contact-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: rgba(255,255,255,0.08);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .contact-text { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+    .contact-val { font-size: 0.88rem; color: white; font-weight: 700; }
+
+    footer {
+      background: var(--dark); text-align: center;
+      padding: 24px; font-size: 0.73rem; color: rgba(255,255,255,0.3);
+    }
+    footer span {
+      background: var(--grad);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; font-weight: 800;
+    }
+
+    .no-results {
+      text-align: center; padding: 60px 30px; grid-column: 1/-1;
+    }
+    .no-results p { font-size: 0.9rem; color: var(--muted); font-weight: 600; }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .hidden { display: none !important; }
+
+    @keyframes up {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @media(max-width: 980px){
+      .admin-grid { grid-template-columns: 1fr; }
+    }
+
+    @media(max-width:768px){
+      .navbar { padding: 0 18px; }
+      .nav-contact { display: none; }
+      .hero { padding: 60px 24px 70px; }
+      .hero-stats { gap: 24px; }
+      .filter-card { padding: 18px; }
+      .contact-band { padding: 32px 24px; }
+      .bm-header, .bm-body { padding-left: 22px; padding-right: 22px; }
+      .bm-provider-preview, .bm-date-selected { margin-left: 22px; margin-right: 22px; }
+      .form-row { grid-template-columns: 1fr; }
+      .res-item { flex-direction: column; align-items: flex-start; }
+      .res-item-right { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-logo" onclick="showPage('home')">
+      <img class="nav-logo-img" src="https://via.placeholder.com/120x120/1E1C3A/FFFFFF?text=CE" alt="Connect Event Logo">
+      <div class="nav-logo-text">
+        CONNECT
+        <span>EVENT</span>
+      </div>
+    </div>
+
+    <div class="nav-links">
+      <button class="nav-btn active" id="nav-home" onclick="showPage('home')">🏠 Accueil</button>
+      <button class="nav-btn" id="nav-reservations" onclick="showPage('reservations')">
+        📋 Mes réservations <span class="nav-res-badge" id="res-badge">0</span>
+      </button>
+      <button class="nav-btn" id="nav-admin" onclick="showPage('admin')">🔐 Admin</button>
+      <button class="nav-btn" onclick="scrollToContact()">📞 Contact</button>
+    </div>
+
+    <div class="nav-contact">
+      <a href="mailto:yagan_darren@hotmail.com">✉ yagan_darren@hotmail.com</a>
+      <a href="tel:0483033202">📞 04 83 03 32 02</a>
+    </div>
+  </nav>
+
+  <div class="page active" id="page-home">
+    <div class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-orb hero-orb-1"></div>
+      <div class="hero-orb hero-orb-2"></div>
+      <div class="hero-orb hero-orb-3"></div>
+
+      <div class="hero-content">
+        <div class="hero-logo-wrap">
+          <img class="hero-logo" src="https://via.placeholder.com/200x200/1E1C3A/FFFFFF?text=CE" alt="Connect Event">
+        </div>
+        <h1>Réservez les meilleurs<br>prestataires pour votre<br><em>événement</em></h1>
+        <p>DJ, décoratrices, traiteurs, photographes, feux d'artifice et bien plus encore — trouvez les meilleurs experts du monde entier.</p>
+
+        <div class="hero-stats">
+          <div class="stat"><div class="stat-num" id="stat-categories">9</div><div class="stat-label">Catégories</div></div>
+          <div class="stat"><div class="stat-num" id="stat-providers">40+</div><div class="stat-label">Prestataires</div></div>
+          <div class="stat"><div class="stat-num">4</div><div class="stat-label">Continents</div></div>
+          <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Certifiés</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-card">
+        <div class="filter-search">
+          <span>🔍</span>
+          <input type="text" id="search-input" placeholder="Rechercher un prestataire, style...">
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">🌍 Continent</div>
+          <select class="filter-control" id="filter-origin">
+            <option value="">Tous les continents</option>
+            <option value="Afrique">Afrique</option>
+            <option value="Europe">Europe</option>
+            <option value="Asie">Asie</option>
+            <option value="Pays de l'Est">Pays de l'Est</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">🏷️ Catégorie</div>
+          <select class="filter-control" id="filter-category-mobile" onchange="setCategoryFromSelect(this.value)">
+            <option value="all">Toutes</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">💰 Budget</div>
+          <select class="filter-control" id="filter-budget">
+            <option value="">Tous budgets</option>
+            <option value="low">Moins de 500€</option>
+            <option value="mid">500€ – 1 500€</option>
+            <option value="high">Plus de 1 500€</option>
+          </select>
+        </div>
+
+        <button class="btn-search" onclick="applyFilters()">Rechercher</button>
+        <button class="btn-reset" onclick="resetFilters()">✕ Effacer</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="cat-tabs" id="cat-tabs"></div>
+
+      <div class="section-head">
+        <div>
+          <div class="section-title" id="section-title">Tous les <span>prestataires</span></div>
+          <div class="section-sub" id="section-sub">Découvrez nos experts disponibles</div>
+        </div>
+        <div class="result-count" id="result-count"></div>
+      </div>
+
+      <div class="providers-grid" id="providers-grid"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-reservations">
+    <div class="reservations-page">
+      <div class="section-head" style="margin-bottom:32px">
+        <div>
+          <div class="section-title">Mes <span>Réservations</span></div>
+          <div class="section-sub">Gérez et suivez toutes vos demandes</div>
+        </div>
+      </div>
+      <div id="res-list"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-admin">
+    <div class="admin-page">
+      <div class="section-head" style="margin-bottom:32px">
+        <div>
+          <div class="section-title">Tableau de bord <span>Admin</span></div>
+          <div class="section-sub">Modifier les prestataires, disponibilités, prix, catégories et visuels</div>
+        </div>
+        <div id="admin-session-box"></div>
+      </div>
+
+      <div id="admin-logged-out" class="admin-auth-wrap">
+        <div class="admin-auth-box">
+          <div class="admin-title">Connexion sécurisée</div>
+          <div class="admin-sub">Seul l’administrateur peut accéder au tableau de bord.</div>
+
+          <div class="form-group">
+            <label class="form-label">Email admin</label>
+            <input class="form-input" type="email" id="admin-email" placeholder="votre@email.com">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Mot de passe</label>
+            <input class="form-input" type="password" id="admin-password" placeholder="Mot de passe">
+          </div>
+
+          <button class="btn-confirm" onclick="loginAdmin()">Se connecter</button>
+        </div>
+      </div>
+
+      <div id="admin-logged-in" class="hidden">
+        <div class="admin-grid">
+          <div class="admin-card">
+            <div class="admin-title" id="admin-form-title">Ajouter un prestataire</div>
+            <div class="admin-sub">Remplis les champs puis enregistre.</div>
+
+            <div class="admin-note">
+              L’accès admin ici est protégé côté navigateur. Pour une vraie sécurité en ligne, il faudra ensuite un backend.
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Nom du prestataire</label>
+              <input class="form-input" type="text" id="a-name" placeholder="Nom du prestataire">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Entreprise</label>
+              <input class="form-input" type="text" id="a-company" placeholder="Nom de l'entreprise">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Catégorie</label>
+                <select class="form-input" id="a-cat"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Continent</label>
+                <select class="form-input" id="a-origin">
+                  <option value="Afrique">Afrique</option>
+                  <option value="Europe">Europe</option>
+                  <option value="Asie">Asie</option>
+                  <option value="Pays de l'Est">Pays de l'Est</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Prix affiché</label>
+                <input class="form-input" type="text" id="a-price" placeholder="600 €">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Valeur prix</label>
+                <input class="form-input" type="number" id="a-priceVal" placeholder="600">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Note du prix</label>
+                <input class="form-input" type="text" id="a-priceNote" placeholder="/ soirée">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Disponibilité</label>
+                <select class="form-input" id="a-avail">
+                  <option value="true">Disponible</option>
+                  <option value="false">Limité</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Note</label>
+                <input class="form-input" type="number" step="0.1" min="0" max="5" id="a-rating" placeholder="4.9">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nombre d'avis</label>
+                <input class="form-input" type="number" id="a-reviews" placeholder="120">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Badge</label>
+              <input class="form-input" type="text" id="a-badge" placeholder="Top DJ">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Image URL</label>
+              <input class="form-input" type="text" id="a-img" placeholder="[https://...]https://...">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Titre vidéo</label>
+              <input class="form-input" type="text" id="a-video" placeholder="Nom vidéo">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tags (séparés par des virgules)</label>
+              <input class="form-input" type="text" id="a-tags" placeholder="Mariage, Luxe, Photo">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea class="form-input" id="a-desc" placeholder="Description du prestataire"></textarea>
+            </div>
+
+            <div class="admin-toolbar">
+              <button class="btn-save" onclick="saveProvider()">💾 Enregistrer</button>
+              <button class="btn-small" onclick="resetAdminForm()">Nouveau</button>
+            </div>
+          </div>
+
+          <div class="admin-list-card">
+            <div class="admin-title">Gestion des prestataires</div>
+            <div class="admin-sub">Modifier, supprimer et piloter tout le catalogue.</div>
+
+            <div class="admin-toolbar">
+              <input class="form-input" type="text" id="admin-search" placeholder="Rechercher dans les prestataires..." oninput="renderAdminTable()">
+              <button class="btn-small" onclick="exportProviders()">Exporter JSON</button>
+              <button class="btn-danger" onclick="logoutAdmin()">Déconnexion</button>
+            </div>
+
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Catégorie</th>
+                    <th>Continent</th>
+                    <th>Prix</th>
+                    <th>Disponibilité</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="contact-band" id="contact-section">
+    <div class="contact-band-logo">
+      <img src="https://via.placeholder.com/120x120/1E1C3A/FFFFFF?text=CE" alt="Logo">
+      <div class="contact-brand">Connect Event</div>
+    </div>
+
+    <div class="contact-items">
+      <div class="contact-item">
+        <div class="contact-icon">✉️</div>
+        <div>
+          <div class="contact-text">Email</div>
+          <div class="contact-val">yagan_darren@hotmail.com</div>
+        </div>
+      </div>
+
+      <div class="contact-item">
+        <div class="contact-icon">📞</div>
+        <div>
+          <div class="contact-text">Téléphone</div>
+          <div class="contact-val">04 83 03 32 02</div>
+        </div>
+      </div>
+
+      <div class="contact-item">
+        <div class="contact-icon">🌍</div>
+        <div>
+          <div class="contact-text">Zones couvertes</div>
+          <div class="contact-val">Afrique · Europe · Asie · Est</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>© 2025 <span>Connect Event</span> — Tous droits réservés · Créez des souvenirs inoubliables ✦</footer>
+
+  <div class="modal-overlay" id="cal-overlay" onclick="closeCalOverlay(event)">
+    <div class="cal-modal">
+      <div class="cal-header">
+        <div class="cal-header-info">
+          <h3 id="cal-provider-name">Calendrier</h3>
+          <p id="cal-provider-sub">Sélectionnez une date disponible</p>
+        </div>
+        <button class="close-btn" onclick="closeCal()">✕</button>
+      </div>
+
+      <div class="cal-body">
+        <div class="cal-nav">
+          <button class="cal-arrow" onclick="changeMonth(-1)">‹</button>
+          <div class="cal-month" id="cal-month-label"></div>
+          <button class="cal-arrow" onclick="changeMonth(1)">›</button>
+        </div>
+
+        <div class="cal-grid" id="cal-grid"></div>
+
+        <div class="cal-legend">
+          <div class="legend-item"><div class="legend-dot ld-avail"></div>Disponible</div>
+          <div class="legend-item"><div class="legend-dot ld-booked"></div>Réservé</div>
+          <div class="legend-item"><div class="legend-dot ld-selected"></div>Sélectionné</div>
+        </div>
+      </div>
+
+      <div class="cal-footer">
+        <div class="selected-date-info" id="selected-date-info">📅 Cliquez sur une date disponible</div>
+        <button class="btn-book-date" onclick="bookFromCalendar()">Réserver cette date →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="booking-overlay" onclick="closeBookingOverlay(event)">
+    <div class="booking-modal">
+      <div id="bm-main">
+        <div class="bm-header">
+          <div class="bm-header-info">
+            <h2>Réserver</h2>
+            <p id="bm-subtitle">Complétez votre demande de réservation</p>
+          </div>
+          <button class="close-btn" onclick="closeBooking()">✕</button>
+        </div>
+
+        <div class="bm-provider-preview" id="bm-preview"></div>
+        <div class="bm-date-selected" id="bm-date-info" style="display:none">📅 <span id="bm-date-text"></span></div>
+
+        <div class="bm-body">
+          <div class="form-group">
+            <label class="form-label">Nom complet *</label>
+            <input class="form-input" type="text" id="f-name" placeholder="Marie Dupont">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Email *</label>
+              <input class="form-input" type="email" id="f-email" placeholder="marie@email.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Téléphone</label>
+              <input class="form-input" type="tel" id="f-phone" placeholder="+33 6 ...">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Date de l'événement *</label>
+              <input class="form-input" type="date" id="f-date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Heure de début</label>
+              <input class="form-input" type="time" id="f-time">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Lieu de l'événement</label>
+            <input class="form-input" type="text" id="f-lieu" placeholder="Ville, adresse ou région">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Type d'événement *</label>
+              <select class="form-input" id="f-type">
+                <option value="">Sélectionner...</option>
+                <option>Mariage</option>
+                <option>Anniversaire</option>
+                <option>Soirée d'entreprise</option>
+                <option>Baptême / Communion</option>
+                <option>Fiançailles</option>
+                <option>Gala / Bal</option>
+                <option>Autre</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nombre d'invités</label>
+              <select class="form-input" id="f-guests">
+                <option value="">Sélectionner...</option>
+                <option>Moins de 30</option>
+                <option>30 – 80</option>
+                <option>80 – 150</option>
+                <option>150 – 300</option>
+                <option>Plus de 300</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Message / Précisions</label>
+            <textarea class="form-input" id="f-msg" placeholder="Décrivez votre événement, vos attentes, thème, style..."></textarea>
+          </div>
+
+          <button class="btn-confirm" onclick="submitBooking()">✓ Confirmer la réservation</button>
+        </div>
+      </div>
+
+      <div class="success-view" id="bm-success">
+        <div class="success-anim">✓</div>
+        <h2>Réservation confirmée !</h2>
+        <p>Votre demande a bien été enregistrée.<br>Le prestataire et l'équipe <strong>Connect Event</strong> vous contacteront sous <strong style="color:var(--blue2)">24 à 48h</strong> pour finaliser les détails.</p>
+        <p style="font-size:0.78rem;color:var(--muted);margin-top:12px">📧 yagan_darren@hotmail.com · 📞 04 83 03 32 02</p>
+        <button class="btn-confirm" style="max-width:200px;margin:0 auto" onclick="closeBooking()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ADMIN_EMAIL = 'yagan_darren@hotmail.com';
+    const ADMIN_PASSWORD = 'ConnectEvent2026!';
+
+    const ORIGIN_COLORS = {
+      'Afrique': '#F59E0B',
+      'Europe': '#3B82F6',
+      'Asie': '#EC4899',
+      "Pays de l'Est": '#8B5CF6'
+    };
+
+    const CATEGORIES = [
+      { id: 'all', label: 'Tous', icon: '✨' },
+      { id: 'dj', label: 'DJ', icon: '🎧' },
+      { id: 'deco', label: 'Décoratrice', icon: '🌸' },
+      { id: 'materiel', label: 'Matériel', icon: '🎪' },
+      { id: 'voiture', label: 'Voiture', icon: '🚗' },
+      { id: 'traiteur', label: 'Traiteur', icon: '🍽️' },
+      { id: 'photo', label: 'Photo & Caméra', icon: '📸' },
+      { id: 'feux', label: "Feux d'artifice", icon: '🎆' },
+      { id: 'salle', label: 'Location de salle', icon: '🏛️' },
+      { id: 'gateau', label: 'Gâteau', icon: '🎂' }
+    ];
+
+    const DEFAULT_PROVIDERS = [
+      { id:'dj1', cat:'dj', name:'DJ Maxime', company:'SoundWave Events', origin:'Europe', price:'600 €', priceNote:'/ soirée', priceVal:600, rating:4.9, reviews:187, tags:['Electro','House','R&B','Afro'], desc:'Spécialiste mariages et soirées privées depuis 10 ans. Matériel haut de gamme, éclairage inclus.', img:'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80', badge:'Top DJ', video:'DJ Maxime — Mariage Paris 2024', avail:true },
+      { id:'dj2', cat:'dj', name:'DJ Kofi', company:'AfroBeats Studio', origin:'Afrique', price:'450 €', priceNote:'/ soirée', priceVal:450, rating:4.8, reviews:143, tags:['Afrobeats','Coupé-décalé','Amapiano'], desc:'Spécialiste Afrobeats et musiques africaines. Ambiance garantie pour vos soirées afro.', img:'https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?w=600&q=80', badge:null, video:'DJ Kofi — Soirée Afro Lyon 2024', avail:true },
+      { id:'dj3', cat:'dj', name:'DJ Yuki', company:'Tokyo Vibes', origin:'Asie', price:'520 €', priceNote:'/ soirée', priceVal:520, rating:4.7, reviews:98, tags:['J-Pop','EDM','Electro','Fusion'], desc:'DJ japonais aux sets innovants. Fusion de J-Pop et EDM international pour une ambiance unique.', img:'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&q=80', badge:null, video:'DJ Yuki — Tokyo Night Paris Edition', avail:false },
+      { id:'dj4', cat:'dj', name:'DJ Vadim', company:'Eastern Sound', origin:"Pays de l'Est", price:'480 €', priceNote:'/ soirée', priceVal:480, rating:4.8, reviews:76, tags:['Techno','House','Progressive'], desc:'Techno et progressive house d\'Europe de l\'Est. Sets électroniques puissants et immersifs.', img:'https://images.unsplash.com/photo-1504509546545-e000b4a62425?w=600&q=80', badge:'Nouveauté', video:'DJ Vadim — Eastern Night Club 2024', avail:true },
+
+      { id:'dec1', name:'Sophie Laurent', cat:'deco', company:'Atelier Blanc & Or', origin:'Europe', price:'1 200 €', priceNote:'/ événement', priceVal:1200, rating:4.9, reviews:215, tags:['Mariage','Floral','Romantique','Luxe'], desc:'Créatrice d\'ambiances florales d\'exception. Spécialiste des mariages haut de gamme.', img:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80', badge:'Top Déco', video:'Sophie — Mariage Château Loire 2024', avail:true },
+      { id:'dec2', name:'Amara Diallo', cat:'deco', company:'Couleurs d\'Afrique', origin:'Afrique', price:'800 €', priceNote:'/ événement', priceVal:800, rating:4.7, reviews:134, tags:['Wax','Coloré','Culturel','Tissu'], desc:'Décoration événementielle aux couleurs et tissus africains. Ambiance chaleureuse et authentique.', img:'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80', badge:null, video:'Amara — Cérémonie Africaine Paris', avail:true },
+      { id:'dec3', name:'Mei Lin', cat:'deco', company:'Blossom Deco', origin:'Asie', price:'900 €', priceNote:'/ événement', priceVal:900, rating:4.8, reviews:89, tags:['Zen','Fleurs de cerisier','Origami'], desc:'Décoration inspirée de l\'art floral asiatique. Cerisiers en fleur, lanternes, ambiance zen et poétique.', img:'https://images.unsplash.com/photo-1510076857177-7470076d4098?w=600&q=80', badge:null, video:'Mei Lin — Mariage Asiatique 2024', avail:true },
+      { id:'dec4', name:'Irina Petrov', cat:'deco', company:'Slavic Elegance', origin:"Pays de l'Est", price:'750 €', priceNote:'/ événement', priceVal:750, rating:4.6, reviews:61, tags:['Baroque','Doré','Cristal','Luxe'], desc:'Inspirations baroques d\'Europe de l\'Est. Cristaux, dorures, chandeliers pour un luxe intemporel.', img:'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80', badge:null, video:'Irina — Gala Baroque Prague 2024', avail:false },
+
+      { id:'mat1', name:'EventTech Pro', cat:'materiel', company:'EventTech Solutions', origin:'Europe', price:'800 €', priceNote:'/ jour', priceVal:800, rating:4.8, reviews:176, tags:['Son','Lumière','Scène','LED'], desc:'Location de matériel audiovisuel complet. Sonorisation, jeux de lumières, écrans LED géants.', img:'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600&q=80', badge:'Top Matériel', video:'EventTech — Installation Festival 2024', avail:true },
+      { id:'mat2', name:'FestEquip', cat:'materiel', company:'FestEquip Location', origin:'Europe', price:'350 €', priceNote:'/ jour', priceVal:350, rating:4.6, reviews:201, tags:['Tente','Chapiteau','Mobilier'], desc:'Spécialiste structures événementielles. Chapiteaux, mobilier, bars en location.', img:'https://images.unsplash.com/photo-1478147427282-58a87a433a5f?w=600&q=80', badge:null, video:'FestEquip — Mariage Plein Air 300p', avail:true },
+
+      { id:'voi1', name:'LuxDrive', cat:'voiture', company:'LuxDrive Premium', origin:'Europe', price:'450 €', priceNote:'/ prestation', priceVal:450, rating:4.9, reviews:312, tags:['Limousine','Mercedes','Chauffeur'], desc:'Flotte de véhicules de prestige avec chauffeurs privés. Mercedes Classe S, décoration florale.', img:'https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&q=80', badge:'Top', video:'LuxDrive — Arrivée Mariage Versailles', avail:true },
+      { id:'voi2', name:'ClassicAuto', cat:'voiture', company:'ClassicAuto Events', origin:'Europe', price:'380 €', priceNote:'/ prestation', priceVal:380, rating:4.8, reviews:156, tags:['Vintage','Rolls-Royce','Retro'], desc:'Collection de voitures anciennes et vintage. Rolls-Royce, Jaguar, Citroën DS.', img:'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80', badge:null, video:'ClassicAuto — Mariage Vintage Rolls', avail:true },
+
+      { id:'tra1', name:'Chef Marcel', cat:'traiteur', company:'Gastronomie Marcel', origin:'Europe', price:'75 €', priceNote:'/ personne', priceVal:75, rating:5.0, reviews:203, tags:['Gastronomique','Étoilé','Sur mesure'], desc:'Chef étoilé au service de vos événements privés. Menu dégustation, accord mets-vins inclus.', img:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80', badge:'Chef Étoilé', video:'Chef Marcel — Mariage Gourmet 2024', avail:true },
+      { id:'tra2', name:'Mama Fatou', cat:'traiteur', company:'Saveurs d\'Afrique', origin:'Afrique', price:'45 €', priceNote:'/ personne', priceVal:45, rating:4.8, reviews:287, tags:['Africain','Attiéké','Yassa','Buffet'], desc:'Cuisine africaine authentique et généreuse. Spécialités ivoiriennes, sénégalaises, camerounaises.', img:'https://images.unsplash.com/photo-1555244162-803834f70033?w=600&q=80', badge:'Coup de ♥', video:'Mama Fatou — Mariage Africain 200p', avail:true },
+      { id:'tra3', name:'Sakura Cuisine', cat:'traiteur', company:'Nihon Kitchen', origin:'Asie', price:'65 €', priceNote:'/ personne', priceVal:65, rating:4.7, reviews:112, tags:['Japonais','Sushi','Bento','Fusion'], desc:'Traiteur japonais haut de gamme. Sushis, temakis, cuisine fusion nippo-française.', img:'https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=600&q=80', badge:null, video:'Sakura — Soirée Japonaise Paris 2024', avail:true },
+      { id:'tra4', name:'Babushka Catering', cat:'traiteur', company:'Eastern Flavors', origin:"Pays de l'Est", price:'50 €', priceNote:'/ personne', priceVal:50, rating:4.6, reviews:88, tags:['Polonais','Piroguis','Bortsch','Festif'], desc:'Cuisine d\'Europe de l\'Est festive et généreuse. Piroguis, bortsch, viandes fumées.', img:'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=600&q=80', badge:null, video:'Babushka — Soirée Est-Européenne', avail:false },
+
+      { id:'ph1', name:'Lucas Martin', cat:'photo', company:'Studio Lumière', origin:'Europe', price:'1 500 €', priceNote:'/ événement', priceVal:1500, rating:4.9, reviews:198, tags:['Photo','Vidéo 4K','Drone','Mariage'], desc:'Photographe-vidéaste professionnel. Reportage complet, drone, album premium inclus.', img:'https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=600&q=80', badge:'Top Photo', video:'Lucas — Film Mariage Provence 2024', avail:true },
+      { id:'ph2', name:'Kwame Asante', cat:'photo', company:'AfroLens Studio', origin:'Afrique', price:'900 €', priceNote:'/ événement', priceVal:900, rating:4.8, reviews:134, tags:['Photo','Reportage','Culturel'], desc:'Photographe spécialisé dans les cérémonies africaines et les événements culturels colorés.', img:'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80', badge:null, video:'Kwame — Cérémonie Africaine 2024', avail:true },
+      { id:'ph3', name:'Hiro Tanaka', cat:'photo', company:'Tokyo Frame', origin:'Asie', price:'1 100 €', priceNote:'/ événement', priceVal:1100, rating:4.9, reviews:87, tags:['Artistique','Cinématique','Drone'], desc:'Photographe-cinéaste au style japonais épuré. Résultats cinématiques et artistiques d\'exception.', img:'https://images.unsplash.com/photo-1480365501497-199581be0e66?w=600&q=80', badge:'Coup de ♥', video:'Hiro — Film Mariage Japon Style', avail:true },
+      { id:'ph4', name:'Andrei Volkov', cat:'photo', company:'EastShot Photography', origin:"Pays de l'Est", price:'800 €', priceNote:'/ événement', priceVal:800, rating:4.7, reviews:102, tags:['Reportage','Portrait','Naturel'], desc:'Photographe roumain au style reportage naturaliste. Émotions authentiques capturées sur le vif.', img:'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=600&q=80', badge:null, video:'Andrei — Mariage Naturel 2024', avail:false },
+
+      { id:'feu1', name:'PyroShow France', cat:'feux', company:'Pyrotechnie Dupuis', origin:'Europe', price:'2 500 €', priceNote:'/ show', priceVal:2500, rating:5.0, reviews:89, tags:['Feux d\'artifice','Show laser','Pyrotechnie'], desc:'Spectacles pyrotechniques haut de gamme. Feux d\'artifice musicaux, effets laser, nappes de fumée.', img:'https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=600&q=80', badge:'Spectaculaire', video:'PyroShow — Mariage Feux Artifice 2024', avail:true },
+      { id:'feu2', name:'AfroFire Events', cat:'feux', company:'AfroFire', origin:'Afrique', price:'1 800 €', priceNote:'/ show', priceVal:1800, rating:4.8, reviews:54, tags:['Feux','Cracheurs','Torches'], desc:'Spectacles de feu d\'inspiration africaine. Danseurs de feu, cracheurs, jongleurs pyrotechniques.', img:'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&q=80', badge:null, video:'AfroFire — Cérémonie Nuit Africaine', avail:true },
+      { id:'feu3', name:'Dragon Fire Asia', cat:'feux', company:'Asian Pyro Arts', origin:'Asie', price:'2 200 €', priceNote:'/ show', priceVal:2200, rating:4.9, reviews:67, tags:['Dragons','Lanterne','Pétards','Tradition'], desc:'Art pyrotechnique chinois ancestral. Dragons lumineux, lanternes, tradition festive millénaire.', img:'https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?w=600&q=80', badge:'Unique', video:'Dragon Fire — Nouvel An Chinois Show', avail:false },
+
+      { id:'sal1', name:'Château de Lumière', cat:'salle', company:'Événements Prestige', origin:'Europe', price:'3 500 €', priceNote:'/ journée', priceVal:3500, rating:4.9, reviews:134, tags:['Château','Jardins','500 pers.','Luxe'], desc:'Château XVIIe siècle avec jardins à la française. Salle de réception de 500 personnes, hébergement disponible.', img:'https://images.unsplash.com/photo-1543333995-a78aea2eee50?w=600&q=80', badge:'Exclusif', video:'Château de Lumière — Visite Virtuelle', avail:true },
+      { id:'sal2', name:'Villa Afrique', cat:'salle', company:'Heritage Events', origin:'Afrique', price:'1 500 €', priceNote:'/ journée', priceVal:1500, rating:4.7, reviews:98, tags:['Villa','Piscine','200 pers.','Plein air'], desc:'Villa méditerranéenne avec terrasse et piscine. Cadre exceptionnel pour vos événements en plein air.', img:'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80', badge:null, video:'Villa Afrique — Mariage Tunisie 2024', avail:true },
+      { id:'sal3', name:'Sakura Hall', cat:'salle', company:'Asian Events Space', origin:'Asie', price:'2 000 €', priceNote:'/ journée', priceVal:2000, rating:4.8, reviews:72, tags:['Zen','Jardin japonais','150 pers.'], desc:'Salle d\'événements inspirée de l\'architecture japonaise. Jardin zen, intérieur bois et papier washi.', img:'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=80', badge:'Dépaysement', video:'Sakura Hall — Visite Jardin Zen', avail:true },
+      { id:'sal4', name:'Palais de Prague', cat:'salle', company:'Eastern Events', origin:"Pays de l'Est", price:'2 800 €', priceNote:'/ journée', priceVal:2800, rating:4.9, reviews:61, tags:['Palais','Baroque','300 pers.','Prestige'], desc:'Palais baroque du XVIIIe siècle. Fresques, dorures, salle de bal d\'exception.', img:'https://images.unsplash.com/photo-1467803738586-46b7eb7b16a1?w=600&q=80', badge:'Grandiose', video:'Palais Prague — Visite Salle de Bal', avail:false },
+
+      { id:'gat1', name:'Pâtisserie Artisan', cat:'gateau', company:'Délices & Création', origin:'Europe', price:'800 €', priceNote:'/ pièce montée', priceVal:800, rating:5.0, reviews:287, tags:['Wedding cake','Pièce montée','Sur mesure'], desc:'Pâtissier artisan créateur de wedding cakes spectaculaires. Personnalisation totale, dégustation incluse.', img:'https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=600&q=80', badge:'Top Gâteau', video:'Délices — Wedding Cake Making-of', avail:true },
+      { id:'gat2', name:'Maman Bâ', cat:'gateau', company:'Saveurs d\'Afrique Sucrée', origin:'Afrique', price:'400 €', priceNote:'/ gâteau', priceVal:400, rating:4.8, reviews:167, tags:['Thiakry','Baobab','Naturel','Africain'], desc:'Pâtissière africaine créative. Gâteaux aux saveurs d\'Afrique : baobab, mangue, gingembre.', img:'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&q=80', badge:'Coup de ♥', video:'Maman Bâ — Gâteau Mariage Africain', avail:true },
+      { id:'gat3', name:'Wagashi Dreams', cat:'gateau', company:'Tokyo Pâtisserie', origin:'Asie', price:'600 €', priceNote:'/ création', priceVal:600, rating:4.9, reviews:134, tags:['Wagashi','Mochi','Matcha','Sakura'], desc:'Art pâtissier japonais : wagashi, mochis, entremets matcha. Oeuvres d\'art comestibles.', img:'https://images.unsplash.com/photo-1562440499-64c9a111f713?w=600&q=80', badge:'Artistique', video:'Wagashi — Création Live Wedding Cake', avail:true },
+      { id:'gat4', name:'Babka & Co', cat:'gateau', company:'Eastern Sweets', origin:"Pays de l'Est", price:'350 €', priceNote:'/ gâteau', priceVal:350, rating:4.6, reviews:92, tags:['Babka','Medivnik','Traditionnel'], desc:'Pâtisseries d\'Europe de l\'Est : babka, medovnik, makowiec. Recettes ancestrales transmises de génération en génération.', img:'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=600&q=80', badge:null, video:'Babka & Co — Traditions Est-Européennes', avail:true }
+    ];
+
+    let PROVIDERS = JSON.parse(localStorage.getItem('ce_providers') || 'null') || [...DEFAULT_PROVIDERS];
+    let activeCategory = 'all';
+    let filteredProviders = [...PROVIDERS];
+    let reservations = JSON.parse(localStorage.getItem('ce_reservations') || '[]');
+    let currentProvider = null;
+    let selectedCalDate = null;
+    let calYear, calMonth;
+    let adminLoggedIn = sessionStorage.getItem('ce_admin_logged_in') === 'true';
+    let editingProviderId = null;
+
+    function saveProvidersToStorage() {
+      localStorage.setItem('ce_providers', JSON.stringify(PROVIDERS));
+    }
+
+    function getProvider(id){ return PROVIDERS.find(p => p.id === id); }
+
+    function init(){
+      populateCategorySelects();
+      renderTabs();
+      renderProviders();
+      updateResCount();
+      updateStats();
+      refreshAdminUI();
+      const now = new Date();
+      calYear = now.getFullYear();
+      calMonth = now.getMonth();
+    }
+
+    function updateStats() {
+      document.getElementById('stat-categories').textContent = CATEGORIES.length - 1;
+      document.getElementById('stat-providers').textContent = PROVIDERS.length + '+';
+    }
+
+    function populateCategorySelects() {
+      const mobile = document.getElementById('filter-category-mobile');
+      mobile.innerHTML = CATEGORIES.map(cat => `<option value="${cat.id}">${cat.label}</option>`).join('');
+
+      const adminCat = document.getElementById('a-cat');
+      adminCat.innerHTML = CATEGORIES.filter(c => c.id !== 'all')
+        .map(cat => `<option value="${cat.id}">${cat.label}</option>`)
+        .join('');
+    }
+
+    function renderTabs(){
+      const c = document.getElementById('cat-tabs');
+      c.innerHTML = CATEGORIES.map(cat => {
+        const count = cat.id === 'all' ? PROVIDERS.length : PROVIDERS.filter(p => p.cat === cat.id).length;
+        return `<button class="cat-tab ${cat.id === activeCategory ? 'active' : ''}" onclick="setCategory('${cat.id}')">
+          <span class="tab-icon">${cat.icon}</span>${cat.label}
+          <span class="cat-count">${count}</span>
+        </button>`;
+      }).join('');
+      document.getElementById('filter-category-mobile').value = activeCategory;
+    }
+
+    function setCategory(id){
+      activeCategory = id;
+      renderTabs();
+      applyFilters();
+    }
+
+    function setCategoryFromSelect(id){
+      activeCategory = id;
+      renderTabs();
+      applyFilters();
+    }
+
+    function applyFilters(){
+      const search = document.getElementById('search-input').value.toLowerCase().trim();
+      const origin = document.getElementById('filter-origin').value;
+      const budget = document.getElementById('filter-budget').value;
+
+      filteredProviders = PROVIDERS.filter(p => {
+        if(activeCategory !== 'all' && p.cat !== activeCategory) return false;
+        if(origin && p.origin !== origin) return false;
+        if(budget){
+          if(budget === 'low' && p.priceVal >= 500) return false;
+          if(budget === 'mid' && (p.priceVal < 500 || p.priceVal > 1500)) return false;
+          if(budget === 'high' && p.priceVal <= 1500) return false;
+        }
+        if(search){
+          const s = (p.name + ' ' + p.company + ' ' + p.tags.join(' ') + ' ' + p.desc + ' ' + p.origin).toLowerCase();
+          if(!s.includes(search)) return false;
+        }
+        return true;
+      });
+
+      renderProviders();
+    }
+
+    function resetFilters(){
+      document.getElementById('search-input').value = '';
+      document.getElementById('filter-origin').value = '';
+      document.getElementById('filter-budget').value = '';
+      activeCategory = 'all';
+      filteredProviders = [...PROVIDERS];
+      renderTabs();
+      renderProviders();
+    }
+
+    function renderProviders(){
+      const cat = CATEGORIES.find(c => c.id === activeCategory);
+      document.getElementById('section-title').innerHTML = `${cat.icon} ${cat.label === 'Tous' ? 'Tous les' : ''} <span>${cat.label === 'Tous' ? 'prestataires' : cat.label + 's'}</span>`;
+      document.getElementById('result-count').textContent = filteredProviders.length + ' résultat' + (filteredProviders.length > 1 ? 's' : '');
+
+      const grid = document.getElementById('providers-grid');
+      if(!filteredProviders.length){
+        grid.innerHTML = `<div class="no-results"><p>😔 Aucun prestataire ne correspond à vos critères.<br>Essayez de modifier vos filtres.</p></div>`;
+        return;
+      }
+
+      grid.innerHTML = filteredProviders.map(p => `
+        <div class="pcard">
+          <div class="pcard-media">
+            <img src="${p.img}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.src='https://via.placeholder.com/600x400/1E1C3A/4A6CF7?text=${encodeURIComponent(p.name)}'">
+            <div class="pcard-overlay"></div>
+
+            <div class="pcard-origin">
+              <div class="origin-dot" style="background:${ORIGIN_COLORS[p.origin] || '#ccc'}"></div>
+              ${p.origin}
+            </div>
+
+            ${p.badge ? `<div class="pcard-badge">${escapeHtml(p.badge)}</div>` : ''}
+
+            <button class="video-overlay-btn" onclick="openVideo('${p.id}')">▶</button>
+
+            <div class="avail-ribbon">
+              <div class="avail-dot ${p.avail ? 'green' : 'orange'}"></div>
+              ${p.avail ? 'Disponible' : 'Limité'}
+            </div>
+
+            <div class="pcard-rating">
+              <span class="stars">★</span>${p.rating} (${p.reviews})
+            </div>
+          </div>
+
+          <div class="pcard-body">
+            <div class="pcard-top">
+              <div>
+                <div class="pcard-name">${escapeHtml(p.name)}</div>
+                <div class="pcard-company">${escapeHtml(p.company)}</div>
+              </div>
+              <div class="pcard-price">
+                <div class="pcard-price-val">${escapeHtml(p.price)}</div>
+                <div class="pcard-price-note">${escapeHtml(p.priceNote || '')}</div>
+              </div>
+            </div>
+
+            <div class="pcard-country">🌍 ${p.origin}</div>
+
+            <div class="pcard-tags">
+              ${(p.tags || []).map((t, i) => `<span class="ptag${i===0 ? ' accent' : ''}">${escapeHtml(t)}</span>`).join('')}
+            </div>
+
+            <p class="pcard-desc">${escapeHtml(p.desc)}</p>
+
+            <div class="pcard-actions">
+              <button class="btn-cal" onclick="openCal('${p.id}')">📅 Disponibilités</button>
+              <button class="btn-book2" onclick="openBooking('${p.id}', null)">Réserver →</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openVideo(id){
+      const p = getProvider(id);
+      alert(`▶ Vidéo : ${p.video}\n\nDans votre version finale, la vidéo de ${p.name} pourra être lue ici via YouTube, Vimeo ou votre hébergeur vidéo.`);
+    }
+
+    function openCal(id){
+      currentProvider = getProvider(id);
+      selectedCalDate = null;
+      document.getElementById('cal-provider-name').textContent = currentProvider.name;
+      document.getElementById('cal-provider-sub').textContent = currentProvider.company + ' · ' + currentProvider.origin;
+      document.getElementById('selected-date-info').textContent = '📅 Cliquez sur une date disponible';
+      document.getElementById('selected-date-info').classList.remove('has-date');
+      const now = new Date();
+      calYear = now.getFullYear();
+      calMonth = now.getMonth();
+      renderCalendar();
+      document.getElementById('cal-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeCal(){
+      document.getElementById('cal-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function closeCalOverlay(e){
+      if(e.target === document.getElementById('cal-overlay')) closeCal();
+    }
+
+    function changeMonth(dir){
+      calMonth += dir;
+      if(calMonth < 0){ calMonth = 11; calYear--; }
+      if(calMonth > 11){ calMonth = 0; calYear++; }
+      renderCalendar();
+    }
+
+    function renderCalendar(){
+      const months=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+      document.getElementById('cal-month-label').textContent = months[calMonth] + ' ' + calYear;
+
+      const days=['L','M','M','J','V','S','D'];
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+      const today = new Date();
+      const offset = firstDay === 0 ? 6 : firstDay - 1;
+
+      const bookedDays = new Set();
+      const seed = currentProvider.id.charCodeAt(currentProvider.id.length - 1);
+      for(let i = 1; i <= daysInMonth; i++){
+        if((i * seed) % 7 === 0 || (i * seed) % 11 === 0) bookedDays.add(i);
+      }
+
+      let html = days.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+      for(let i = 0; i < offset; i++) html += `<div class="cal-day empty"></div>`;
+
+      for(let d = 1; d <= daysInMonth; d++){
+        const date = new Date(calYear, calMonth, d);
+        const isPast = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const isBooked = bookedDays.has(d);
+        const isSelected = selectedCalDate && selectedCalDate.getDate() === d && selectedCalDate.getMonth() === calMonth && selectedCalDate.getFullYear() === calYear;
+        const isToday = d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+
+        let cls = 'cal-day';
+        if(isPast) cls += ' past';
+        else if(isBooked) cls += ' booked';
+        else cls += ' available';
+        if(isSelected) cls += ' selected';
+        if(isToday) cls += ' today';
+
+        html += `<div class="${cls}" onclick="selectCalDay(${d})">${d}</div>`;
+      }
+      document.getElementById('cal-grid').innerHTML = html;
+    }
+
+    function selectCalDay(d){
+      const date = new Date(calYear, calMonth, d);
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      if(date < today) return;
+      selectedCalDate = date;
+      renderCalendar();
+
+      const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+      const str = date.toLocaleDateString('fr-FR', opts);
+      document.getElementById('selected-date-info').textContent = '✓ ' + str.charAt(0).toUpperCase() + str.slice(1);
+      document.getElementById('selected-date-info').classList.add('has-date');
+    }
+
+    function bookFromCalendar(){
+      if(!selectedCalDate){
+        alert('Veuillez sélectionner une date disponible.');
+        return;
+      }
+      closeCal();
+      openBooking(currentProvider.id, selectedCalDate);
+    }
+
+    function openBooking(id, date){
+      currentProvider = getProvider(id);
+      document.getElementById('bm-subtitle').textContent = currentProvider.company + ' · ' + currentProvider.origin;
+      document.getElementById('bm-preview').innerHTML = `
+        <img class="bm-provider-img" src="${currentProvider.img}" alt="${escapeHtml(currentProvider.name)}">
+        <div class="bm-provider-details">
+          <h4>${escapeHtml(currentProvider.name)}</h4>
+          <p>${escapeHtml(currentProvider.company)} · ${'★'.repeat(Math.floor(currentProvider.rating))} ${currentProvider.rating} (${currentProvider.reviews} avis)</p>
+        </div>
+        <div class="bm-provider-price">${escapeHtml(currentProvider.price)}<small>${escapeHtml(currentProvider.priceNote || '')}</small></div>
+      `;
+
+      const dateInfo = document.getElementById('bm-date-info');
+      const dateText = document.getElementById('bm-date-text');
+
+      clearForm();
+
+      if(date){
+        const f = date.toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+        dateText.textContent = 'Date sélectionnée : ' + f.charAt(0).toUpperCase() + f.slice(1);
+        dateInfo.style.display = 'flex';
+        document.getElementById('f-date').value = localDateInputValue(date);
+      } else {
+        dateInfo.style.display = 'none';
+        document.getElementById('f-date').value = '';
+      }
+
+      document.getElementById('bm-main').style.display = 'block';
+      document.getElementById('bm-success').classList.remove('show');
+
+      document.getElementById('booking-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeBooking(){
+      document.getElementById('booking-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function closeBookingOverlay(e){
+      if(e.target === document.getElementById('booking-overlay')) closeBooking();
+    }
+
+    function clearForm(){
+      ['f-name','f-email','f-phone','f-time','f-lieu','f-msg','f-date'].forEach(i => document.getElementById(i).value = '');
+      ['f-type','f-guests'].forEach(i => document.getElementById(i).value = '');
+    }
+
+    function submitBooking(){
+      const name = document.getElementById('f-name').value.trim();
+      const email = document.getElementById('f-email').value.trim();
+      const date = document.getElementById('f-date').value;
+      const type = document.getElementById('f-type').value;
+
+      if(!name || !email || !date || !type){
+        alert('Merci de remplir les champs obligatoires : nom, email, date et type d\'événement.');
+        return;
+      }
+
+      const catObj = CATEGORIES.find(c => c.id === currentProvider.cat);
+      const res = {
+        id: Date.now(),
+        providerId: currentProvider.id,
+        providerName: currentProvider.name,
+        company: currentProvider.company,
+        img: currentProvider.img,
+        price: currentProvider.price,
+        origin: currentProvider.origin,
+        category: catObj?.label || '',
+        name,
+        email,
+        phone: document.getElementById('f-phone').value,
+        date,
+        time: document.getElementById('f-time').value,
+        lieu: document.getElementById('f-lieu').value,
+        eventType: type,
+        guests: document.getElementById('f-guests').value,
+        message: document.getElementById('f-msg').value,
+        createdAt: new Date().toLocaleDateString('fr-FR')
+      };
+
+      reservations.unshift(res);
+      localStorage.setItem('ce_reservations', JSON.stringify(reservations));
+      updateResCount();
+
+      document.getElementById('bm-main').style.display = 'none';
+      document.getElementById('bm-success').classList.add('show');
+    }
+
+    function renderReservations(){
+      const list = document.getElementById('res-list');
+
+      if(!reservations.length){
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><h3>Aucune réservation</h3><p>Choisissez un prestataire pour commencer à organiser votre événement.</p></div>`;
+        return;
+      }
+
+      list.innerHTML = reservations.map(r => `
+        <div class="res-item">
+          <img class="res-item-img" src="${r.img}" alt="${escapeHtml(r.providerName)}">
+          <div class="res-item-info">
+            <h4>${escapeHtml(r.providerName)} · ${escapeHtml(r.company)}</h4>
+            <p>
+              ${escapeHtml(r.category)} · 🌍 ${escapeHtml(r.origin)}<br>
+              📅 ${escapeHtml(r.date)}${r.time ? ' à ' + escapeHtml(r.time) : ''} · 🎉 ${escapeHtml(r.eventType)}
+              ${r.lieu ? ' · 📍 ' + escapeHtml(r.lieu) : ''}${r.guests ? ' · 👥 ' + escapeHtml(r.guests) : ''}
+            </p>
+          </div>
+          <div class="res-item-right">
+            <span class="res-status-badge">✓ Confirmée</span>
+            <span class="res-price">${escapeHtml(r.price)}</span>
+            <button class="btn-cancel-r" onclick="cancelRes(${r.id})">Annuler</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function cancelRes(id){
+      if(!confirm('Annuler cette réservation ?')) return;
+      reservations = reservations.filter(r => r.id !== id);
+      localStorage.setItem('ce_reservations', JSON.stringify(reservations));
+      updateResCount();
+      renderReservations();
+    }
+
+    function updateResCount(){
+      const badge = document.getElementById('res-badge');
+      badge.textContent = reservations.length;
+      badge.style.display = reservations.length ? 'inline' : 'none';
+    }
+
+    function showPage(page){
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('nav-home').classList.remove('active');
+      document.getElementById('nav-reservations').classList.remove('active');
+      document.getElementById('nav-admin').classList.remove('active');
+
+      if(page === 'home'){
+        document.getElementById('page-home').classList.add('active');
+        document.getElementById('nav-home').classList.add('active');
+      } else if(page === 'reservations'){
+        document.getElementById('page-reservations').classList.add('active');
+        document.getElementById('nav-reservations').classList.add('active');
+        renderReservations();
+      } else {
+        document.getElementById('page-admin').classList.add('active');
+        document.getElementById('nav-admin').classList.add('active');
+        refreshAdminUI();
+      }
+
+      window.scrollTo(0,0);
+    }
+
+    function scrollToContact(){
+      document.getElementById('contact-section').scrollIntoView({ behavior:'smooth' });
+    }
+
+    function refreshAdminUI() {
+      const out = document.getElementById('admin-logged-out');
+      const inside = document.getElementById('admin-logged-in');
+      const sessionBox = document.getElementById('admin-session-box');
+
+      if(adminLoggedIn){
+        out.classList.add('hidden');
+        inside.classList.remove('hidden');
+        sessionBox.innerHTML = `<div class="admin-login-state">✅ Connecté en admin</div>`;
+        renderAdminTable();
+      } else {
+        out.classList.remove('hidden');
+        inside.classList.add('hidden');
+        sessionBox.innerHTML = '';
+      }
+    }
+
+    function loginAdmin(){
+      const email = document.getElementById('admin-email').value.trim();
+      const password = document.getElementById('admin-password').value;
+
+      if(email === ADMIN_EMAIL && password === ADMIN_PASSWORD){
+        adminLoggedIn = true;
+        sessionStorage.setItem('ce_admin_logged_in', 'true');
+        document.getElementById('admin-email').value = '';
+        document.getElementById('admin-password').value = '';
+        refreshAdminUI();
+      } else {
+        alert('Identifiants admin incorrects.');
+      }
+    }
+
+    function logoutAdmin(){
+      adminLoggedIn = false;
+      sessionStorage.removeItem('ce_admin_logged_in');
+      editingProviderId = null;
+      resetAdminForm();
+      refreshAdminUI();
+    }
+
+    function renderAdminTable(){
+      if(!adminLoggedIn) return;
+
+      const q = document.getElementById('admin-search').value.toLowerCase().trim();
+      const body = document.getElementById('admin-table-body');
+
+      const list = PROVIDERS.filter(p => {
+        if(!q) return true;
+        return (
+          p.name.toLowerCase().includes(q) ||
+          p.company.toLowerCase().includes(q) ||
+          p.origin.toLowerCase().includes(q) ||
+          p.cat.toLowerCase().includes(q) ||
+          (p.tags || []).join(' ').toLowerCase().includes(q)
+        );
+      });
+
+      body.innerHTML = list.map(p => `
+        <tr>
+          <td>
+            <strong>${escapeHtml(p.name)}</strong><br>
+            <span style="color:var(--muted)">${escapeHtml(p.company)}</span>
+          </td>
+          <td>${escapeHtml(getCategoryLabel(p.cat))}</td>
+          <td>${escapeHtml(p.origin)}</td>
+          <td>
+            <strong>${escapeHtml(p.price)}</strong><br>
+            <span style="color:var(--muted)">${escapeHtml(p.priceNote || '')}</span>
+          </td>
+          <td>
+            <span class="admin-chip ${p.avail ? 'status-yes' : 'status-no'}">${p.avail ? 'Disponible' : 'Limité'}</span>
+          </td>
+          <td>
+            <div class="admin-actions-cell">
+              <button class="btn-small" onclick="editProvider('${p.id}')">Modifier</button>
+              <button class="btn-danger" onclick="deleteProvider('${p.id}')">Supprimer</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function resetAdminForm(){
+      editingProviderId = null;
+      document.getElementById('admin-form-title').textContent = 'Ajouter un prestataire';
+      [
+        'a-name','a-company','a-price','a-priceVal','a-priceNote','a-rating',
+        'a-reviews','a-badge','a-img','a-video','a-tags','a-desc'
+      ].forEach(id => document.getElementById(id).value = '');
+
+      document.getElementById('a-cat').value = CATEGORIES.find(c => c.id !== 'all').id;
+      document.getElementById('a-origin').value = 'Europe';
+      document.getElementById('a-avail').value = 'true';
+    }
+
+    function editProvider(id){
+      const p = getProvider(id);
+      if(!p) return;
+      editingProviderId = id;
+      document.getElementById('admin-form-title').textContent = 'Modifier un prestataire';
+
+      document.getElementById('a-name').value = p.name || '';
+      document.getElementById('a-company').value = p.company || '';
+      document.getElementById('a-cat').value = p.cat || 'dj';
+      document.getElementById('a-origin').value = p.origin || 'Europe';
+      document.getElementById('a-price').value = p.price || '';
+      document.getElementById('a-priceVal').value = p.priceVal || '';
+      document.getElementById('a-priceNote').value = p.priceNote || '';
+      document.getElementById('a-avail').value = String(!!p.avail);
+      document.getElementById('a-rating').value = p.rating || '';
+      document.getElementById('a-reviews').value = p.reviews || '';
+      document.getElementById('a-badge').value = p.badge || '';
+      document.getElementById('a-img').value = p.img || '';
+      document.getElementById('a-video').value = p.video || '';
+      document.getElementById('a-tags').value = (p.tags || []).join(', ');
+      document.getElementById('a-desc').value = p.desc || '';
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function saveProvider(){
+      if(!adminLoggedIn) return;
+
+      const data = {
+        name: document.getElementById('a-name').value.trim(),
+        company: document.getElementById('a-company').value.trim(),
+        cat: document.getElementById('a-cat').value,
+        origin: document.getElementById('a-origin').value,
+        price: document.getElementById('a-price').value.trim(),
+        priceVal: Number(document.getElementById('a-priceVal').value || 0),
+        priceNote: document.getElementById('a-priceNote').value.trim(),
+        avail: document.getElementById('a-avail').value === 'true',
+        rating: Number(document.getElementById('a-rating').value || 0),
+        reviews: Number(document.getElementById('a-reviews').value || 0),
+        badge: document.getElementById('a-badge').value.trim() || null,
+        img: document.getElementById('a-img').value.trim() || 'https://via.placeholder.com/600x400/1E1C3A/4A6CF7?text=Connect+Event',
+        video: document.getElementById('a-video').value.trim() || 'Vidéo à venir',
+        tags: document.getElementById('a-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+        desc: document.getElementById('a-desc').value.trim()
+      };
+
+      if(!data.name || !data.company || !data.cat || !data.origin || !data.price || !data.desc){
+        alert('Merci de remplir les champs principaux.');
+        return;
+      }
+
+      if(editingProviderId){
+        const index = PROVIDERS.findIndex(p => p.id === editingProviderId);
+        if(index !== -1){
+          PROVIDERS[index] = { ...PROVIDERS[index], ...data };
+        }
+      } else {
+        const newId = generateProviderId(data.cat);
+        PROVIDERS.unshift({ id: newId, ...data });
+      }
+
+      saveProvidersToStorage();
+      filteredProviders = [...PROVIDERS];
+      renderTabs();
+      applyFilters();
+      renderAdminTable();
+      updateStats();
+      resetAdminForm();
+      alert('Prestataire enregistré avec succès.');
+    }
+
+    function deleteProvider(id){
+      if(!adminLoggedIn) return;
+      const p = getProvider(id);
+      if(!p) return;
+      if(!confirm(`Supprimer ${p.name} ?`)) return;
+
+      PROVIDERS = PROVIDERS.filter(item => item.id !== id);
+      saveProvidersToStorage();
+      filteredProviders = [...PROVIDERS];
+      renderTabs();
+      applyFilters();
+      renderAdminTable();
+      updateStats();
+
+      if(editingProviderId === id) resetAdminForm();
+    }
+
+    function generateProviderId(cat){
+      return cat + '_' + Date.now();
+    }
+
+    function exportProviders(){
+      const blob = new Blob([JSON.stringify(PROVIDERS, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'connect-event-providers.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function getCategoryLabel(catId){
+      return CATEGORIES.find(c => c.id === catId)?.label || catId;
+    }
+
+    function localDateInputValue(date){
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function escapeHtml(str){
+      if(str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    init();
+    resetAdminForm();
+  </script>
+</body>
+</html>
+
+
+
+Yagan Darren
