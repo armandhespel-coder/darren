@@ -29,15 +29,16 @@ Règles absolues :
 ## Efficacité tokens — règles strictes
 
 1. **Batch ALL reads** : regrouper TOUS les fichiers à lire dans un seul appel parallèle. Jamais séquentiellement.
-9. **Vérification git root** : avant tout push dans un nouveau repo, lancer `git rev-parse --show-toplevel` pour confirmer le bon dossier. 1 commande = évite tout le chaos de lock file / mauvais remote.
-2. **Dev server** : supposer qu'il tourne déjà sur port 3000 depuis la session précédente. Vérifier avec `curl -s http://localhost:3000 > /dev/null 2>&1` avant de lancer. Ne pas lancer si déjà actif.
-3. **Pas de `sleep`** : commande bloquée, inutile. Ne jamais l'utiliser.
-4. **Edit ciblé** : `old_string` = string le plus court et unique. Éviter les blocs SVG/HTML longs → risque d'échec + tokens perdus.
-5. **Write uniquement pour réécriture complète** — sinon Edit.
-6. **Pas de confirmation** avant action bash/git/chrome.
-7. **Skills UI/UX** : si le skill est déjà chargé dans le contexte, NE PAS relancer le script Python `search.py`. Appliquer les principes directement depuis le contenu du skill. Le script est redondant.
-8. **package.json / deps** : ne pas lire pour vérifier si un package est installé. Supposer absent si non mentionné. Utiliser SVG inline plutôt que d'ajouter une dépendance icon.
-10. **Fix TypeScript** : lire le fichier entier en une passe, puis faire UN seul Edit qui regroupe tous les changements (import + type fix ensemble). Ne jamais fractionner en Edit séquentiels.
+2. **Edit vs Write** : si 3+ changements prévus sur le même fichier → 1 Read + 1 Write (rewrite complet). Moins de 3 changements → Edit ciblé. Ne jamais faire 5 Edits séquentiels sur le même fichier.
+3. **Edit ciblé** : `old_string` = string le plus court et unique. Éviter les blocs SVG/HTML longs → risque d'échec + tokens perdus.
+4. **Toujours Read avant Edit** si le fichier n'a pas été lu dans la session en cours. Un Edit sans Read préalable échoue et gaspille 1 appel.
+5. **Dev server** : supposer qu'il tourne déjà sur port 3000. Vérifier avec `curl -s http://localhost:3000 > /dev/null 2>&1` avant de lancer.
+6. **Pas de `sleep`** : inutile. Ne jamais l'utiliser.
+7. **Pas de confirmation** avant action bash/git/chrome.
+8. **Vérification git root** : avant tout push dans un nouveau repo, lancer `git rev-parse --show-toplevel`. 1 commande évite le chaos lock file / mauvais remote.
+9. **package.json / deps** : ne pas lire pour vérifier si un package est installé. Supposer absent si non mentionné. Utiliser SVG inline plutôt que d'ajouter une dépendance icon.
+10. **Skills UI/UX** : si le skill est déjà chargé dans le contexte, NE PAS relancer le script Python `search.py`. Appliquer les principes directement.
+11. **Fix TypeScript** : 1 Read large → 1 Edit ou Write qui regroupe TOUS les changements (import + type fix). Jamais fractionner.
 
 ## Commands
 
