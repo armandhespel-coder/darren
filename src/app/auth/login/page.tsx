@@ -1,0 +1,107 @@
+"use client";
+
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+    } else {
+      router.push("/");
+    }
+  };
+
+  return (
+    <main
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{ background: "radial-gradient(ellipse at 20% 0%, #1e0a3c 0%, #090b1a 45%, #080d28 100%)" }}
+    >
+      <div className="w-full max-w-sm">
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-2.5 mb-8">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3l14 9-14 9V3z" />
+            </svg>
+          </div>
+          <span className="text-white font-bold text-xs uppercase tracking-widest">Connect Event</span>
+        </div>
+
+        <div className="glass rounded-2xl p-8">
+          <h1 className="text-white text-2xl font-bold mb-1" style={{ fontFamily: "var(--font-cormorant)" }}>
+            Connexion
+          </h1>
+          <p className="text-white/40 text-sm mb-6">Accédez à votre espace</p>
+
+          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+            <div>
+              <label className="text-white/50 text-xs uppercase tracking-wider block mb-1.5">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="vous@exemple.com"
+                className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/25 outline-none focus:border-purple-500/60 transition-colors text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="text-white/50 text-xs uppercase tracking-wider block mb-1.5">Mot de passe</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="••••••••"
+                className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/25 outline-none focus:border-purple-500/60 transition-colors text-sm"
+              />
+            </div>
+
+            {error && (
+              <p className="text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full text-white font-semibold py-3 rounded-xl transition-all duration-200 hover:opacity-90 disabled:opacity-50 cursor-pointer mt-1"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}
+            >
+              {loading ? "Connexion..." : "Se connecter"}
+            </button>
+          </form>
+
+          <p className="text-center text-white/35 text-sm mt-6">
+            Pas de compte ?{" "}
+            <a href="/auth/register" className="text-purple-400 hover:text-purple-300 transition-colors">
+              S&apos;inscrire
+            </a>
+          </p>
+        </div>
+
+        <p className="text-center mt-4">
+          <a href="/" className="text-white/30 hover:text-white/60 text-sm transition-colors">
+            ← Retour à l&apos;accueil
+          </a>
+        </p>
+      </div>
+    </main>
+  );
+}

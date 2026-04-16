@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  --background: #08091a;
+  --foreground: #e8eaf6;
+  --font-cormorant: "Cormorant Garamond", serif;
+  --font-montserrat: "Montserrat", sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-montserrat), Arial, sans-serif;
+  min-height: 100vh;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-cormorant), serif;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.glass-card:hover {
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.12);
+  transform: translateY(-2px);
+}
+
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
