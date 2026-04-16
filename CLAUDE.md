@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Connect Event** — marketplace dark mode pour prestataires événementiels (DJ, traiteur, photo...).  
+**Connect Event** — marketplace pour prestataires événementiels (DJ, traiteur, photo...).  
 Stack : Next.js 16 App Router + Tailwind CSS + Supabase + Stripe (à venir).
 
 ## Permissions permanentes — ne jamais demander confirmation
@@ -39,6 +39,10 @@ Règles absolues :
 9. **package.json / deps** : ne pas lire pour vérifier si un package est installé. Supposer absent si non mentionné. Utiliser SVG inline plutôt que d'ajouter une dépendance icon.
 10. **Skills UI/UX** : si le skill est déjà chargé dans le contexte, NE PAS relancer le script Python `search.py`. Appliquer les principes directement.
 11. **Fix TypeScript** : 1 Read large → 1 Edit ou Write qui regroupe TOUS les changements (import + type fix). Jamais fractionner.
+12. **Fichiers HTML/référence volumineux** : NE PAS lire chunk par chunk. Utiliser Grep pour extraire le strict nécessaire en 2 appels max : (a) `Grep` sur les CSS vars + fonts, (b) `Read` ciblé avec `offset` sur la section data JS. Exemple : pour adapter un design HTML, `Grep "--[a-z].*:" file.html` donne toutes les variables CSS en 1 appel.
+13. **Glob/Bash `find`** : toujours exclure `.next` et `node_modules` dès le premier appel. Préférer `Glob` pour lister les fichiers source. Un `find` sans exclusion retourne des MBs de résultats inutiles.
+14. **Pas d'`import React`** dans les nouveaux fichiers `.tsx` Next.js — le JSX transform (React 17+) ne le requiert pas. L'écrire force un Edit correctif = 1 appel gaspillé.
+15. **Décisions de conception** : trancher à la première heuristique valide, ne pas boucler dans le thinking. Si plusieurs options sont équivalentes, prendre la plus simple sans justification supplémentaire.
 
 ## Commands
 
@@ -76,11 +80,13 @@ src/
 
 RLS activé sur les 3 tables.
 
-### Design system
+### Design system (v1 — light theme)
 
-Classe CSS `.glass` définie dans `globals.css` : glassmorphism (backdrop-blur + border semi-transparent).  
-Background global : `radial-gradient(ellipse at top left, #1a0533, #0b0e1a, #0d1230)`.  
-Palette : blanc/violet (`purple-400`, `purple-600`) sur fond bleu nuit.
+Fonts : **Nunito** (body) + **Raleway** (titres/logo), importées via `next/font/google`.  
+CSS variables dans `globals.css` : `--blue2: #4A6CF7`, `--pink: #D93FB5`, `--grad`, `--grad2`, `--bg: #F7F8FC`, `--dark2: #1E1C3A`.  
+Cartes : `bg-white`, `border: 1px solid var(--border)`, `box-shadow: var(--shadow2)`.  
+Hero : fond sombre `#1E1C3A` avec orbs blur colorés. Reste de la page : fond clair `#F7F8FC`.  
+Admin accessible via `/auth/login` avec l'email admin — pas d'onglet dédié dans la navbar.
 
 ### Logique métier clé
 
