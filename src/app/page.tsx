@@ -324,7 +324,7 @@ export default function HomePage() {
       >
         {/* Logo */}
         <div className="flex items-center gap-3 cursor-pointer">
-          <img src="/logo.png" alt="Connect Event" className="h-10 w-auto object-contain" />
+          <img src="/logo.png" alt="Connect Event" className="h-20 w-auto object-contain" />
         </div>
 
         {/* Nav links */}
