@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import PrestaCard from "@/components/PrestaCard";
+import PrestaModal from "@/components/PrestaModal";
 import SearchBar from "@/components/SearchBar";
 import { Prestataire } from "@/types";
 
@@ -65,6 +66,7 @@ export default function HomePage() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("Tous");
+  const [selectedPresta, setSelectedPresta] = useState<Prestataire | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -92,6 +94,14 @@ export default function HomePage() {
   }, [prestataires, filters, activeCategory]);
 
   return (
+    <>
+    {selectedPresta && (
+      <PrestaModal
+        presta={selectedPresta}
+        onClose={() => setSelectedPresta(null)}
+        onContact={() => setSelectedPresta(null)}
+      />
+    )}
     <main className="min-h-screen" style={{ background: "radial-gradient(ellipse at 20% 0%, #1e0a3c 0%, #090b1a 45%, #080d28 100%)" }}>
 
       {/* Header */}
@@ -201,14 +211,26 @@ export default function HomePage() {
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center text-white/30 py-24 text-sm">Aucun prestataire trouvé.</div>
+          <div className="flex flex-col items-center justify-center py-28 gap-4">
+            <svg className="w-12 h-12 text-white/15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <p className="text-white/35 text-sm">Aucun prestataire ne correspond à vos critères.</p>
+            <button
+              onClick={() => { setFilters(DEFAULT_FILTERS); setActiveCategory("Tous"); }}
+              className="text-xs text-purple-400 hover:text-purple-300 border border-purple-500/30 hover:border-purple-400/50 px-4 py-2 rounded-xl transition-all cursor-pointer"
+            >
+              Réinitialiser les filtres
+            </button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((p) => (
               <PrestaCard
                 key={p.id}
                 presta={p}
-                onContact={(presta) => alert(`Contacter ${presta.nom} — messagerie à venir`)}
+                onSelect={setSelectedPresta}
+                onContact={setSelectedPresta}
               />
             ))}
           </div>
@@ -243,5 +265,6 @@ export default function HomePage() {
         </div>
       </section>
     </main>
+    </>
   );
 }

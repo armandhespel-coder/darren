@@ -37,6 +37,7 @@ Règles absolues :
 6. **Pas de confirmation** avant action bash/git/chrome.
 7. **Skills UI/UX** : si le skill est déjà chargé dans le contexte, NE PAS relancer le script Python `search.py`. Appliquer les principes directement depuis le contenu du skill. Le script est redondant.
 8. **package.json / deps** : ne pas lire pour vérifier si un package est installé. Supposer absent si non mentionné. Utiliser SVG inline plutôt que d'ajouter une dépendance icon.
+10. **Fix TypeScript** : lire le fichier entier en une passe, puis faire UN seul Edit qui regroupe tous les changements (import + type fix ensemble). Ne jamais fractionner en Edit séquentiels.
 
 ## Commands
 

@@ -3,7 +3,7 @@
 import React from "react";
 import { Prestataire } from "@/types";
 
-interface Props { presta: Prestataire; onContact: (presta: Prestataire) => void; }
+interface Props { presta: Prestataire; onSelect: (presta: Prestataire) => void; onContact: (presta: Prestataire) => void; }
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
   DJ: "from-violet-900/60 to-indigo-900/60",
@@ -23,12 +23,12 @@ const CATEGORY_ICONS: Record<string, React.ReactElement> = {
   Animateur: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />,
 };
 
-export default function PrestaCard({ presta, onContact }: Props) {
+export default function PrestaCard({ presta, onSelect, onContact }: Props) {
   const grad = CATEGORY_GRADIENTS[presta.categorie] ?? "from-purple-900/60 to-blue-900/60";
   const icon = CATEGORY_ICONS[presta.categorie];
 
   return (
-    <div className="glass-card rounded-2xl overflow-hidden cursor-pointer group">
+    <div className="glass-card rounded-2xl overflow-hidden cursor-pointer group" onClick={() => onSelect(presta)}>
       {/* Image / placeholder */}
       <div className={`relative h-44 bg-gradient-to-br ${grad}`}>
         {presta.images[0] ? (
@@ -103,6 +103,7 @@ export default function PrestaCard({ presta, onContact }: Props) {
           {presta.is_premium && presta.telephone ? (
             <a
               href={`tel:${presta.telephone}`}
+              onClick={(e) => e.stopPropagation()}
               className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200 cursor-pointer hover:opacity-90"
               style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}
             >
@@ -113,7 +114,7 @@ export default function PrestaCard({ presta, onContact }: Props) {
             </a>
           ) : (
             <button
-              onClick={() => onContact(presta)}
+              onClick={(e) => { e.stopPropagation(); onContact(presta); }}
               className="text-sm font-medium px-4 py-2 rounded-xl border border-white/15 text-white/70 hover:text-white hover:border-white/30 hover:bg-white/[0.06] transition-all duration-200 cursor-pointer"
             >
               Réserver
