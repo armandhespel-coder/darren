@@ -14,7 +14,7 @@
   --dark: #12112A;
   --dark2: #1E1C3A;
   --text: #2C2B4B;
-  --muted: #8887A8;
+  --muted: #5E5D7C;
   --card: #FFFFFF;
   --border: rgba(74, 108, 247, 0.12);
   --shadow: 0 8px 32px rgba(74, 108, 247, 0.12);
@@ -58,3 +58,16 @@ body {
 
 .anim-up { animation: up 0.5s ease both; }
 .anim-popin { animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue2);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

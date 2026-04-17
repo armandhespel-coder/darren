@@ -31,6 +31,94 @@ function parseBudget(budget: string): [number, number] {
   return [0, Infinity];
 }
 
+// ─── SVG Icons ────────────────────────────────────────────────────────────────
+
+function IconHome({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  );
+}
+
+function IconUsers({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+    </svg>
+  );
+}
+
+function IconPhone({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.4 10.82a19.79 19.79 0 01-3.07-8.67A2 2 0 012.48 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.06 6.06l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+    </svg>
+  );
+}
+
+function IconMail({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2" y="4" width="20" height="16" rx="2"/>
+      <path d="M22 7l-10 7L2 7"/>
+    </svg>
+  );
+}
+
+function IconMapPin({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+      <circle cx="12" cy="10" r="3"/>
+    </svg>
+  );
+}
+
+function IconLock({ size = 12 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0110 0v4"/>
+    </svg>
+  );
+}
+
+function IconStar({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2l2.09 6.26L20 9.27l-5 4.87L16.18 22 12 18.77 7.82 22 9 14.14 4 9.27l5.91-.91L12 2z"/>
+    </svg>
+  );
+}
+
+function IconX({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" aria-hidden="true">
+      <path d="M18 6L6 18M6 6l12 12"/>
+    </svg>
+  );
+}
+
+function IconCheck({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  );
+}
+
+function IconCheckWhite() {
+  return (
+    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  );
+}
+
 // ─── Composant "Devenir prestataire" modal ────────────────────────────────────
 
 interface ProForm { nom: string; service: string; email: string; telephone: string; message: string; }
@@ -72,18 +160,23 @@ function DevenirPrestaireModal({ onClose }: { onClose: () => void }) {
             </h2>
             <p className="text-white/50 text-sm mt-1">Présentez votre offre et touchez des milliers de clients</p>
           </div>
-          <button onClick={onClose}
+          <button
+            aria-label="Fermer"
+            onClick={onClose}
             className="flex items-center justify-center rounded-full text-white/70 hover:text-white cursor-pointer transition-all"
-            style={{ width: 34, height: 34, background: "rgba(255,255,255,0.1)", border: "none", flexShrink: 0 }}>
-            ✕
+            style={{ width: 44, height: 44, background: "rgba(255,255,255,0.1)", border: "none", flexShrink: 0 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.2)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.1)"; }}
+          >
+            <IconX />
           </button>
         </div>
 
         {success ? (
           <div className="p-10 text-center">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl mx-auto mb-4"
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
               style={{ background: "var(--grad)", boxShadow: "0 8px 28px rgba(217,63,181,0.4)" }}>
-              ✓
+              <IconCheckWhite />
             </div>
             <h3 className="text-xl font-black mb-3" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
               Message envoyé !
@@ -92,8 +185,8 @@ function DevenirPrestaireModal({ onClose }: { onClose: () => void }) {
               Notre équipe vous contactera sous 24 à 48h pour finaliser votre inscription.
             </p>
             <button onClick={onClose}
-              className="text-white text-sm font-extrabold px-8 py-3 rounded-xl cursor-pointer"
-              style={{ background: "var(--grad2)" }}>
+              className="text-white text-sm font-extrabold px-8 rounded-xl cursor-pointer"
+              style={{ height: 44, background: "var(--grad2)" }}>
               Fermer
             </button>
           </div>
@@ -106,8 +199,8 @@ function DevenirPrestaireModal({ onClose }: { onClose: () => void }) {
               <input
                 required value={form.nom} onChange={e => update("nom", e.target.value)}
                 placeholder="Marie Dupont"
-                className="w-full rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all"
-                style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                className="w-full rounded-xl px-4 text-sm font-semibold outline-none transition-all"
+                style={{ height: 44, background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
                 onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
                 onBlur={e => (e.target.style.borderColor = "var(--border)")}
               />
@@ -119,8 +212,8 @@ function DevenirPrestaireModal({ onClose }: { onClose: () => void }) {
               </label>
               <select
                 required value={form.service} onChange={e => update("service", e.target.value)}
-                className="w-full rounded-xl px-4 py-3 text-sm font-semibold outline-none cursor-pointer"
-                style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: form.service ? "var(--text)" : "var(--muted)", appearance: "none" }}
+                className="w-full rounded-xl px-4 text-sm font-semibold outline-none cursor-pointer"
+                style={{ height: 44, background: "var(--bg)", border: "1.5px solid var(--border)", color: form.service ? "var(--text)" : "var(--muted)", appearance: "none" }}
               >
                 <option value="">Sélectionner une catégorie...</option>
                 {SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -135,8 +228,8 @@ function DevenirPrestaireModal({ onClose }: { onClose: () => void }) {
                 <input
                   required type="email" value={form.email} onChange={e => update("email", e.target.value)}
                   placeholder="votre@email.com"
-                  className="w-full rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all"
-                  style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                  className="w-full rounded-xl px-4 text-sm font-semibold outline-none transition-all"
+                  style={{ height: 44, background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
                   onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
                   onBlur={e => (e.target.style.borderColor = "var(--border)")}
                 />
@@ -148,8 +241,8 @@ function DevenirPrestaireModal({ onClose }: { onClose: () => void }) {
                 <input
                   type="tel" value={form.telephone} onChange={e => update("telephone", e.target.value)}
                   placeholder="+32 4 ..."
-                  className="w-full rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all"
-                  style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                  className="w-full rounded-xl px-4 text-sm font-semibold outline-none transition-all"
+                  style={{ height: 44, background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
                   onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
                   onBlur={e => (e.target.style.borderColor = "var(--border)")}
                 />
@@ -172,8 +265,8 @@ function DevenirPrestaireModal({ onClose }: { onClose: () => void }) {
 
             <button
               type="submit"
-              className="w-full text-white font-extrabold py-4 rounded-xl cursor-pointer transition-all text-sm mt-1"
-              style={{ background: "var(--grad)", boxShadow: "0 6px 22px rgba(217,63,181,0.3)", letterSpacing: "0.06em" }}
+              className="w-full flex items-center justify-center gap-2 text-white font-extrabold rounded-xl cursor-pointer transition-all text-sm mt-1"
+              style={{ height: 52, background: "var(--grad)", boxShadow: "0 6px 22px rgba(217,63,181,0.3)", letterSpacing: "0.06em" }}
               onMouseEnter={e => {
                 (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
                 (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 12px 30px rgba(217,63,181,0.4)";
@@ -183,7 +276,7 @@ function DevenirPrestaireModal({ onClose }: { onClose: () => void }) {
                 (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 22px rgba(217,63,181,0.3)";
               }}
             >
-              ✓ Envoyer ma candidature
+              <IconCheck /> Envoyer ma candidature
             </button>
           </form>
         )}
@@ -302,14 +395,14 @@ export default function HomePage() {
 
         <div className="hidden md:flex items-center gap-1">
           {[
-            { label: "🏠 Accueil", href: "/" },
-            { label: "🎉 Prestataires", href: "#prestataires" },
-            { label: "📞 Contact", href: "#contact" },
+            { label: "Accueil", href: "/", icon: <IconHome /> },
+            { label: "Prestataires", href: "#prestataires", icon: <IconUsers /> },
+            { label: "Contact", href: "#contact", icon: <IconPhone /> },
           ].map((item, i) => (
             <a
               key={item.label}
               href={item.href}
-              className="px-4 py-2 rounded-full text-xs font-bold transition-all duration-200"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all duration-200"
               style={i === 0
                 ? { background: "var(--grad2)", color: "white", boxShadow: "0 4px 14px rgba(74,108,247,0.35)" }
                 : { color: "var(--muted)" }
@@ -323,6 +416,7 @@ export default function HomePage() {
                 (e.currentTarget as HTMLAnchorElement).style.background = "none";
               } : undefined}
             >
+              {item.icon}
               {item.label}
             </a>
           ))}
@@ -330,16 +424,18 @@ export default function HomePage() {
 
         <div className="flex items-center gap-3">
           <button
+            aria-label={showFavoritesOnly ? "Masquer les favoris" : "Afficher les favoris"}
             onClick={() => setShowFavoritesOnly(f => !f)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer"
             style={{
+              height: 44,
               background: showFavoritesOnly ? "rgba(217,63,181,0.1)" : "var(--bg2)",
               color: showFavoritesOnly ? "var(--pink)" : "var(--muted)",
               border: showFavoritesOnly ? "1.5px solid rgba(217,63,181,0.3)" : "1.5px solid transparent",
             }}
           >
             <svg width={14} height={14} fill={showFavoritesOnly ? "var(--pink)" : "none"}
-              stroke={showFavoritesOnly ? "none" : "var(--muted)"} strokeWidth={2} viewBox="0 0 24 24">
+              stroke={showFavoritesOnly ? "none" : "var(--muted)"} strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
@@ -353,10 +449,10 @@ export default function HomePage() {
               {userEmail === ADMIN_EMAIL && (
                 <a
                   href="/admin"
-                  className="text-xs font-extrabold px-3 py-1.5 rounded-full transition-all"
-                  style={{ background: "rgba(74,108,247,0.1)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.25)" }}
+                  className="flex items-center gap-1.5 text-xs font-extrabold px-3 rounded-full transition-all"
+                  style={{ height: 36, background: "rgba(74,108,247,0.1)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.25)" }}
                 >
-                  🔐 Admin
+                  <IconLock /> Admin
                 </a>
               )}
               <button
@@ -381,8 +477,9 @@ export default function HomePage() {
 
           <button
             onClick={() => setShowPrestaireModal(true)}
-            className="text-white text-xs font-extrabold px-4 py-2 rounded-full cursor-pointer transition-all duration-200 whitespace-nowrap"
+            className="flex items-center gap-1.5 text-white text-xs font-extrabold px-4 rounded-full cursor-pointer transition-all duration-200 whitespace-nowrap"
             style={{
+              height: 44,
               background: "var(--grad)",
               boxShadow: "0 4px 14px rgba(217,63,181,0.3)",
               letterSpacing: "0.04em",
@@ -396,13 +493,13 @@ export default function HomePage() {
               (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 14px rgba(217,63,181,0.3)";
             }}
           >
-            ✨ Devenir prestataire
+            <IconStar /> Devenir prestataire
           </button>
         </div>
       </nav>
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden text-center" style={{ background: "var(--dark2)", padding: "80px 48px 90px" }}>
+      <section className="relative overflow-hidden text-center" style={{ background: "var(--dark2)", padding: "80px 48px 100px" }}>
         <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #12112A 0%, #1E1C3A 50%, #2A1042 100%)" }} />
         <div className="absolute rounded-full pointer-events-none" style={{ width:500, height:500, background:"#4A6CF7", top:-200, left:-100, filter:"blur(80px)", opacity:0.35 }} />
         <div className="absolute rounded-full pointer-events-none" style={{ width:400, height:400, background:"#D93FB5", bottom:-200, right:-100, filter:"blur(80px)", opacity:0.35 }} />
@@ -419,23 +516,34 @@ export default function HomePage() {
               événement
             </em>
           </h1>
-          <p className="mx-auto mb-10 anim-up" style={{ color: "rgba(255,255,255,0.6)", maxWidth: 500, lineHeight: 1.75, fontSize: "1rem", animationDelay: "0.1s" }}>
+          <p className="mx-auto mb-12 anim-up" style={{ color: "rgba(255,255,255,0.6)", maxWidth: 500, lineHeight: 1.75, fontSize: "1rem", animationDelay: "0.1s" }}>
             DJ, décoratrices, traiteurs, photographes, feux d&apos;artifice et bien plus encore —<br />
             trouvez les meilleurs experts en Belgique.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-10 mb-12 anim-up" style={{ animationDelay: "0.2s" }}>
+          {/* Stats */}
+          <div className="flex flex-wrap justify-center gap-0 mb-0 anim-up" style={{ animationDelay: "0.2s" }}>
             {[
               [String(CATEGORY_PILLS.length - 1), "Catégories"],
               [loading ? "..." : String(prestataires.length) + "+", "Prestataires"],
               ["Belgique", "Zone couverte"],
               ["100%", "Certifiés"],
-            ].map(([val, label]) => (
-              <div key={label} className="text-center">
-                <div className="font-black text-3xl" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                  {val}
+            ].map(([val, label], i, arr) => (
+              <div key={label} className="flex items-center">
+                <div
+                  className="text-center px-8 py-5"
+                  style={{
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: i === 0 ? "16px 0 0 16px" : i === arr.length - 1 ? "0 16px 16px 0" : "0",
+                    borderRight: i < arr.length - 1 ? "none" : "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div className="font-black text-3xl" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                    {val}
+                  </div>
+                  <div className="text-[11px] uppercase tracking-widest mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{label}</div>
                 </div>
-                <div className="text-[11px] uppercase tracking-widest mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{label}</div>
               </div>
             ))}
           </div>
@@ -508,7 +616,12 @@ export default function HomePage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl" style={{ border: "2px dashed var(--border)" }}>
-            <div className="text-5xl mb-4">😔</div>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "var(--bg2)" }}>
+              <svg width={28} height={28} viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                <path d="M8 11h6M11 8v6"/>
+              </svg>
+            </div>
             <h3 className="font-extrabold text-lg mb-2" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
               {showFavoritesOnly ? "Aucun favori" : "Aucun résultat"}
             </h3>
@@ -519,8 +632,10 @@ export default function HomePage() {
               onClick={() => { setFilters(DEFAULT_FILTERS); setActiveCategory("Tous"); setShowFavoritesOnly(false); }}
               className="mt-4 text-xs font-bold px-5 py-2 rounded-full cursor-pointer transition-all"
               style={{ background: "var(--bg2)", color: "var(--muted)" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "var(--muted)"; }}
             >
-              Réinitialiser
+              Réinitialiser les filtres
             </button>
           </div>
         ) : (
@@ -542,49 +657,61 @@ export default function HomePage() {
       {/* ── Contact band ── */}
       <section
         id="contact"
-        className="flex flex-wrap gap-6 items-center justify-between"
-        style={{ background: "var(--dark2)", padding: "40px 48px", marginTop: 40 }}
+        className="relative overflow-hidden"
+        style={{ background: "linear-gradient(135deg, var(--dark2) 0%, #2A1042 100%)", marginTop: 40 }}
       >
-        <div className="flex items-center gap-4">
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black"
-            style={{ background: "var(--grad2)" }}
-          >
-            CE
-          </div>
-          <span className="font-black text-white text-lg" style={{ fontFamily: "var(--font-raleway)" }}>
-            Connect Event
-          </span>
-        </div>
-
-        <div className="flex flex-wrap gap-6">
-          {[
-            { icon: "✉️", label: "Email", val: "yagan_darren@hotmail.com" },
-            { icon: "📞", label: "Téléphone", val: "04 83 03 32 02" },
-            { icon: "📍", label: "Zone couverte", val: "Belgique" },
-          ].map(item => (
-            <div key={item.label} className="flex items-center gap-3">
-              <div
-                className="flex items-center justify-center rounded-xl text-xl"
-                style={{ width: 38, height: 38, background: "rgba(255,255,255,0.08)" }}
-              >
-                {item.icon}
-              </div>
-              <div>
-                <div className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>{item.label}</div>
-                <div className="text-sm font-bold text-white">{item.val}</div>
-              </div>
+        <div className="absolute rounded-full pointer-events-none" style={{ width:300, height:300, background:"#4A6CF7", top:-100, right:100, filter:"blur(80px)", opacity:0.15 }} />
+        <div className="absolute rounded-full pointer-events-none" style={{ width:200, height:200, background:"#D93FB5", bottom:-80, left:100, filter:"blur(60px)", opacity:0.15 }} />
+        <div className="relative flex flex-wrap gap-6 items-center justify-between" style={{ padding: "48px 48px" }}>
+          <div className="flex items-center gap-4">
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black"
+              style={{ background: "var(--grad2)", boxShadow: "0 6px 20px rgba(74,108,247,0.4)" }}
+            >
+              CE
             </div>
-          ))}
-        </div>
+            <span className="font-black text-white text-lg" style={{ fontFamily: "var(--font-raleway)" }}>
+              Connect Event
+            </span>
+          </div>
 
-        <button
-          onClick={() => setShowPrestaireModal(true)}
-          className="text-white text-sm font-extrabold px-6 py-3 rounded-full cursor-pointer transition-all whitespace-nowrap"
-          style={{ background: "var(--grad)", boxShadow: "0 4px 14px rgba(217,63,181,0.3)" }}
-        >
-          ✨ Devenir prestataire
-        </button>
+          <div className="flex flex-wrap gap-6">
+            {[
+              { icon: <IconMail />, label: "Email", val: "yagan_darren@hotmail.com" },
+              { icon: <IconPhone />, label: "Téléphone", val: "04 83 03 32 02" },
+              { icon: <IconMapPin />, label: "Zone couverte", val: "Belgique" },
+            ].map(item => (
+              <div key={item.label} className="flex items-center gap-3">
+                <div
+                  className="flex items-center justify-center rounded-xl"
+                  style={{ width: 40, height: 40, background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}
+                >
+                  {item.icon}
+                </div>
+                <div>
+                  <div className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>{item.label}</div>
+                  <div className="text-sm font-bold text-white">{item.val}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setShowPrestaireModal(true)}
+            className="flex items-center gap-2 text-white text-sm font-extrabold px-6 rounded-full cursor-pointer transition-all whitespace-nowrap"
+            style={{ height: 48, background: "var(--grad)", boxShadow: "0 4px 14px rgba(217,63,181,0.3)" }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 24px rgba(217,63,181,0.45)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 14px rgba(217,63,181,0.3)";
+            }}
+          >
+            <IconStar /> Devenir prestataire
+          </button>
+        </div>
       </section>
 
       {/* ── Footer ── */}
@@ -623,12 +750,13 @@ export default function HomePage() {
               href="#"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Facebook"
               className="flex items-center justify-center rounded-full transition-all"
               style={{ width: 36, height: 36, background: "rgba(255,255,255,0.1)" }}
               onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.2)")}
               onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.1)")}
             >
-              <svg width={16} height={16} fill="white" viewBox="0 0 24 24">
+              <svg width={16} height={16} fill="white" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
             </a>
@@ -636,12 +764,13 @@ export default function HomePage() {
               href="#"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Instagram"
               className="flex items-center justify-center rounded-full transition-all"
               style={{ width: 36, height: 36, background: "rgba(255,255,255,0.1)" }}
               onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.2)")}
               onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.1)")}
             >
-              <svg width={16} height={16} fill="white" viewBox="0 0 24 24">
+              <svg width={16} height={16} fill="white" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
               </svg>
             </a>

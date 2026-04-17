@@ -43,6 +43,9 @@ Règles absolues :
 13. **Glob/Bash `find`** : toujours exclure `.next` et `node_modules` dès le premier appel. Préférer `Glob` pour lister les fichiers source. Un `find` sans exclusion retourne des MBs de résultats inutiles.
 14. **Pas d'`import React`** dans les nouveaux fichiers `.tsx` Next.js — le JSX transform (React 17+) ne le requiert pas. L'écrire force un Edit correctif = 1 appel gaspillé.
 15. **Décisions de conception** : trancher à la première heuristique valide, ne pas boucler dans le thinking. Si plusieurs options sont équivalentes, prendre la plus simple sans justification supplémentaire.
+16. **Design system déjà documenté** : ne jamais lire `layout.tsx`, `globals.css` ou tout fichier de config déjà résumé dans ce CLAUDE.md. Les fonts, CSS vars et couleurs sont ici — c'est la source de vérité pour le contexte de travail.
+17. **Création multi-fichiers** : toujours écrire TOUS les nouveaux fichiers en un seul appel parallèle — même après un round rejeté. Ne jamais séparer en 1 + N pour "tester" : si le premier passe, les autres passent aussi.
+18. **Composants helpers locaux** : un composant `Section`, `Card`, etc. défini dans un seul fichier ne doit pas être copié-collé dans un autre. Soit le partager dans `src/components/`, soit l'inliner — jamais dupliquer.
 
 ## Commands
 

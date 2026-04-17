@@ -8,6 +8,47 @@ interface Props {
   onContact: (presta: Prestataire) => void;
 }
 
+function IconX() {
+  return (
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" aria-hidden="true">
+      <path d="M18 6L6 18M6 6l12 12"/>
+    </svg>
+  );
+}
+
+function IconPhone() {
+  return (
+    <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.4 10.82a19.79 19.79 0 01-3.07-8.67A2 2 0 012.48 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.06 6.06l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+    </svg>
+  );
+}
+
+function IconCheck() {
+  return (
+    <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  );
+}
+
+function IconCheckCircle() {
+  return (
+    <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  );
+}
+
+function IconEvent() {
+  return (
+    <svg width={48} height={48} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={1} strokeLinecap="round" strokeLinejoin="round" opacity={0.15} aria-hidden="true">
+      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+      <path d="M12 6v6l4 2"/>
+    </svg>
+  );
+}
+
 export default function PrestaModal({ presta, onClose, onContact }: Props) {
   return (
     <div
@@ -29,7 +70,7 @@ export default function PrestaModal({ presta, onClose, onContact }: Props) {
               className="w-full h-full flex items-center justify-center"
               style={{ background: "linear-gradient(135deg, #1E1C3A, #2A1042)" }}
             >
-              <span className="text-6xl opacity-20">🎉</span>
+              <IconEvent />
             </div>
           )}
           <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(18,17,42,0.8) 0%, transparent 50%)" }} />
@@ -44,18 +85,21 @@ export default function PrestaModal({ presta, onClose, onContact }: Props) {
           )}
 
           <button
+            aria-label="Fermer"
             onClick={onClose}
             className="absolute flex items-center justify-center rounded-full cursor-pointer transition-all duration-200"
             style={{
               top: 16, right: 16,
-              width: 34, height: 34,
+              width: 44, height: 44,
               background: "rgba(0,0,0,0.45)",
               backdropFilter: "blur(4px)",
               color: "rgba(255,255,255,0.8)",
               border: "none",
             }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,0,0,0.65)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,0,0,0.45)"; }}
           >
-            ✕
+            <IconX />
           </button>
 
           <div className="absolute px-6" style={{ bottom: 18, left: 0, right: 0 }}>
@@ -73,10 +117,13 @@ export default function PrestaModal({ presta, onClose, onContact }: Props) {
                 {presta.categorie}
               </span>
               <span
-                className="text-[10px] font-semibold text-white px-2 py-0.5 rounded-full"
+                className="flex items-center gap-1 text-[10px] font-semibold text-white px-2 py-0.5 rounded-full"
                 style={{ background: presta.is_available ? "rgba(74,222,128,0.6)" : "rgba(251,146,60,0.6)" }}
               >
-                {presta.is_available ? "✓ Disponible" : "⚠ Limité"}
+                {presta.is_available
+                  ? <><IconCheckCircle /> Disponible</>
+                  : "Limité"
+                }
               </span>
             </div>
           </div>
@@ -132,20 +179,22 @@ export default function PrestaModal({ presta, onClose, onContact }: Props) {
           {presta.is_premium && presta.telephone ? (
             <a
               href={`tel:${presta.telephone}`}
-              className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-extrabold text-white transition-all text-sm"
+              className="flex items-center justify-center gap-2 w-full rounded-2xl font-extrabold text-white transition-all text-sm"
               style={{
+                height: 52,
                 background: "var(--grad)",
                 boxShadow: "0 6px 20px rgba(217,63,181,0.3)",
                 letterSpacing: "0.06em",
               }}
             >
-              📞 Appeler — {presta.telephone}
+              <IconPhone /> Appeler — {presta.telephone}
             </a>
           ) : (
             <button
               onClick={() => { onContact(presta); onClose(); }}
-              className="w-full py-4 rounded-2xl font-extrabold text-white transition-all cursor-pointer text-sm"
+              className="w-full flex items-center justify-center gap-2 rounded-2xl font-extrabold text-white transition-all cursor-pointer text-sm"
               style={{
+                height: 52,
                 background: "var(--grad)",
                 boxShadow: "0 6px 20px rgba(217,63,181,0.3)",
                 letterSpacing: "0.06em",
@@ -159,7 +208,7 @@ export default function PrestaModal({ presta, onClose, onContact }: Props) {
                 (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(217,63,181,0.3)";
               }}
             >
-              ✓ Envoyer une demande de réservation
+              <IconCheck /> Envoyer une demande de réservation
             </button>
           )}
         </div>
