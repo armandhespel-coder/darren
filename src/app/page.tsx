@@ -9,7 +9,7 @@ import { Prestataire } from "@/types";
 
 // ─── Types & constantes ───────────────────────────────────────────────────────
 
-const DEFAULT_FILTERS = { search: "", continent: "Tous", categorie: "Tous", budget: "Tous" };
+const DEFAULT_FILTERS = { search: "", categorie: "Tous", budget: "Tous" };
 
 const CATEGORY_PILLS = [
   { label: "Tous", icon: "✨" },
@@ -30,48 +30,6 @@ function parseBudget(budget: string): [number, number] {
   if (budget === "> 1500€") return [1500, Infinity];
   return [0, Infinity];
 }
-
-// ─── Mock data (v1) ───────────────────────────────────────────────────────────
-
-const MOCK_PRESTATAIRES: Prestataire[] = [
-  // DJs
-  { id:"dj1", owner_id:"mock", nom:"DJ Maxime", company:"SoundWave Events", categorie:"DJ", continent:"Europe", prix:600, note:4.9, reviews:187, tags:["Electro","House","R&B","Afro"], description:"Spécialiste mariages et soirées privées depuis 10 ans. Matériel haut de gamme, éclairage inclus.", images:["https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80"], badge:"Top DJ", price_note:"/ soirée", is_premium:true, is_available:true, telephone:"+33 6 12 34 56 78", created_at:"" },
-  { id:"dj2", owner_id:"mock", nom:"DJ Kofi", company:"AfroBeats Studio", categorie:"DJ", continent:"Afrique", prix:450, note:4.8, reviews:143, tags:["Afrobeats","Coupé-décalé","Amapiano"], description:"Spécialiste Afrobeats et musiques africaines. Ambiance garantie pour vos soirées afro.", images:["https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?w=600&q=80"], badge:null, price_note:"/ soirée", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  { id:"dj3", owner_id:"mock", nom:"DJ Yuki", company:"Tokyo Vibes", categorie:"DJ", continent:"Asie", prix:520, note:4.7, reviews:98, tags:["J-Pop","EDM","Electro","Fusion"], description:"DJ japonais aux sets innovants. Fusion de J-Pop et EDM international pour une ambiance unique.", images:["https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&q=80"], badge:null, price_note:"/ soirée", is_premium:false, is_available:false, telephone:null, created_at:"" },
-  { id:"dj4", owner_id:"mock", nom:"DJ Vadim", company:"Eastern Sound", categorie:"DJ", continent:"Pays de l'Est", prix:480, note:4.8, reviews:76, tags:["Techno","House","Progressive"], description:"Techno et progressive house d'Europe de l'Est. Sets électroniques puissants et immersifs.", images:["https://images.unsplash.com/photo-1504509546545-e000b4a62425?w=600&q=80"], badge:"Nouveauté", price_note:"/ soirée", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  // Décorateurs
-  { id:"dec1", owner_id:"mock", nom:"Sophie Laurent", company:"Atelier Blanc & Or", categorie:"Décoratrice", continent:"Europe", prix:1200, note:4.9, reviews:215, tags:["Mariage","Floral","Romantique","Luxe"], description:"Créatrice d'ambiances florales d'exception. Spécialiste des mariages haut de gamme.", images:["https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80"], badge:"Top Déco", price_note:"/ événement", is_premium:true, is_available:true, telephone:"+33 6 11 22 33 44", created_at:"" },
-  { id:"dec2", owner_id:"mock", nom:"Amara Diallo", company:"Couleurs d'Afrique", categorie:"Décoratrice", continent:"Afrique", prix:800, note:4.7, reviews:134, tags:["Wax","Coloré","Culturel","Tissu"], description:"Décoration événementielle aux couleurs et tissus africains. Ambiance chaleureuse et authentique.", images:["https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80"], badge:null, price_note:"/ événement", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  { id:"dec3", owner_id:"mock", nom:"Mei Lin", company:"Blossom Deco", categorie:"Décoratrice", continent:"Asie", prix:900, note:4.8, reviews:89, tags:["Zen","Cerisiers","Origami"], description:"Décoration inspirée de l'art floral asiatique. Cerisiers en fleur, lanternes, ambiance zen et poétique.", images:["https://images.unsplash.com/photo-1510076857177-7470076d4098?w=600&q=80"], badge:null, price_note:"/ événement", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  { id:"dec4", owner_id:"mock", nom:"Irina Petrov", company:"Slavic Elegance", categorie:"Décoratrice", continent:"Pays de l'Est", prix:750, note:4.6, reviews:61, tags:["Baroque","Doré","Cristal","Luxe"], description:"Inspirations baroques d'Europe de l'Est. Cristaux, dorures, chandeliers pour un luxe intemporel.", images:["https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80"], badge:null, price_note:"/ événement", is_premium:false, is_available:false, telephone:null, created_at:"" },
-  // Matériel
-  { id:"mat1", owner_id:"mock", nom:"EventTech Pro", company:"EventTech Solutions", categorie:"Matériel", continent:"Europe", prix:800, note:4.8, reviews:176, tags:["Son","Lumière","Scène","LED"], description:"Location de matériel audiovisuel complet. Sonorisation, jeux de lumières, écrans LED géants.", images:["https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600&q=80"], badge:"Top Matériel", price_note:"/ jour", is_premium:true, is_available:true, telephone:"+33 6 55 66 77 88", created_at:"" },
-  { id:"mat2", owner_id:"mock", nom:"FestEquip", company:"FestEquip Location", categorie:"Matériel", continent:"Europe", prix:350, note:4.6, reviews:201, tags:["Tente","Chapiteau","Mobilier"], description:"Spécialiste structures événementielles. Chapiteaux, mobilier, bars en location.", images:["https://images.unsplash.com/photo-1478147427282-58a87a433a5f?w=600&q=80"], badge:null, price_note:"/ jour", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  // Voiture
-  { id:"voi1", owner_id:"mock", nom:"LuxDrive", company:"LuxDrive Premium", categorie:"Voiture", continent:"Europe", prix:450, note:4.9, reviews:312, tags:["Limousine","Mercedes","Chauffeur"], description:"Flotte de véhicules de prestige avec chauffeurs privés. Mercedes Classe S, décoration florale.", images:["https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&q=80"], badge:"Top", price_note:"/ prestation", is_premium:true, is_available:true, telephone:"+33 6 44 55 66 77", created_at:"" },
-  { id:"voi2", owner_id:"mock", nom:"ClassicAuto", company:"ClassicAuto Events", categorie:"Voiture", continent:"Europe", prix:380, note:4.8, reviews:156, tags:["Vintage","Rolls-Royce","Retro"], description:"Collection de voitures anciennes et vintage. Rolls-Royce, Jaguar, Citroën DS.", images:["https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80"], badge:null, price_note:"/ prestation", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  // Traiteurs
-  { id:"tra1", owner_id:"mock", nom:"Chef Marcel", company:"Gastronomie Marcel", categorie:"Traiteur", continent:"Europe", prix:75, note:5.0, reviews:203, tags:["Gastronomique","Étoilé","Sur mesure"], description:"Chef étoilé au service de vos événements privés. Menu dégustation, accord mets-vins inclus.", images:["https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80"], badge:"Chef Étoilé", price_note:"/ personne", is_premium:true, is_available:true, telephone:"+33 6 99 88 77 66", created_at:"" },
-  { id:"tra2", owner_id:"mock", nom:"Mama Fatou", company:"Saveurs d'Afrique", categorie:"Traiteur", continent:"Afrique", prix:45, note:4.8, reviews:287, tags:["Africain","Attiéké","Yassa","Buffet"], description:"Cuisine africaine authentique et généreuse. Spécialités ivoiriennes, sénégalaises, camerounaises.", images:["https://images.unsplash.com/photo-1555244162-803834f70033?w=600&q=80"], badge:"Coup de ♥", price_note:"/ personne", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  { id:"tra3", owner_id:"mock", nom:"Sakura Cuisine", company:"Nihon Kitchen", categorie:"Traiteur", continent:"Asie", prix:65, note:4.7, reviews:112, tags:["Japonais","Sushi","Bento","Fusion"], description:"Traiteur japonais haut de gamme. Sushis, temakis, cuisine fusion nippo-française.", images:["https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=600&q=80"], badge:null, price_note:"/ personne", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  { id:"tra4", owner_id:"mock", nom:"Babushka Catering", company:"Eastern Flavors", categorie:"Traiteur", continent:"Pays de l'Est", prix:50, note:4.6, reviews:88, tags:["Polonais","Piroguis","Bortsch","Festif"], description:"Cuisine d'Europe de l'Est festive et généreuse. Piroguis, bortsch, viandes fumées.", images:["https://images.unsplash.com/photo-1551218808-94e220e084d2?w=600&q=80"], badge:null, price_note:"/ personne", is_premium:false, is_available:false, telephone:null, created_at:"" },
-  // Photo & Caméra
-  { id:"ph1", owner_id:"mock", nom:"Lucas Martin", company:"Studio Lumière", categorie:"Photo & Caméra", continent:"Europe", prix:1500, note:4.9, reviews:198, tags:["Photo","Vidéo 4K","Drone","Mariage"], description:"Photographe-vidéaste professionnel. Reportage complet, drone, album premium inclus.", images:["https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=600&q=80"], badge:"Top Photo", price_note:"/ événement", is_premium:true, is_available:true, telephone:"+33 6 33 44 55 66", created_at:"" },
-  { id:"ph2", owner_id:"mock", nom:"Kwame Asante", company:"AfroLens Studio", categorie:"Photo & Caméra", continent:"Afrique", prix:900, note:4.8, reviews:134, tags:["Photo","Reportage","Culturel"], description:"Photographe spécialisé dans les cérémonies africaines et les événements culturels colorés.", images:["https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80"], badge:null, price_note:"/ événement", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  { id:"ph3", owner_id:"mock", nom:"Hiro Tanaka", company:"Tokyo Frame", categorie:"Photo & Caméra", continent:"Asie", prix:1100, note:4.9, reviews:87, tags:["Artistique","Cinématique","Drone"], description:"Photographe-cinéaste au style japonais épuré. Résultats cinématiques et artistiques d'exception.", images:["https://images.unsplash.com/photo-1480365501497-199581be0e66?w=600&q=80"], badge:"Coup de ♥", price_note:"/ événement", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  // Feux d'artifice
-  { id:"feu1", owner_id:"mock", nom:"PyroShow France", company:"Pyrotechnie Dupuis", categorie:"Feux d'artifice", continent:"Europe", prix:2500, note:5.0, reviews:89, tags:["Feux d'artifice","Show laser","Pyrotechnie"], description:"Spectacles pyrotechniques haut de gamme. Feux d'artifice musicaux, effets laser, nappes de fumée.", images:["https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=600&q=80"], badge:"Spectaculaire", price_note:"/ show", is_premium:true, is_available:true, telephone:"+33 6 77 88 99 00", created_at:"" },
-  { id:"feu2", owner_id:"mock", nom:"AfroFire Events", company:"AfroFire", categorie:"Feux d'artifice", continent:"Afrique", prix:1800, note:4.8, reviews:54, tags:["Feux","Cracheurs","Torches"], description:"Spectacles de feu d'inspiration africaine. Danseurs de feu, cracheurs, jongleurs pyrotechniques.", images:["https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&q=80"], badge:null, price_note:"/ show", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  { id:"feu3", owner_id:"mock", nom:"Dragon Fire Asia", company:"Asian Pyro Arts", categorie:"Feux d'artifice", continent:"Asie", prix:2200, note:4.9, reviews:67, tags:["Dragons","Lanterne","Tradition"], description:"Art pyrotechnique chinois ancestral. Dragons lumineux, lanternes, tradition festive millénaire.", images:["https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?w=600&q=80"], badge:"Unique", price_note:"/ show", is_premium:false, is_available:false, telephone:null, created_at:"" },
-  // Location de salle
-  { id:"sal1", owner_id:"mock", nom:"Château de Lumière", company:"Événements Prestige", categorie:"Location de salle", continent:"Europe", prix:3500, note:4.9, reviews:134, tags:["Château","Jardins","500 pers.","Luxe"], description:"Château XVIIe siècle avec jardins à la française. Salle de réception de 500 personnes, hébergement disponible.", images:["https://images.unsplash.com/photo-1543333995-a78aea2eee50?w=600&q=80"], badge:"Exclusif", price_note:"/ journée", is_premium:true, is_available:true, telephone:"+33 4 56 78 90 12", created_at:"" },
-  { id:"sal2", owner_id:"mock", nom:"Villa Afrique", company:"Heritage Events", categorie:"Location de salle", continent:"Afrique", prix:1500, note:4.7, reviews:98, tags:["Villa","Piscine","200 pers.","Plein air"], description:"Villa méditerranéenne avec terrasse et piscine. Cadre exceptionnel pour vos événements en plein air.", images:["https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80"], badge:null, price_note:"/ journée", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  { id:"sal3", owner_id:"mock", nom:"Sakura Hall", company:"Asian Events Space", categorie:"Location de salle", continent:"Asie", prix:2000, note:4.8, reviews:72, tags:["Zen","Jardin japonais","150 pers."], description:"Salle d'événements inspirée de l'architecture japonaise. Jardin zen, intérieur bois et papier washi.", images:["https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=80"], badge:"Dépaysement", price_note:"/ journée", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  // Gâteau
-  { id:"gat1", owner_id:"mock", nom:"Pâtisserie Artisan", company:"Délices & Création", categorie:"Gâteau", continent:"Europe", prix:800, note:5.0, reviews:287, tags:["Wedding cake","Pièce montée","Sur mesure"], description:"Pâtissier artisan créateur de wedding cakes spectaculaires. Personnalisation totale, dégustation incluse.", images:["https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=600&q=80"], badge:"Top Gâteau", price_note:"/ pièce montée", is_premium:true, is_available:true, telephone:"+33 6 22 33 44 55", created_at:"" },
-  { id:"gat2", owner_id:"mock", nom:"Maman Bâ", company:"Saveurs d'Afrique Sucrée", categorie:"Gâteau", continent:"Afrique", prix:400, note:4.8, reviews:167, tags:["Baobab","Mangue","Naturel","Africain"], description:"Pâtissière africaine créative. Gâteaux aux saveurs d'Afrique : baobab, mangue, gingembre.", images:["https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&q=80"], badge:"Coup de ♥", price_note:"/ gâteau", is_premium:false, is_available:true, telephone:null, created_at:"" },
-  { id:"gat3", owner_id:"mock", nom:"Wagashi Dreams", company:"Tokyo Pâtisserie", categorie:"Gâteau", continent:"Asie", prix:600, note:4.9, reviews:134, tags:["Wagashi","Mochi","Matcha","Sakura"], description:"Art pâtissier japonais : wagashi, mochis, entremets matcha. Œuvres d'art comestibles.", images:["https://images.unsplash.com/photo-1562440499-64c9a111f713?w=600&q=80"], badge:"Artistique", price_note:"/ création", is_premium:false, is_available:true, telephone:null, created_at:"" },
-];
 
 // ─── Composant "Devenir prestataire" modal ────────────────────────────────────
 
@@ -106,7 +64,6 @@ function DevenirPrestaireModal({ onClose }: { onClose: () => void }) {
         style={{ maxHeight: "92vh", overflowY: "auto", boxShadow: "0 30px 80px rgba(74,108,247,0.25)" }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
         <div style={{ background: "linear-gradient(135deg, var(--dark2), #2A1042)", padding: "28px 32px" }}
           className="flex justify-between items-start">
           <div>
@@ -190,7 +147,7 @@ function DevenirPrestaireModal({ onClose }: { onClose: () => void }) {
                 </label>
                 <input
                   type="tel" value={form.telephone} onChange={e => update("telephone", e.target.value)}
-                  placeholder="+33 6 ..."
+                  placeholder="+32 4 ..."
                   className="w-full rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all"
                   style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
                   onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
@@ -250,13 +207,11 @@ export default function HomePage() {
 
   const ADMIN_EMAIL = "armand.hespel@hotmail.com";
 
-  // Chargement favoris depuis localStorage
   useEffect(() => {
     const saved = localStorage.getItem("ce_favorites");
     if (saved) setFavorites(new Set(JSON.parse(saved)));
   }, []);
 
-  // Session utilisateur
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? null));
@@ -272,7 +227,6 @@ export default function HomePage() {
     });
   };
 
-  // Chargement Supabase (fallback mock)
   useEffect(() => {
     const supabase = createClient();
     supabase
@@ -280,11 +234,24 @@ export default function HomePage() {
       .select("*")
       .order("is_premium", { ascending: false })
       .then(({ data }) => {
-        const result = (data as Prestataire[]) ?? [];
-        setPrestataires(result.length > 0 ? result : MOCK_PRESTATAIRES);
+        setPrestataires((data as Prestataire[]) ?? []);
         setLoading(false);
       });
   }, []);
+
+  // Nettoyer les favoris orphelins après chargement
+  useEffect(() => {
+    if (loading) return;
+    const validIds = new Set(prestataires.map(p => p.id));
+    setFavorites(prev => {
+      const next = new Set([...prev].filter(id => validIds.has(id)));
+      if (next.size !== prev.size) {
+        localStorage.setItem("ce_favorites", JSON.stringify([...next]));
+        return next;
+      }
+      return prev;
+    });
+  }, [prestataires, loading]);
 
   const filtered = useMemo(() => {
     const [min, max] = parseBudget(filters.budget);
@@ -295,7 +262,6 @@ export default function HomePage() {
         const haystack = `${p.nom} ${p.company ?? ""} ${p.tags.join(" ")} ${p.description ?? ""}`.toLowerCase();
         if (!haystack.includes(q)) return false;
       }
-      if (filters.continent !== "Tous" && p.continent !== filters.continent) return false;
       if (filters.categorie !== "Tous" && p.categorie !== filters.categorie) return false;
       if (activeCategory !== "Tous" && p.categorie !== activeCategory) return false;
       if (p.prix < min || p.prix > max) return false;
@@ -307,7 +273,6 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Modals */}
       {selectedPresta && (
         <PrestaModal
           presta={selectedPresta}
@@ -331,12 +296,10 @@ export default function HomePage() {
           height: 72,
         }}
       >
-        {/* Logo */}
         <div className="flex items-center gap-3 cursor-pointer">
           <img src="/logo.png" alt="Connect Event" className="h-20 w-auto object-contain" />
         </div>
 
-        {/* Nav links */}
         <div className="hidden md:flex items-center gap-1">
           {[
             { label: "🏠 Accueil", href: "/" },
@@ -365,9 +328,7 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Right side */}
         <div className="flex items-center gap-3">
-          {/* Favoris */}
           <button
             onClick={() => setShowFavoritesOnly(f => !f)}
             className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer"
@@ -387,7 +348,6 @@ export default function HomePage() {
             )}
           </button>
 
-          {/* Compte / Admin */}
           {userEmail ? (
             <div className="hidden md:flex items-center gap-2">
               {userEmail === ADMIN_EMAIL && (
@@ -419,7 +379,6 @@ export default function HomePage() {
             </a>
           )}
 
-          {/* Devenir prestataire CTA */}
           <button
             onClick={() => setShowPrestaireModal(true)}
             className="text-white text-xs font-extrabold px-4 py-2 rounded-full cursor-pointer transition-all duration-200 whitespace-nowrap"
@@ -445,7 +404,6 @@ export default function HomePage() {
       {/* ── Hero ── */}
       <section className="relative overflow-hidden text-center" style={{ background: "var(--dark2)", padding: "80px 48px 90px" }}>
         <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #12112A 0%, #1E1C3A 50%, #2A1042 100%)" }} />
-        {/* Orbs */}
         <div className="absolute rounded-full pointer-events-none" style={{ width:500, height:500, background:"#4A6CF7", top:-200, left:-100, filter:"blur(80px)", opacity:0.35 }} />
         <div className="absolute rounded-full pointer-events-none" style={{ width:400, height:400, background:"#D93FB5", bottom:-200, right:-100, filter:"blur(80px)", opacity:0.35 }} />
         <div className="absolute rounded-full pointer-events-none" style={{ width:300, height:300, background:"#F5842A", top:"50%", left:"50%", transform:"translate(-50%,-50%)", filter:"blur(80px)", opacity:0.35 }} />
@@ -463,15 +421,14 @@ export default function HomePage() {
           </h1>
           <p className="mx-auto mb-10 anim-up" style={{ color: "rgba(255,255,255,0.6)", maxWidth: 500, lineHeight: 1.75, fontSize: "1rem", animationDelay: "0.1s" }}>
             DJ, décoratrices, traiteurs, photographes, feux d&apos;artifice et bien plus encore —<br />
-            trouvez les meilleurs experts du monde entier.
+            trouvez les meilleurs experts en Belgique.
           </p>
 
-          {/* Stats */}
           <div className="flex flex-wrap justify-center gap-10 mb-12 anim-up" style={{ animationDelay: "0.2s" }}>
             {[
               [String(CATEGORY_PILLS.length - 1), "Catégories"],
-              [String(MOCK_PRESTATAIRES.length) + "+", "Prestataires"],
-              ["4", "Continents"],
+              [loading ? "..." : String(prestataires.length) + "+", "Prestataires"],
+              ["Belgique", "Zone couverte"],
               ["100%", "Certifiés"],
             ].map(([val, label]) => (
               <div key={label} className="text-center">
@@ -492,7 +449,6 @@ export default function HomePage() {
 
       {/* ── Main content ── */}
       <main className="max-w-6xl mx-auto px-6 pt-14 pb-20" id="prestataires">
-        {/* Category tabs */}
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mb-10">
           {CATEGORY_PILLS.map(({ label, icon }) => {
             const count = label === "Tous" ? prestataires.length : prestataires.filter(p => p.categorie === label).length;
@@ -526,7 +482,6 @@ export default function HomePage() {
           })}
         </div>
 
-        {/* Section header */}
         <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
           <div>
             <h2
@@ -545,7 +500,6 @@ export default function HomePage() {
           </span>
         </div>
 
-        {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -607,7 +561,7 @@ export default function HomePage() {
           {[
             { icon: "✉️", label: "Email", val: "yagan_darren@hotmail.com" },
             { icon: "📞", label: "Téléphone", val: "04 83 03 32 02" },
-            { icon: "🌍", label: "Zones couvertes", val: "Afrique · Europe · Asie · Est" },
+            { icon: "📍", label: "Zone couverte", val: "Belgique" },
           ].map(item => (
             <div key={item.label} className="flex items-center gap-3">
               <div
@@ -634,12 +588,65 @@ export default function HomePage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="text-center py-6 text-xs" style={{ background: "var(--dark)", color: "rgba(255,255,255,0.3)" }}>
-        © 2025{" "}
-        <span style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", fontWeight: 800 }}>
-          Connect Event
-        </span>{" "}
-        — Tous droits réservés · Créez des souvenirs inoubliables ✦
+      <footer style={{ background: "var(--dark)", padding: "24px 48px" }}>
+        <div className="flex flex-wrap justify-between items-center gap-4">
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            {[
+              { label: "Confidentialité", href: "/confidentialite" },
+              { label: "Conditions générales", href: "/cgv" },
+              { label: "Fonctionnement", href: "/fonctionnement" },
+              { label: "À propos", href: "/a-propos" },
+            ].map(({ label, href }) => (
+              <a
+                key={label}
+                href={href}
+                className="text-xs font-semibold transition-colors"
+                style={{ color: "rgba(255,255,255,0.4)" }}
+                onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.8)")}
+                onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.4)")}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+
+          <div className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+            © 2025{" "}
+            <span style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", fontWeight: 800 }}>
+              Connect Event
+            </span>{" "}
+            — Tous droits réservés
+          </div>
+
+          <div className="flex items-center gap-3">
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center rounded-full transition-all"
+              style={{ width: 36, height: 36, background: "rgba(255,255,255,0.1)" }}
+              onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.2)")}
+              onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.1)")}
+            >
+              <svg width={16} height={16} fill="white" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center rounded-full transition-all"
+              style={{ width: 36, height: 36, background: "rgba(255,255,255,0.1)" }}
+              onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.2)")}
+              onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.1)")}
+            >
+              <svg width={16} height={16} fill="white" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
       </footer>
     </>
   );

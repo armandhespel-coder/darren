@@ -12,7 +12,7 @@ export interface Prestataire {
   owner_id: string;
   nom: string;
   categorie: string;
-  continent: string;
+  continent?: string;
   prix: number;
   note: number;
   images: string[];

@@ -10,18 +10,7 @@ interface Props {
   onToggleFavorite: (id: string) => void;
 }
 
-const ORIGIN_COLORS: Record<string, string> = {
-  Europe: "#3B82F6",
-  Afrique: "#F59E0B",
-  Asie: "#EC4899",
-  "Pays de l'Est": "#8B5CF6",
-  Amériques: "#10B981",
-  Océanie: "#06B6D4",
-};
-
 export default function PrestaCard({ presta, onSelect, onContact, isFavorited, onToggleFavorite }: Props) {
-  const originColor = ORIGIN_COLORS[presta.continent] ?? "#8887A8";
-
   return (
     <div
       className="bg-white rounded-2xl overflow-hidden cursor-pointer group"
@@ -62,33 +51,17 @@ export default function PrestaCard({ presta, onSelect, onContact, isFavorited, o
           </div>
         )}
 
-        {/* Overlay gradient */}
         <div
           className="absolute inset-0"
           style={{ background: "linear-gradient(to top, rgba(18,17,42,0.75) 0%, transparent 55%)" }}
         />
-
-        {/* Origin badge */}
-        <div
-          className="absolute flex items-center gap-1.5 text-xs font-extrabold rounded-full px-3 py-1.5"
-          style={{
-            top: 14, left: 14,
-            background: "rgba(255,255,255,0.92)",
-            backdropFilter: "blur(8px)",
-            color: "var(--dark)",
-            letterSpacing: "0.06em",
-          }}
-        >
-          <div className="w-2 h-2 rounded-full" style={{ background: originColor }} />
-          {presta.continent}
-        </div>
 
         {/* Badge */}
         {presta.badge && (
           <div
             className="absolute text-[10px] font-extrabold text-white uppercase tracking-wider px-3 py-1.5 rounded-full"
             style={{
-              top: 14, right: 44,
+              top: 14, left: 14,
               background: "var(--grad)",
               boxShadow: "0 4px 14px rgba(217,63,181,0.4)",
             }}
@@ -127,7 +100,7 @@ export default function PrestaCard({ presta, onSelect, onContact, isFavorited, o
           </svg>
         </button>
 
-        {/* Rating (bottom right) */}
+        {/* Rating */}
         {presta.note > 0 && (
           <div
             className="absolute flex items-center gap-1 text-white text-sm font-bold"
@@ -141,7 +114,7 @@ export default function PrestaCard({ presta, onSelect, onContact, isFavorited, o
           </div>
         )}
 
-        {/* Availability ribbon (bottom left) */}
+        {/* Availability ribbon */}
         <div
           className="absolute flex items-center gap-1.5 rounded-full text-xs font-bold text-white px-3 py-1"
           style={{ bottom: 14, left: 14, background: "rgba(18,17,42,0.7)", backdropFilter: "blur(8px)" }}
@@ -159,7 +132,7 @@ export default function PrestaCard({ presta, onSelect, onContact, isFavorited, o
 
       {/* Body */}
       <div className="p-5">
-        <div className="flex justify-between items-start mb-1.5 gap-3">
+        <div className="flex justify-between items-start mb-3 gap-3">
           <div>
             <h3
               className="text-base font-extrabold leading-tight"
@@ -183,10 +156,6 @@ export default function PrestaCard({ presta, onSelect, onContact, isFavorited, o
               </div>
             )}
           </div>
-        </div>
-
-        <div className="flex items-center gap-1.5 text-xs font-semibold mb-2.5" style={{ color: "var(--muted)" }}>
-          🌍 {presta.continent}
         </div>
 
         {presta.tags.length > 0 && (

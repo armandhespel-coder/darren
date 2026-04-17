@@ -11,17 +11,15 @@ const CATEGORIES = [
   "DJ", "Décoratrice", "Matériel", "Voiture", "Traiteur",
   "Photo & Caméra", "Feux d'artifice", "Location de salle", "Gâteau",
 ];
-const CONTINENTS = ["Europe", "Afrique", "Asie", "Pays de l'Est"];
-
 const EMPTY: FormData = {
-  nom: "", company: "", categorie: "DJ", continent: "Europe",
+  nom: "", company: "", categorie: "DJ",
   prix: "", price_note: "", note: "", reviews: "", badge: "",
   image: "", tags: "", description: "",
   is_available: true, is_premium: false, telephone: "",
 };
 
 interface FormData {
-  nom: string; company: string; categorie: string; continent: string;
+  nom: string; company: string; categorie: string;
   prix: string; price_note: string; note: string; reviews: string; badge: string;
   image: string; tags: string; description: string;
   is_available: boolean; is_premium: boolean; telephone: string;
@@ -120,7 +118,6 @@ export default function AdminPage() {
       nom: form.nom.trim(),
       company: form.company.trim() || null,
       categorie: form.categorie,
-      continent: form.continent,
       prix: Number(form.prix) || 0,
       price_note: form.price_note.trim() || null,
       note: form.note ? Number(form.note) : 0,
@@ -151,7 +148,7 @@ export default function AdminPage() {
     setEditId(p.id);
     setForm({
       nom: p.nom, company: p.company ?? "",
-      categorie: p.categorie, continent: p.continent,
+      categorie: p.categorie,
       prix: String(p.prix), price_note: p.price_note ?? "",
       note: String(p.note), reviews: String(p.reviews ?? ""),
       badge: p.badge ?? "", image: p.images?.[0] ?? "",
@@ -177,7 +174,7 @@ export default function AdminPage() {
   const resetForm = () => { setForm(EMPTY); setEditId(null); };
 
   const filtered = prestataires.filter(p =>
-    `${p.nom} ${p.categorie} ${p.continent}`.toLowerCase().includes(search.toLowerCase())
+    `${p.nom} ${p.categorie}`.toLowerCase().includes(search.toLowerCase())
   );
 
   if (loading) {
@@ -292,19 +289,11 @@ export default function AdminPage() {
                 <Input value={form.company} onChange={v => up("company", v)} placeholder="Nom de l'entreprise" />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Catégorie *</Label>
-                  <Select value={form.categorie} onChange={v => up("categorie", v)}>
-                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </Select>
-                </div>
-                <div>
-                  <Label>Continent *</Label>
-                  <Select value={form.continent} onChange={v => up("continent", v)}>
-                    {CONTINENTS.map(c => <option key={c} value={c}>{c}</option>)}
-                  </Select>
-                </div>
+              <div>
+                <Label>Catégorie *</Label>
+                <Select value={form.categorie} onChange={v => up("categorie", v)}>
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </Select>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -462,7 +451,7 @@ export default function AdminPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr style={{ background: "var(--bg)", borderBottom: "1px solid var(--border)" }}>
-                      {["Nom", "Catégorie", "Continent", "Prix", "Premium", "Dispo", "Actions"].map(h => (
+                      {["Nom", "Catégorie", "Prix", "Premium", "Dispo", "Actions"].map(h => (
                         <th
                           key={h}
                           className="text-left px-5 py-3 text-[10px] font-extrabold uppercase tracking-widest"
@@ -496,9 +485,6 @@ export default function AdminPage() {
                           >
                             {p.categorie}
                           </span>
-                        </td>
-                        <td className="px-5 py-3 text-sm font-semibold" style={{ color: "var(--text)" }}>
-                          {p.continent}
                         </td>
                         <td className="px-5 py-3 font-extrabold text-sm" style={{ color: "var(--dark)" }}>
                           {p.prix} €

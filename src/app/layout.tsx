@@ -17,7 +17,7 @@ const raleway = Raleway({
 
 export const metadata: Metadata = {
   title: "Connect Event — Les meilleurs prestataires pour votre événement",
-  description: "DJ, traiteurs, photographes, décorateurs — trouvez les meilleurs experts du monde entier.",
+  description: "DJ, traiteurs, photographes, décorateurs — trouvez les meilleurs prestataires événementiels en Belgique.",
   icons: { icon: "/logo.png" },
 };
 

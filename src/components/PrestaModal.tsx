@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Prestataire } from "@/types";
 
 interface Props {
@@ -9,18 +8,7 @@ interface Props {
   onContact: (presta: Prestataire) => void;
 }
 
-const ORIGIN_COLORS: Record<string, string> = {
-  Europe: "#3B82F6",
-  Afrique: "#F59E0B",
-  Asie: "#EC4899",
-  "Pays de l'Est": "#8B5CF6",
-  Amériques: "#10B981",
-  Océanie: "#06B6D4",
-};
-
 export default function PrestaModal({ presta, onClose, onContact }: Props) {
-  const originColor = ORIGIN_COLORS[presta.continent] ?? "#8887A8";
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -46,30 +34,15 @@ export default function PrestaModal({ presta, onClose, onContact }: Props) {
           )}
           <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(18,17,42,0.8) 0%, transparent 50%)" }} />
 
-          {/* Origin badge */}
-          <div
-            className="absolute flex items-center gap-1.5 text-xs font-extrabold rounded-full px-3 py-1.5"
-            style={{
-              top: 16, left: 16,
-              background: "rgba(255,255,255,0.92)",
-              backdropFilter: "blur(8px)",
-              color: "var(--dark)",
-            }}
-          >
-            <div className="w-2 h-2 rounded-full" style={{ background: originColor }} />
-            {presta.continent}
-          </div>
-
           {presta.badge && (
             <div
               className="absolute text-[10px] font-extrabold text-white uppercase tracking-wider px-3 py-1.5 rounded-full"
-              style={{ top: 16, right: 52, background: "var(--grad)", boxShadow: "0 4px 14px rgba(217,63,181,0.4)" }}
+              style={{ top: 16, left: 16, background: "var(--grad)", boxShadow: "0 4px 14px rgba(217,63,181,0.4)" }}
             >
               {presta.badge}
             </div>
           )}
 
-          {/* Close button */}
           <button
             onClick={onClose}
             className="absolute flex items-center justify-center rounded-full cursor-pointer transition-all duration-200"
@@ -85,7 +58,6 @@ export default function PrestaModal({ presta, onClose, onContact }: Props) {
             ✕
           </button>
 
-          {/* Name + details at bottom */}
           <div className="absolute px-6" style={{ bottom: 18, left: 0, right: 0 }}>
             <h2
               className="text-2xl font-black text-white leading-tight"
@@ -112,7 +84,6 @@ export default function PrestaModal({ presta, onClose, onContact }: Props) {
 
         {/* Content */}
         <div className="p-7">
-          {/* Rating + Price */}
           <div className="flex items-center justify-between mb-5">
             {presta.note > 0 ? (
               <div className="flex items-center gap-2">
@@ -136,12 +107,10 @@ export default function PrestaModal({ presta, onClose, onContact }: Props) {
             </div>
           </div>
 
-          {/* Description */}
           <p className="text-sm leading-relaxed mb-5 font-semibold" style={{ color: "var(--muted)" }}>
             {presta.description || "Aucune description disponible."}
           </p>
 
-          {/* Tags */}
           {presta.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-6">
               {presta.tags.map((tag, i) => (
@@ -160,7 +129,6 @@ export default function PrestaModal({ presta, onClose, onContact }: Props) {
             </div>
           )}
 
-          {/* CTA */}
           {presta.is_premium && presta.telephone ? (
             <a
               href={`tel:${presta.telephone}`}

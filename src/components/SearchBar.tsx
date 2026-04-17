@@ -1,16 +1,15 @@
 "use client";
 
-interface Filters { search: string; continent: string; categorie: string; budget: string; }
+interface Filters { search: string; categorie: string; budget: string; }
 interface Props { filters: Filters; onChange: (filters: Filters) => void; onSearch: () => void; }
 
-const CONTINENTS = ["Tous", "Europe", "Afrique", "Asie", "Pays de l'Est", "Amériques", "Océanie"];
 const CATEGORIES = ["Tous", "DJ", "Décoratrice", "Matériel", "Voiture", "Traiteur", "Photo & Caméra", "Feux d'artifice", "Location de salle", "Gâteau"];
 const BUDGETS = ["Tous", "< 500€", "500–1500€", "> 1500€"];
 
 export default function SearchBar({ filters, onChange, onSearch }: Props) {
   const update = (key: keyof Filters, value: string) => onChange({ ...filters, [key]: value });
   const reset = () => {
-    onChange({ search: "", continent: "Tous", categorie: "Tous", budget: "Tous" });
+    onChange({ search: "", categorie: "Tous", budget: "Tous" });
   };
 
   return (
@@ -41,28 +40,6 @@ export default function SearchBar({ filters, onChange, onSearch }: Props) {
             className="flex-1 outline-none text-sm font-semibold py-3 bg-transparent"
             style={{ color: "var(--text)" }}
           />
-        </div>
-
-        {/* Continent */}
-        <div className="flex-1 min-w-[150px]">
-          <div className="text-[10px] font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>
-            🌍 Continent
-          </div>
-          <select
-            value={filters.continent}
-            onChange={(e) => update("continent", e.target.value)}
-            className="w-full rounded-xl px-3.5 py-2.5 text-sm font-semibold outline-none cursor-pointer"
-            style={{
-              background: "var(--bg)",
-              border: "1.5px solid var(--border)",
-              color: "var(--text)",
-              appearance: "none",
-            }}
-          >
-            {CONTINENTS.map((c) => (
-              <option key={c} value={c}>{c === "Tous" ? "Tous les continents" : c}</option>
-            ))}
-          </select>
         </div>
 
         {/* Catégorie */}
