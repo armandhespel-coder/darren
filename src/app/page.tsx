@@ -246,11 +246,20 @@ export default function HomePage() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showPrestaireModal, setShowPrestaireModal] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  const ADMIN_EMAIL = "armand.hespel@hotmail.com";
 
   // Chargement favoris depuis localStorage
   useEffect(() => {
     const saved = localStorage.getItem("ce_favorites");
     if (saved) setFavorites(new Set(JSON.parse(saved)));
+  }, []);
+
+  // Session utilisateur
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? null));
   }, []);
 
   const toggleFavorite = (id: string) => {
@@ -378,14 +387,37 @@ export default function HomePage() {
             )}
           </button>
 
-          {/* Connexion */}
-          <a href="/auth/login"
-            className="text-xs font-bold hidden md:block transition-colors duration-200"
-            style={{ color: "var(--muted)" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "var(--blue2)")}
-            onMouseLeave={e => (e.currentTarget.style.color = "var(--muted)")}>
-            Connexion
-          </a>
+          {/* Compte / Admin */}
+          {userEmail ? (
+            <div className="hidden md:flex items-center gap-2">
+              {userEmail === ADMIN_EMAIL && (
+                <a
+                  href="/admin"
+                  className="text-xs font-extrabold px-3 py-1.5 rounded-full transition-all"
+                  style={{ background: "rgba(74,108,247,0.1)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.25)" }}
+                >
+                  🔐 Admin
+                </a>
+              )}
+              <button
+                onClick={async () => { const s = createClient(); await s.auth.signOut(); setUserEmail(null); }}
+                className="text-xs font-bold transition-colors duration-200 cursor-pointer bg-transparent border-none"
+                style={{ color: "var(--muted)" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "var(--blue2)")}
+                onMouseLeave={e => (e.currentTarget.style.color = "var(--muted)")}
+              >
+                Déconnexion
+              </button>
+            </div>
+          ) : (
+            <a href="/auth/login"
+              className="text-xs font-bold hidden md:block transition-colors duration-200"
+              style={{ color: "var(--muted)" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "var(--blue2)")}
+              onMouseLeave={e => (e.currentTarget.style.color = "var(--muted)")}>
+              Connexion
+            </a>
+          )}
 
           {/* Devenir prestataire CTA */}
           <button
