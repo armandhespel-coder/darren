@@ -99,13 +99,13 @@ export default function AdminPage() {
     setLoading(false);
   }, [supabase]);
 
-  const ADMIN_EMAIL = "armand.hespel@hotmail.com";
+  const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com"];
 
   // Auth guard — réservé à l'admin
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) { router.push("/auth/login"); return; }
-      if (data.user.email !== ADMIN_EMAIL) { router.push("/"); return; }
+      if (!ADMIN_EMAILS.includes(data.user.email ?? "")) { router.push("/"); return; }
       load();
     });
   }, [load, router, supabase.auth]);

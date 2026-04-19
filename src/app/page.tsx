@@ -298,7 +298,7 @@ export default function HomePage() {
   const [showPrestaireModal, setShowPrestaireModal] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
-  const ADMIN_EMAIL = "armand.hespel@hotmail.com";
+  const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com"];
 
   useEffect(() => {
     const saved = localStorage.getItem("ce_favorites");
@@ -446,7 +446,7 @@ export default function HomePage() {
 
           {userEmail ? (
             <div className="hidden md:flex items-center gap-2">
-              {userEmail === ADMIN_EMAIL && (
+              {ADMIN_EMAILS.includes(userEmail) && (
                 <a
                   href="/admin"
                   className="flex items-center gap-1.5 text-xs font-extrabold px-3 rounded-full transition-all"
