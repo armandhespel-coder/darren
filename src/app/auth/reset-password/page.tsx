@@ -1,27 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [ready, setReady] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const supabase = createClient();
+    const code = searchParams.get("code");
+
+    if (code) {
+      // PKCE flow — échange le code contre une session
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (error) setError("Lien invalide ou expiré. Demandez un nouveau lien.");
+        else setReady(true);
+      });
+    } else {
+      // Implicit flow — vérifie si une session existe déjà (hash fragment)
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) setReady(true);
+        else setError("Lien invalide ou expiré. Demandez un nouveau lien.");
+      });
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirm) {
-      setError("Les mots de passe ne correspondent pas.");
-      return;
-    }
-    if (password.length < 6) {
-      setError("Minimum 6 caractères.");
-      return;
-    }
+    if (password !== confirm) { setError("Les mots de passe ne correspondent pas."); return; }
+    if (password.length < 6) { setError("Minimum 6 caractères."); return; }
     setLoading(true);
     setError("");
     const supabase = createClient();
@@ -57,6 +72,28 @@ export default function ResetPasswordPage() {
                 Mot de passe modifié !
               </h2>
               <p className="text-white/50 text-sm">Redirection vers la connexion...</p>
+            </div>
+          ) : error && !ready ? (
+            <div className="text-center py-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <h2 className="text-white text-xl font-bold mb-2" style={{ fontFamily: "var(--font-cormorant)" }}>
+                Lien invalide
+              </h2>
+              <p className="text-white/50 text-sm mb-4">{error}</p>
+              <a href="/auth/forgot-password"
+                className="inline-block text-sm font-semibold px-5 py-2.5 rounded-xl text-white"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}>
+                Demander un nouveau lien
+              </a>
+            </div>
+          ) : !ready ? (
+            <div className="text-center py-8">
+              <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-white/50 text-sm">Vérification du lien...</p>
             </div>
           ) : (
             <>
@@ -113,5 +150,13 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
