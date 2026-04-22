@@ -28,7 +28,13 @@ export default function RegisterPage() {
       setLoading(false);
     } else {
       setSuccess(true);
-      setTimeout(() => router.push("/auth/login"), 3000);
+      setTimeout(() => {
+        if (role === "pro") {
+          router.push("/pro/onboarding");
+        } else {
+          router.push("/auth/login");
+        }
+      }, 2500);
     }
   };
 
@@ -52,7 +58,11 @@ export default function RegisterPage() {
                 </svg>
               </div>
               <h2 className="text-white text-xl font-bold mb-2" style={{ fontFamily: "var(--font-cormorant)" }}>Compte créé !</h2>
-              <p className="text-white/50 text-sm">Vérifiez votre email pour confirmer votre compte.</p>
+              <p className="text-white/50 text-sm">
+                {role === "pro"
+                  ? "Compte créé ! Redirection vers votre espace pro..."
+                  : "Vérifiez votre email pour confirmer votre compte."}
+              </p>
             </div>
           ) : (
             <>

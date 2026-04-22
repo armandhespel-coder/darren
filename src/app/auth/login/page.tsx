@@ -83,7 +83,13 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-center text-white/35 text-sm mt-6">
+          <p className="text-center mt-3">
+            <a href="/auth/forgot-password" className="text-white/35 hover:text-white/60 text-xs transition-colors">
+              Mot de passe oublié ?
+            </a>
+          </p>
+
+          <p className="text-center text-white/35 text-sm mt-4">
             Pas de compte ?{" "}
             <a href="/auth/register" className="text-purple-400 hover:text-purple-300 transition-colors">
               S&apos;inscrire

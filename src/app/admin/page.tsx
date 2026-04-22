@@ -87,15 +87,19 @@ export default function AdminPage() {
   const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [stats, setStats] = useState({ premium: 0, users: 0, messages: 0 });
 
   const up = (k: keyof FormData, v: string | boolean) => setForm(f => ({ ...f, [k]: v }));
 
   const load = useCallback(async () => {
-    const { data } = await supabase
-      .from("prestataires")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const [{ data }, premiumRes, usersRes, msgsRes] = await Promise.all([
+      supabase.from("prestataires").select("*").order("created_at", { ascending: false }),
+      supabase.from("prestataires").select("*", { count: "exact", head: true }).eq("is_premium", true),
+      supabase.from("profiles").select("*", { count: "exact", head: true }),
+      supabase.from("messages").select("*", { count: "exact", head: true }),
+    ]);
     setPrestataires((data as Prestataire[]) ?? []);
+    setStats({ premium: premiumRes.count ?? 0, users: usersRes.count ?? 0, messages: msgsRes.count ?? 0 });
     setLoading(false);
   }, [supabase]);
 
@@ -211,6 +215,16 @@ export default function AdminPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <a href="/admin/utilisateurs"
+            className="text-xs font-bold px-4 py-2 rounded-full transition-all"
+            style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
+            👥 Utilisateurs
+          </a>
+          <a href="/admin/messages"
+            className="text-xs font-bold px-4 py-2 rounded-full transition-all"
+            style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
+            💬 Messages
+          </a>
           <a
             href="/admin/portail"
             className="text-xs font-extrabold px-4 py-2 rounded-full transition-all text-white"
@@ -252,6 +266,26 @@ export default function AdminPage() {
           <p className="text-sm font-semibold" style={{ color: "var(--muted)" }}>
             Gérez les prestataires, modifiez les infos et les prix
           </p>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {[
+            { label: "Prestataires", value: prestataires.length, icon: "🎵", color: "var(--blue2)", bg: "rgba(74,108,247,0.08)" },
+            { label: "Premium", value: stats.premium, icon: "⭐", color: "#7c3aed", bg: "rgba(124,58,237,0.08)" },
+            { label: "Utilisateurs", value: stats.users, icon: "👥", color: "#16a34a", bg: "rgba(22,163,74,0.08)" },
+            { label: "Messages", value: stats.messages, icon: "💬", color: "#d97706", bg: "rgba(217,119,6,0.08)" },
+          ].map((s) => (
+            <div key={s.label} className="rounded-2xl p-5"
+              style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-3"
+                style={{ background: s.bg }}>
+                {s.icon}
+              </div>
+              <div className="font-black text-3xl" style={{ color: s.color }}>{s.value}</div>
+              <div className="text-xs font-semibold mt-0.5" style={{ color: "var(--muted)" }}>{s.label}</div>
+            </div>
+          ))}
         </div>
 
         {/* Flash message */}
