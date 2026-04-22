@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Prestataire } from '@/types';
 import './portal.css';
@@ -31,7 +31,6 @@ function Logo() {
   );
 }
 
-// ─── Buttons ─────────────────────────────────────────────────────────
 function GradButton({ children, onClick, size = 'md', full = false, icon, disabled }: {
   children: React.ReactNode; onClick?: () => void; size?: string;
   full?: boolean; icon?: React.ReactNode; disabled?: boolean;
@@ -58,7 +57,7 @@ function GhostButton({ children, onClick, icon }: {
 // ─── Types ───────────────────────────────────────────────────────────
 interface PrestaRow {
   id: string; nom: string; company: string; categorie: string;
-  last_login: string; status: 'active' | 'stale' | 'pending';
+  email: string; last_login: string; status: 'active' | 'stale';
 }
 
 function toRow(p: Prestataire): PrestaRow {
@@ -68,6 +67,7 @@ function toRow(p: Prestataire): PrestaRow {
     nom: p.nom,
     company: p.company ?? '',
     categorie: p.categorie,
+    email: p.email ?? '',
     last_login: days === 0 ? "Aujourd'hui" : `il y a ${days}j`,
     status: days < 14 ? 'active' : 'stale',
   };
@@ -75,6 +75,7 @@ function toRow(p: Prestataire): PrestaRow {
 
 // ─── AdminPanel ───────────────────────────────────────────────────────
 function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
+  const [rows, setRows] = useState(prestaList);
   const [selected, setSelected] = useState<PrestaRow | null>(prestaList[0] ?? null);
   const [expiry, setExpiry] = useState('7');
   const [reusable, setReusable] = useState(false);
@@ -82,34 +83,61 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
   const [note, setNote] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [sentLink, setSentLink] = useState('');
   const [copied, setCopied] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const emailSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const supabase = createClient();
 
   useEffect(() => {
     if (prestaList.length && !selected) setSelected(prestaList[0]);
   }, [prestaList, selected]);
 
-  const link = selected
-    ? `https://connectevent.be/p/edit/mZQ8kX3Lp2tR-${selected.id.slice(-8)}`
-    : '';
+  const updateEmail = (email: string) => {
+    if (!selected) return;
+    const updated = { ...selected, email };
+    setSelected(updated);
+    setRows(r => r.map(row => row.id === selected.id ? updated : row));
 
-  const handleSend = () => {
+    if (emailSaveTimer.current) clearTimeout(emailSaveTimer.current);
+    emailSaveTimer.current = setTimeout(async () => {
+      await supabase.from('prestataires').update({ email }).eq('id', selected.id);
+    }, 800);
+  };
+
+  const handleSend = async () => {
+    if (!selected?.email) { setErr("Renseignez d'abord l'adresse email du prestataire."); return; }
+    setErr(null);
     setSending(true);
-    setTimeout(() => { setSending(false); setSent(true); }, 700);
+    const res = await fetch('/api/send-edit-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prestataire_id: selected.id,
+        email: selected.email,
+        nom: selected.nom,
+        expiry,
+        note,
+        reusable,
+      }),
+    });
+    const data = await res.json();
+    setSending(false);
+    if (!res.ok) { setErr(data.error ?? 'Erreur lors de l\'envoi.'); return; }
+    setSentLink(data.link);
+    setSent(true);
   };
 
   const copy = () => {
-    navigator.clipboard?.writeText(link);
+    navigator.clipboard?.writeText(sentLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
   };
 
-  if (!prestaList.length) {
+  if (!rows.length) {
     return (
       <div className="ce-admin-wrap">
-        <header className="ce-admin-top">
-          <Logo />
-          <span className="ce-pill-tag"><Ico.Shield s={12} /> Admin · Portail</span>
-        </header>
+        <header className="ce-admin-top"><Logo /><span className="ce-pill-tag"><Ico.Shield s={12} /> Admin · Portail</span></header>
         <main className="ce-admin-main" style={{ textAlign: 'center', paddingTop: 80 }}>
           <p style={{ color: 'var(--muted)', fontWeight: 600 }}>Aucun prestataire dans la base de données.</p>
           <a href="/admin" className="ce-ghost-btn" style={{ height: 44, display: 'inline-flex', marginTop: 16 }}>← Retour admin</a>
@@ -121,17 +149,14 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
   if (sent && selected) {
     return (
       <div className="ce-admin-wrap">
-        <header className="ce-admin-top">
-          <Logo />
-          <span className="ce-pill-tag"><Ico.Shield s={12} /> Admin · Portail</span>
-        </header>
+        <header className="ce-admin-top"><Logo /><span className="ce-pill-tag"><Ico.Shield s={12} /> Admin · Portail</span></header>
         <main className="ce-admin-main">
           <div className="ce-success-card" style={{ animation: 'cePopIn .4s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
             <div className="ce-success-icon"><Ico.Check s={32} /></div>
-            <h1 className="ce-success-h">Lien envoyé à {selected.nom.split(' ')[0]}</h1>
-            <p className="ce-success-p">Vous pouvez aussi partager ce lien directement par WhatsApp ou autre :</p>
+            <h1 className="ce-success-h">Email envoyé à {selected.nom.split(' ')[0]}</h1>
+            <p className="ce-success-p">L&apos;email vient de partir. Vous pouvez aussi partager ce lien directement :</p>
             <div className="ce-link-box">
-              <Ico.Link s={14} /><code>{link}</code>
+              <Ico.Link s={14} /><code>{sentLink}</code>
               <button className="ce-link-copy" onClick={copy}>
                 {copied ? <><Ico.Check s={13} /> Copié</> : <><Ico.Copy s={13} /> Copier</>}
               </button>
@@ -165,13 +190,20 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
             <p className="ce-sub">Générez un lien sécurisé que le prestataire utilisera pour mettre à jour son profil — sans compte à créer.</p>
           </div>
         </div>
+
+        {err && (
+          <div style={{ marginBottom: 16, padding: '10px 16px', background: 'rgba(239,68,68,0.08)', border: '1.5px solid rgba(239,68,68,0.3)', borderRadius: 12, color: '#dc2626', fontSize: 13, fontWeight: 700 }}>
+            ✕ {err}
+          </div>
+        )}
+
         <div className="ce-admin-grid">
           {/* ── Left card ── */}
           <section className="ce-card">
             <h2 className="ce-card-title">1. Destinataire</h2>
             <label className="ce-lbl">Prestataire</label>
             <div className="ce-presta-list" role="listbox">
-              {prestaList.map(p => (
+              {rows.map(p => (
                 <button key={p.id} role="option" aria-selected={p.id === selected?.id}
                   onClick={() => setSelected(p)}
                   className={`ce-presta-row${p.id === selected?.id ? ' is-active' : ''}`}>
@@ -181,12 +213,24 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
                     <div className="ce-presta-email">{p.categorie}</div>
                   </div>
                   <div className="ce-presta-status" data-status={p.status}>
-                    {p.status === 'active' && <span>● {p.last_login}</span>}
-                    {p.status === 'stale' && <span>● {p.last_login}</span>}
+                    <span>● {p.last_login}</span>
                   </div>
                 </button>
               ))}
             </div>
+
+            {selected && (
+              <div style={{ marginTop: 16 }}>
+                <label className="ce-lbl">Email du prestataire <span className="ce-lbl-opt">(enregistré automatiquement)</span></label>
+                <input
+                  className="ce-input"
+                  type="email"
+                  value={selected.email}
+                  onChange={e => updateEmail(e.target.value)}
+                  placeholder="prenom.nom@email.com"
+                />
+              </div>
+            )}
 
             <h2 className="ce-card-title" style={{ marginTop: 32 }}>2. Permissions du lien</h2>
             <div className="ce-scope">
@@ -231,9 +275,7 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
               <div>
                 <div className="ce-reuse-lbl">Lien réutilisable</div>
                 <div className="ce-reuse-sub">
-                  {reusable
-                    ? 'Le prestataire pourra revenir éditer son profil à volonté avec ce même lien.'
-                    : 'Usage unique — le lien se désactive après la première utilisation (plus sécurisé).'}
+                  {reusable ? 'Le prestataire pourra revenir éditer à volonté.' : 'Usage unique — désactivé après la première utilisation.'}
                 </div>
               </div>
               <button className={`ce-switch${reusable ? ' is-on' : ''}`} onClick={() => setReusable(r => !r)} aria-pressed={reusable}>
@@ -255,13 +297,13 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
             <div className="ce-email">
               <div className="ce-email-top">
                 <div className="ce-email-field"><span>De</span><strong>Connect Event &lt;no-reply@connectevent.be&gt;</strong></div>
-                <div className="ce-email-field"><span>À</span><strong>{selected?.nom ?? '—'}</strong></div>
+                <div className="ce-email-field"><span>À</span><strong>{selected?.email || <em style={{ color: 'var(--warn)', fontStyle: 'normal' }}>email non renseigné</em>}</strong></div>
                 <div className="ce-email-field"><span>Objet</span><strong>Mettez à jour votre profil Connect Event</strong></div>
               </div>
               <div className="ce-email-body">
                 <div className="ce-email-logo"><Logo /></div>
                 <h3 className="ce-email-h">Bonjour {selected?.nom.split(' ')[0] ?? ''},</h3>
-                <p className="ce-email-p">Nous avons créé un lien sécurisé pour que vous puissiez mettre à jour votre profil prestataire — photos, disponibilités et informations. Aucun compte à créer, aucun mot de passe à retenir.</p>
+                <p className="ce-email-p">Nous avons créé un lien sécurisé pour que vous puissiez mettre à jour votre profil prestataire — photos, disponibilités et informations.</p>
                 {note && <div className="ce-email-note">« {note} »<span>— Connect Event</span></div>}
                 <div className="ce-email-cta">
                   <span className="ce-grad-btn" style={{ pointerEvents: 'none', height: 48, padding: '0 26px' }}>
@@ -270,15 +312,16 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
                 </div>
                 <div className="ce-email-meta">
                   <div><Ico.Clock s={12} /> {expiry === 'inf' ? 'Lien sans expiration' : `Lien valable ${expiry === '1' ? '24 heures' : `${expiry} jours`}`}</div>
-                  <div><Ico.Lock s={12} /> {reusable ? 'Réutilisable — lié à votre profil' : 'Usage unique, lié à votre profil'}</div>
+                  <div><Ico.Lock s={12} /> {reusable ? 'Réutilisable' : 'Usage unique'}</div>
                 </div>
                 <p className="ce-email-fp">Si vous n&apos;êtes pas à l&apos;origine de cette demande, ignorez simplement ce message.</p>
               </div>
             </div>
-            <GradButton full size="lg" icon={<Ico.Send s={14} />} onClick={handleSend} disabled={sending || !selected}>
+            <GradButton full size="lg" icon={<Ico.Send s={14} />} onClick={handleSend}
+              disabled={sending || !selected || !selected.email}>
               {sending ? 'Envoi en cours…' : `Envoyer à ${selected?.nom.split(' ')[0] ?? '—'}`}
             </GradButton>
-            <p className="ce-help"><Ico.Info s={12} /> Vous pourrez révoquer ou renvoyer ce lien à tout moment.</p>
+            <p className="ce-help"><Ico.Info s={12} /> {selected?.email ? 'Email prêt à être envoyé.' : 'Renseignez l\'email du prestataire pour envoyer.'}</p>
           </aside>
         </div>
       </main>
@@ -295,7 +338,7 @@ export default function PortalClient() {
     const supabase = createClient();
     supabase
       .from('prestataires')
-      .select('id, nom, company, categorie, created_at')
+      .select('id, nom, company, categorie, email, created_at')
       .order('created_at', { ascending: false })
       .then(({ data }) => {
         setPrestaList(((data ?? []) as Prestataire[]).map(toRow));

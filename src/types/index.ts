@@ -22,6 +22,7 @@ export interface Prestataire {
   is_premium: boolean;
   is_available: boolean;
   created_at: string;
+  email?: string | null;
   // Champs étendus (mock / admin uniquement, absents de la DB)
   company?: string;
   reviews?: number;
