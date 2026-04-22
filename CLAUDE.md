@@ -46,6 +46,9 @@ Règles absolues :
 16. **Design system déjà documenté** : ne jamais lire `layout.tsx`, `globals.css` ou tout fichier de config déjà résumé dans ce CLAUDE.md. Les fonts, CSS vars et couleurs sont ici — c'est la source de vérité pour le contexte de travail.
 17. **Création multi-fichiers** : toujours écrire TOUS les nouveaux fichiers en un seul appel parallèle — même après un round rejeté. Ne jamais séparer en 1 + N pour "tester" : si le premier passe, les autres passent aussi.
 18. **Composants helpers locaux** : un composant `Section`, `Card`, etc. défini dans un seul fichier ne doit pas être copié-collé dans un autre. Soit le partager dans `src/components/`, soit l'inliner — jamais dupliquer.
+19. **Fichiers HTML bundlés (Bolt.new, StackBlitz…)** : le contenu réel est dans `<script type="__bundler/template">` (JSON string) et les assets React sont en gzip+base64 indexés par UUID. Écrire **1 seul script Python** qui : (1) parse le template JSON, (2) trouve l'UUID du composant principal dans le `<body>`, (3) décompresse avec `gzip.decompress(base64.b64decode(...))`, (4) écrit JSX + CSS directement dans `src/app/…/` sans fichier intermédiaire. Ne jamais explorer itérativement avec des Bash multiples.
+20. **Write multi-fichiers toujours en parallèle** : même si un fichier en importe un autre, l'outil Write ne fait que créer le fichier sur disque — la compilation se fait au build. Envoyer tous les Write dans le même message.
+21. **TypeScript `Record<string, T>`** : tout `useState` sur un objet `{ a: bool, b: bool }` accédé via une clé dynamique doit être typé `Record<string, boolean>` dès l'écriture. L'oublier = build raté + 2 appels correctifs.
 
 ## Commands
 

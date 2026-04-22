@@ -1,0 +1,189 @@
+/* ════════════════════════════════════════════════════════════════════
+   Connect Event — Portail Prestataire
+   ════════════════════════════════════════════════════════════════════ */
+
+.ce-root {
+  --blue: #2D9FE8;
+  --blue2: #4A6CF7;
+  --purple: #7B3FDB;
+  --pink: #D93FB5;
+  --orange: #F5842A;
+  --grad: linear-gradient(135deg, #2D9FE8 0%, #7B3FDB 40%, #D93FB5 70%, #F5842A 100%);
+  --grad2: linear-gradient(135deg, #4A6CF7, #D93FB5);
+  --ce-bg: #F7F8FC;
+  --ce-bg2: #ECEEF6;
+  --dark: #12112A;
+  --dark2: #1E1C3A;
+  --ce-text: #2C2B4B;
+  --muted: #6B6A87;
+  --muted2: #9594AE;
+  --card: #FFFFFF;
+  --ce-border: rgba(74,108,247,0.12);
+  --border2: #E7E6EC;
+  --ok: #10B981;
+  --warn: #F59E0B;
+  --danger: #EF4444;
+  --shadow-sm: 0 1px 2px rgba(18,17,42,0.04), 0 2px 8px rgba(74,108,247,0.06);
+  --shadow-md: 0 2px 8px rgba(18,17,42,0.05), 0 12px 32px rgba(74,108,247,0.08);
+  --shadow-lg: 0 24px 60px rgba(74,108,247,0.18);
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  font-family: var(--font-nunito), system-ui, -apple-system, sans-serif;
+  color: var(--ce-text);
+  background: var(--ce-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.ce-root * { box-sizing: border-box; }
+.ce-root button { font-family: inherit; cursor: pointer; }
+.ce-root input, .ce-root select, .ce-root textarea { font-family: inherit; }
+
+/* ── Logo ─────────────────────────────────────────────────────────── */
+.ce-logo { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-raleway), sans-serif; font-weight: 900; }
+.ce-logo-mark {
+  width: 38px; height: 38px; border-radius: 11px;
+  background: var(--grad2);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: white; font-weight: 900; font-size: 13px; letter-spacing: 0.02em;
+  box-shadow: 0 6px 18px rgba(74,108,247,0.35);
+}
+.ce-logo-text { font-size: 17px; }
+.ce-logo.white { color: white; }
+
+/* ── Shared buttons ────────────────────────────────────────────────── */
+.ce-grad-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 0 22px; border: none; border-radius: 12px;
+  background: var(--grad); color: white;
+  font-weight: 800; font-size: 13px; letter-spacing: 0.04em;
+  box-shadow: 0 6px 22px rgba(217,63,181,0.3);
+  transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+  white-space: nowrap; cursor: pointer;
+}
+.ce-grad-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(217,63,181,0.4); }
+.ce-grad-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.ce-ghost-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 0 18px; background: white; color: var(--ce-text);
+  border: 1.5px solid var(--border2); border-radius: 12px;
+  font-weight: 700; font-size: 13px;
+  transition: border-color .2s, color .2s, background .2s; cursor: pointer;
+}
+.ce-ghost-btn:hover { border-color: var(--blue2); color: var(--blue2); }
+
+/* ── Typography ───────────────────────────────────────────────────── */
+.ce-h1 { font-family: var(--font-raleway), sans-serif; font-weight: 900; font-size: clamp(1.8rem, 3vw, 2.4rem); letter-spacing: -0.02em; color: var(--dark); margin: 4px 0 6px; line-height: 1.1; }
+.ce-h2 { font-family: var(--font-raleway), sans-serif; font-weight: 900; font-size: 1.4rem; letter-spacing: -0.01em; color: var(--dark); margin: 0 0 4px; }
+.ce-sub { color: var(--muted); font-size: 14px; font-weight: 500; line-height: 1.5; max-width: 560px; }
+.ce-breadcrumb { color: var(--muted2); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+.ce-breadcrumb strong { color: var(--ce-text); }
+.ce-lbl { display: block; color: var(--blue2); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px; margin-top: 4px; }
+.ce-lbl-opt { color: var(--muted2); font-weight: 600; text-transform: none; letter-spacing: 0; }
+.ce-card-title { font-family: var(--font-raleway), sans-serif; font-weight: 900; font-size: 1rem; color: var(--dark); margin: 0 0 14px; letter-spacing: -0.01em; }
+
+/* ── Cards & inputs ────────────────────────────────────────────────── */
+.ce-card { background: white; border: 1px solid var(--ce-border); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-sm); }
+.ce-input, .ce-textarea {
+  width: 100%; background: var(--ce-bg); border: 1.5px solid var(--border2); border-radius: 12px;
+  padding: 0 14px; height: 44px; font-size: 14px; font-weight: 600; color: var(--ce-text);
+  outline: none; transition: border-color .15s, background .15s;
+}
+.ce-textarea { padding: 12px 14px; min-height: 90px; line-height: 1.5; resize: vertical; height: auto; }
+.ce-input:focus, .ce-textarea:focus { border-color: var(--blue2); background: white; }
+.ce-input::placeholder, .ce-textarea::placeholder { color: var(--muted2); font-weight: 500; }
+
+/* ── Admin ────────────────────────────────────────────────────────── */
+.ce-admin-wrap { background: var(--ce-bg); min-height: 100vh; }
+.ce-admin-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid var(--ce-border); }
+.ce-admin-top-right { display: flex; align-items: center; gap: 12px; }
+.ce-pill-tag { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 999px; background: rgba(74,108,247,0.1); color: var(--blue2); font-size: 11px; font-weight: 800; letter-spacing: 0.04em; border: 1px solid rgba(74,108,247,0.2); }
+.ce-avatar-sm, .ce-avatar { width: 36px; height: 36px; border-radius: 999px; background: var(--grad2); color: white; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; flex-shrink: 0; }
+.ce-avatar { width: 40px; height: 40px; font-size: 13px; }
+.ce-admin-main { max-width: 1280px; margin: 0 auto; padding: 40px 32px 80px; }
+.ce-admin-hd { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 28px; flex-wrap: wrap; }
+.ce-admin-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 24px; }
+
+.ce-presta-list { display: flex; flex-direction: column; gap: 8px; }
+.ce-presta-row { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--ce-bg); border: 1.5px solid transparent; border-radius: 14px; transition: border-color .15s, background .15s; text-align: left; cursor: pointer; }
+.ce-presta-row:hover { background: white; border-color: var(--ce-border); }
+.ce-presta-row.is-active { background: white; border-color: var(--blue2); box-shadow: 0 6px 20px rgba(74,108,247,0.12); }
+.ce-presta-meta { flex: 1; min-width: 0; }
+.ce-presta-nom { font-weight: 800; font-size: 14px; color: var(--dark); }
+.ce-presta-cat { color: var(--muted); font-weight: 600; }
+.ce-presta-email { color: var(--muted); font-size: 12px; font-weight: 600; margin-top: 2px; }
+.ce-presta-status { font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.ce-presta-status[data-status="active"] span { color: var(--ok); }
+.ce-presta-status[data-status="stale"] span { color: var(--warn); }
+.ce-presta-status[data-status="pending"] span { color: var(--muted2); }
+
+.ce-scope { display: flex; flex-direction: column; gap: 8px; }
+.ce-scope-row { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; background: var(--ce-bg); border: 1.5px solid transparent; border-radius: 14px; cursor: pointer; transition: all .15s; }
+.ce-scope-row.is-on { background: rgba(74,108,247,0.06); border-color: rgba(74,108,247,0.25); }
+.ce-scope-row input { position: absolute; opacity: 0; pointer-events: none; }
+.ce-scope-check { width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--border2); display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; margin-top: 1px; transition: all .15s; }
+.ce-scope-row.is-on .ce-scope-check { background: var(--grad2); border-color: transparent; }
+.ce-scope-lbl { font-weight: 800; font-size: 14px; color: var(--dark); }
+.ce-scope-sub { color: var(--muted); font-size: 12px; font-weight: 500; margin-top: 2px; }
+
+.ce-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.ce-segment { display: inline-flex; background: var(--ce-bg); border: 1.5px solid var(--border2); border-radius: 12px; padding: 4px; gap: 2px; }
+.ce-segment button { background: transparent; border: none; padding: 0 14px; height: 36px; font-size: 12px; font-weight: 700; color: var(--muted); border-radius: 8px; transition: all .15s; cursor: pointer; }
+.ce-segment button.is-active { background: white; color: var(--dark); box-shadow: 0 2px 6px rgba(18,17,42,0.06); }
+.ce-channel { display: flex; gap: 8px; height: 44px; align-items: center; }
+.ce-chan { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; background: var(--ce-bg); color: var(--muted); font-size: 12px; font-weight: 700; border: 1.5px solid transparent; }
+.ce-chan.is-on { background: rgba(74,108,247,0.08); color: var(--blue2); border-color: rgba(74,108,247,0.2); }
+.ce-reuse-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 16px; background: var(--ce-bg); border-radius: 14px; margin-top: 16px; border: 1.5px solid transparent; }
+.ce-reuse-lbl { font-weight: 800; font-size: 13px; color: var(--dark); }
+.ce-reuse-sub { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.5; margin-top: 3px; max-width: 360px; }
+
+.ce-preview { position: sticky; top: 80px; align-self: flex-start; }
+.ce-preview-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.ce-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 800; color: var(--muted); padding: 3px 9px; border-radius: 999px; background: var(--ce-bg2); letter-spacing: 0.06em; text-transform: uppercase; }
+.ce-email { border: 1px solid var(--border2); border-radius: 14px; overflow: hidden; margin-bottom: 16px; }
+.ce-email-top { background: var(--ce-bg); padding: 14px 18px; border-bottom: 1px solid var(--border2); display: flex; flex-direction: column; gap: 4px; }
+.ce-email-field { display: flex; gap: 10px; font-size: 12px; }
+.ce-email-field span { color: var(--muted2); font-weight: 700; width: 44px; flex-shrink: 0; }
+.ce-email-field strong { color: var(--ce-text); font-weight: 700; }
+.ce-email-body { background: white; padding: 24px 22px; }
+.ce-email-logo { margin-bottom: 18px; }
+.ce-email-h { font-family: var(--font-raleway), sans-serif; font-weight: 900; font-size: 1.1rem; color: var(--dark); margin: 0 0 10px; }
+.ce-email-p { color: var(--muted); font-size: 13px; line-height: 1.6; font-weight: 500; margin: 0 0 14px; }
+.ce-email-note { border-left: 3px solid var(--pink); background: rgba(217,63,181,0.05); padding: 12px 14px; border-radius: 0 10px 10px 0; font-size: 13px; color: var(--ce-text); font-weight: 600; font-style: italic; margin: 14px 0; }
+.ce-email-note span { display: block; font-style: normal; font-weight: 700; color: var(--muted2); margin-top: 6px; font-size: 11px; }
+.ce-email-cta { margin: 18px 0 14px; display: flex; }
+.ce-email-meta { display: flex; flex-direction: column; gap: 6px; margin: 14px 0 10px; }
+.ce-email-meta div { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 700; }
+.ce-email-fp { font-size: 11px; color: var(--muted2); font-weight: 600; line-height: 1.6; border-top: 1px solid var(--border2); padding-top: 12px; margin: 10px 0 0; }
+.ce-help { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); margin: 10px 0 0; font-weight: 600; }
+
+/* ── Sent success inline ──────────────────────────────────────────── */
+.ce-success-card { background: white; border: 1px solid var(--ce-border); border-radius: var(--radius-lg); padding: 36px; text-align: center; box-shadow: var(--shadow-sm); max-width: 600px; margin: 0 auto; }
+.ce-success-icon { width: 72px; height: 72px; margin: 0 auto 18px; border-radius: 22px; background: var(--grad); display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 20px 40px rgba(217,63,181,0.35); }
+.ce-success-h { font-family: var(--font-raleway), sans-serif; font-weight: 900; font-size: 1.6rem; color: var(--dark); margin: 0 0 8px; }
+.ce-success-p { color: var(--muted); font-size: 14px; font-weight: 500; line-height: 1.6; margin: 0 0 22px; }
+.ce-link-box { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; background: var(--ce-bg); border: 1.5px solid var(--border2); border-radius: 14px; margin-bottom: 24px; }
+.ce-link-box svg { color: var(--muted); flex-shrink: 0; }
+.ce-link-box code { flex: 1; text-align: left; font-family: 'SF Mono', 'Menlo', monospace; font-size: 11px; color: var(--ce-text); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ce-link-copy { display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px; border-radius: 10px; background: var(--grad2); color: white; border: none; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0; cursor: pointer; }
+
+/* ── Switch ───────────────────────────────────────────────────────── */
+.ce-switch { position: relative; width: 52px; height: 30px; border-radius: 999px; background: var(--ce-bg2); border: none; padding: 3px; transition: background .2s; flex-shrink: 0; cursor: pointer; }
+.ce-switch.is-on { background: var(--grad2); }
+.ce-switch-thumb { display: block; width: 24px; height: 24px; border-radius: 999px; background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transform: translateX(0); transition: transform .22s cubic-bezier(0.34,1.56,0.64,1); }
+.ce-switch.is-on .ce-switch-thumb { transform: translateX(22px); }
+
+/* ── Loading spinner ──────────────────────────────────────────────── */
+.ce-spin { width: 36px; height: 36px; border: 3px solid var(--ce-bg2); border-top-color: var(--blue2); border-radius: 999px; animation: ceSpin .9s linear infinite; }
+
+@keyframes ceSpin { to { transform: rotate(360deg); } }
+@keyframes cePopIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+
+@media (max-width: 960px) {
+  .ce-admin-grid { grid-template-columns: 1fr; }
+  .ce-preview { position: static; }
+  .ce-admin-main { padding: 24px 18px 60px; }
+  .ce-admin-top { padding: 12px 18px; }
+  .ce-form-grid { grid-template-columns: 1fr; }
+}
