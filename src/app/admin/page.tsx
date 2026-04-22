@@ -99,7 +99,7 @@ export default function AdminPage() {
     setLoading(false);
   }, [supabase]);
 
-  const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com"];
+  const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com", "studiohesperides@gmail.com"];
 
   // Auth guard — réservé à l'admin
   useEffect(() => {

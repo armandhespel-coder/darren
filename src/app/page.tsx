@@ -298,7 +298,7 @@ export default function HomePage() {
   const [showPrestaireModal, setShowPrestaireModal] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
-  const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com"];
+  const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com", "studiohesperides@gmail.com"];
 
   useEffect(() => {
     const saved = localStorage.getItem("ce_favorites");
