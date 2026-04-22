@@ -212,6 +212,13 @@ export default function AdminPage() {
         </div>
         <div className="flex items-center gap-3">
           <a
+            href="/admin/portail"
+            className="text-xs font-extrabold px-4 py-2 rounded-full transition-all text-white"
+            style={{ background: "var(--grad)" }}
+          >
+            ✉️ Portail prestataires
+          </a>
+          <a
             href="/"
             className="text-xs font-bold px-4 py-2 rounded-full transition-all"
             style={{ background: "var(--bg2)", color: "var(--muted)" }}
