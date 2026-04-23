@@ -197,24 +197,20 @@ export default function AdminMessagesPage() {
                   </span>
                 </div>
               </div>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>{active.content}</p>
-              <div className="mt-4 pt-4 grid grid-cols-2 gap-3 text-[11px] font-semibold"
-                style={{ borderTop: "1px solid var(--border)", color: "var(--muted)" }}>
-                <div>
-                  <span className="font-extrabold uppercase tracking-wider text-[9px] block mb-0.5" style={{ color: "var(--blue2)" }}>
-                    Expéditeur ID
-                  </span>
-                  {active.sender_id.slice(0, 12)}...
-                </div>
-                {active.prestataire_id && (
-                  <div>
-                    <span className="font-extrabold uppercase tracking-wider text-[9px] block mb-0.5" style={{ color: "var(--blue2)" }}>
-                      Prestataire ID
-                    </span>
-                    {active.prestataire_id.slice(0, 12)}...
-                  </div>
-                )}
-              </div>
+              {/* Téléphone en évidence */}
+              {(() => {
+                const phoneLine = active.content.split("\n").find(l => l.startsWith("📞"));
+                const phone = phoneLine?.replace("📞 Téléphone : ", "").trim();
+                if (!phone) return null;
+                return (
+                  <a href={`tel:${phone}`}
+                    className="flex items-center gap-2 mb-4 px-4 py-3 rounded-xl font-extrabold text-sm"
+                    style={{ background: "rgba(74,108,247,0.07)", border: "1.5px solid rgba(74,108,247,0.2)", color: "var(--blue2)", textDecoration: "none" }}>
+                    📞 {phone}
+                  </a>
+                );
+              })()}
+              <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: "var(--text)" }}>{active.content}</p>
             </div>
           )}
         </div>

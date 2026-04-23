@@ -178,6 +178,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
   const [bookingDate, setBookingDate] = useState("");
   const [bookingGuests, setBookingGuests] = useState("");
   const [bookingLocation, setBookingLocation] = useState("");
+  const [bookingPhone, setBookingPhone] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [msgError, setMsgError] = useState("");
@@ -203,13 +204,16 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
       .catch(() => setLoadingReviews(false));
   }, [p.id]);
 
+  const dateUnavailable = !!(bookingDate && (p.busy_dates ?? []).includes(bookingDate));
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!bookingMsg.trim()) return;
+    if (!bookingMsg.trim() || !bookingPhone.trim() || dateUnavailable) return;
     setSending(true);
     setMsgError("");
     const parts: string[] = [];
-    if (bookingDate) parts.push(`📅 Date de l'événement : ${bookingDate}`);
+    parts.push(`📞 Téléphone : ${bookingPhone.trim()}`);
+    if (bookingDate) parts.push(`📅 Date de l'événement : ${new Date(bookingDate).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`);
     if (bookingGuests) parts.push(`👥 Nombre de personnes : ${bookingGuests}`);
     if (bookingLocation) parts.push(`📍 Lieu : ${bookingLocation}`);
     parts.push(`💬 Message : ${bookingMsg.trim()}`);
@@ -233,6 +237,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
       setBookingDate("");
       setBookingGuests("");
       setBookingLocation("");
+      setBookingPhone("");
     }
   };
 
@@ -462,6 +467,20 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                 </div>
               ) : (
                 <form onSubmit={handleSendMessage} className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Téléphone *</label>
+                    <input
+                      type="tel"
+                      value={bookingPhone}
+                      onChange={(e) => setBookingPhone(e.target.value)}
+                      required
+                      placeholder="ex: +32 470 12 34 56"
+                      className="w-full rounded-xl px-3 py-2 text-sm outline-none"
+                      style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                      onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
+                      onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                    />
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Date de l&apos;événement</label>
@@ -470,10 +489,19 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                         value={bookingDate}
                         onChange={(e) => setBookingDate(e.target.value)}
                         className="rounded-xl px-3 py-2 text-sm outline-none"
-                        style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
-                        onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
-                        onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                        style={{
+                          background: "var(--bg)",
+                          border: `1.5px solid ${dateUnavailable ? "#ef4444" : "var(--border)"}`,
+                          color: "var(--text)",
+                        }}
+                        onFocus={(e) => (e.target.style.borderColor = dateUnavailable ? "#ef4444" : "var(--blue2)")}
+                        onBlur={(e) => (e.target.style.borderColor = dateUnavailable ? "#ef4444" : "var(--border)")}
                       />
+                      {dateUnavailable && (
+                        <p className="text-[11px] font-semibold" style={{ color: "#ef4444" }}>
+                          Cette date n&apos;est pas disponible.
+                        </p>
+                      )}
                     </div>
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Nb de personnes</label>
@@ -520,7 +548,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                   {msgError && (
                     <p className="text-red-500 text-xs font-semibold">{msgError}</p>
                   )}
-                  <button type="submit" disabled={sending || !bookingMsg.trim()}
+                  <button type="submit" disabled={sending || !bookingMsg.trim() || !bookingPhone.trim() || dateUnavailable}
                     className="w-full py-3 rounded-xl font-extrabold text-sm text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
                     style={{ background: "var(--grad)", boxShadow: "0 4px 16px rgba(217,63,181,0.25)" }}>
                     {sending ? "Envoi..." : "Envoyer ma demande"}
