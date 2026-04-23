@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const supabase = createServiceClient();
   await supabase.from("prestataires").update({ email }).eq("id", prestataire_id);
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "https://connectevent.be";
+  const origin = new URL(req.url).origin;
   const link = `${origin}/p/edit/${prestataire_id}`;
   const expiryLabel =
     expiry === "inf" ? "sans expiration" : expiry === "1" ? "24 heures" : `${expiry} jours`;
