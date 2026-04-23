@@ -52,11 +52,11 @@ export default function SearchBar({ filters, onChange, onSearch, categories = []
       className="bg-white rounded-2xl overflow-visible"
       style={{ boxShadow: "0 20px 60px rgba(74,108,247,0.18)" }}
     >
-      <div className="flex flex-wrap items-end gap-3.5 p-6">
+      <div className="flex flex-wrap items-end gap-3 p-4 md:p-6">
 
         {/* Search input */}
         <div
-          className="flex items-center gap-2 flex-[2] min-w-[200px] rounded-xl px-3.5"
+          className="flex items-center gap-2 flex-[2] min-w-[160px] w-full rounded-xl px-3.5"
           style={{
             background: "var(--bg)",
             border: "1.5px solid var(--border)",

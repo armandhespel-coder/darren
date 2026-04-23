@@ -42,7 +42,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex items-center justify-center mb-8">
-          <img src="/logo.png" alt="Connect Event" className="h-32 w-auto object-contain" />
+          <img src="/logo.png" alt="Connect Event" className="h-20 md:h-32 w-auto object-contain" />
         </div>
 
         <div className="glass rounded-2xl p-8">

@@ -220,12 +220,12 @@ export default function HomePage() {
           backdropFilter: "blur(20px)",
           borderBottom: "1px solid var(--border)",
           boxShadow: "0 2px 20px rgba(74,108,247,0.08)",
-          padding: "0 48px",
+          padding: "0 clamp(16px, 4vw, 48px)",
           height: 72,
         }}
       >
         <div className="flex items-center gap-3 cursor-pointer">
-          <img src="/logo.png" alt="Connect Event" className="h-40 w-auto object-contain" />
+          <img src="/logo.png" alt="Connect Event" className="h-14 md:h-40 w-auto object-contain" />
         </div>
 
         <div className="hidden md:flex items-center gap-1">
@@ -280,7 +280,7 @@ export default function HomePage() {
           </button>
 
           {userEmail ? (
-            <div className="hidden md:flex items-center gap-2">
+            <div className="flex items-center gap-2">
               {/* Menu hamburger */}
               <div className="relative" ref={menuRef}>
                 <button
@@ -361,7 +361,7 @@ export default function HomePage() {
             </div>
           ) : (
             <a href="/auth/login"
-              className="text-xs font-bold hidden md:block transition-colors duration-200"
+              className="text-xs font-bold transition-colors duration-200"
               style={{ color: "var(--muted)" }}
               onMouseEnter={e => (e.currentTarget.style.color = "var(--blue2)")}
               onMouseLeave={e => (e.currentTarget.style.color = "var(--muted)")}>
@@ -371,7 +371,7 @@ export default function HomePage() {
 
           <button
             onClick={() => setShowPrestaireModal(true)}
-            className="flex items-center gap-1.5 text-white text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer"
+            className="flex items-center gap-1.5 text-white text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer hidden sm:flex"
             style={{
               height: 44,
               background: "var(--grad)",
@@ -394,7 +394,7 @@ export default function HomePage() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden text-center" style={{ background: "var(--dark2)", padding: "80px 48px 100px" }}>
+      <section className="relative overflow-hidden text-center" style={{ background: "var(--dark2)", padding: "clamp(40px,8vw,80px) clamp(16px,4vw,48px) clamp(60px,10vw,100px)" }}>
         <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #12112A 0%, #1E1C3A 50%, #2A1042 100%)" }} />
         <div className="absolute rounded-full pointer-events-none" style={{ width:500, height:500, background:"#4A6CF7", top:-200, left:-100, filter:"blur(80px)", opacity:0.35 }} />
         <div className="absolute rounded-full pointer-events-none" style={{ width:400, height:400, background:"#D93FB5", bottom:-200, right:-100, filter:"blur(80px)", opacity:0.35 }} />
@@ -558,7 +558,7 @@ export default function HomePage() {
       >
         <div className="absolute rounded-full pointer-events-none" style={{ width:300, height:300, background:"#4A6CF7", top:-100, right:100, filter:"blur(80px)", opacity:0.15 }} />
         <div className="absolute rounded-full pointer-events-none" style={{ width:200, height:200, background:"#D93FB5", bottom:-80, left:100, filter:"blur(60px)", opacity:0.15 }} />
-        <div className="relative flex flex-wrap gap-6 items-center justify-between" style={{ padding: "48px 48px" }}>
+        <div className="relative flex flex-wrap gap-6 items-center justify-between" style={{ padding: "clamp(24px,4vw,48px) clamp(16px,4vw,48px)" }}>
           <div className="flex items-center gap-4">
             <div
               className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black"
@@ -611,7 +611,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ background: "var(--dark)", padding: "24px 48px" }}>
+      <footer style={{ background: "var(--dark)", padding: "24px clamp(16px,4vw,48px)" }}>
         <div className="flex flex-wrap justify-between items-center gap-4">
           <div className="flex flex-wrap gap-x-6 gap-y-2">
             {[
