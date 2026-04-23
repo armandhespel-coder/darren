@@ -156,28 +156,25 @@ export default function PrestaCard({ presta, onSelect, isFavorited, onToggleFavo
       </div>
 
       {/* Info Airbnb-style */}
-      <div className="pt-2.5 px-0.5">
+      <div className="pt-1.5 px-0.5">
         <div className="flex justify-between items-start gap-1">
-          <span className="font-bold text-sm leading-tight line-clamp-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
+          <span className="font-bold text-[11px] sm:text-sm leading-tight line-clamp-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
             {presta.nom}
           </span>
           {presta.note > 0 && (
-            <span className="flex items-center gap-0.5 text-xs font-semibold flex-shrink-0" style={{ color: "var(--dark)" }}>
+            <span className="flex items-center gap-0.5 text-[10px] sm:text-xs font-semibold flex-shrink-0" style={{ color: "var(--dark)" }}>
               <span style={{ color: "#FFD700" }}>★</span>
               {presta.note}
             </span>
           )}
         </div>
 
-        <div className="text-xs mt-0.5 line-clamp-1" style={{ color: "var(--muted)" }}>
+        <div className="text-[10px] sm:text-xs mt-0.5 line-clamp-1" style={{ color: "var(--muted)" }}>
           {presta.company && !presta.hide_company ? presta.company : presta.categorie}
         </div>
 
-        <div className="text-sm mt-1">
+        <div className="text-[11px] sm:text-sm mt-0.5">
           <span className="font-bold" style={{ color: "var(--dark)" }}>{presta.prix}€</span>
-          {presta.price_note && (
-            <span className="text-xs font-semibold ml-1" style={{ color: "var(--muted)" }}>{presta.price_note}</span>
-          )}
         </div>
       </div>
     </div>
