@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { Prestataire } from '@/types';
 import './portal.css';
 
@@ -324,21 +323,23 @@ export default function EditClient({ prestataire }: { prestataire: Prestataire }
 
   const save = async () => {
     setSaving(true);
-    const supabase = createClient();
-    const { error } = await supabase.from('prestataires').update({
-      nom: state.nom,
-      company: state.company || null,
-      description: state.description || null,
-      tags: state.tags,
-      prix: state.prix,
-      price_note: state.price_note || null,
-      telephone: state.telephone || null,
-      is_available: state.is_available,
-      images: state.images,
-    }).eq('id', prestataire.id);
-
+    const res = await fetch(`/api/prestataires/${prestataire.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nom: state.nom,
+        company: state.company || null,
+        description: state.description || null,
+        tags: state.tags,
+        prix: state.prix,
+        price_note: state.price_note || null,
+        telephone: state.telephone || null,
+        is_available: state.is_available,
+        images: state.images,
+      }),
+    });
     setSaving(false);
-    if (error) showToast('Erreur lors de la sauvegarde.');
+    if (!res.ok) showToast('Erreur lors de la sauvegarde.');
     else { setDirty(false); showToast('Profil enregistré ✓'); }
   };
 
