@@ -48,6 +48,129 @@ function timeAgo(dateStr: string): string {
   return `Il y a ${Math.floor(months / 12)} an${Math.floor(months / 12) > 1 ? "s" : ""}`;
 }
 
+function ChevIcon({ dir }: { dir: "left" | "right" }) {
+  const rot = dir === "left" ? 90 : -90;
+  return (
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}
+      strokeLinecap="round" strokeLinejoin="round" style={{ transform: `rotate(${rot}deg)` }} aria-hidden>
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  );
+}
+
+function DispoCalendar({ prestataire: p }: { prestataire: Prestataire }) {
+  const [monthOffset, setMonthOffset] = useState(0);
+  const today = new Date();
+  const base = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
+  const monthName = base.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+  const firstDay = (base.getDay() + 6) % 7;
+  const daysInMonth = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate();
+  const busySet = new Set(p.busy_dates ?? []);
+
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  const freeCount = daysInMonth - [...busySet].filter(d => d.startsWith(
+    `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, "0")}`
+  )).length;
+
+  return (
+    <div id="disponibilites" className="mt-4 rounded-2xl p-6 scroll-mt-20"
+      style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
+      <h2 className="font-black text-lg mb-3" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
+        Disponibilités
+      </h2>
+
+      {/* Statut global */}
+      <div className="flex items-center gap-3 p-3 rounded-xl mb-4"
+        style={{
+          background: p.is_available ? "rgba(74,222,128,0.07)" : "rgba(251,146,60,0.07)",
+          border: `1px solid ${p.is_available ? "rgba(74,222,128,0.25)" : "rgba(251,146,60,0.25)"}`,
+        }}>
+        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+          style={{ background: p.is_available ? "#4ADE80" : "#FB923C", boxShadow: p.is_available ? "0 0 6px #4ADE80" : "0 0 6px #FB923C" }} />
+        <span className="text-sm font-extrabold" style={{ color: p.is_available ? "#16a34a" : "#ea580c" }}>
+          {p.is_available ? "Disponible pour de nouvelles réservations" : "Agenda chargé en ce moment"}
+        </span>
+      </div>
+
+      {/* Calendrier lecture seule */}
+      <div style={{ border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
+        {/* Navigation */}
+        <div className="flex items-center justify-between px-4 py-3"
+          style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)" }}>
+          <button
+            onClick={() => setMonthOffset(o => o - 1)}
+            className="flex items-center justify-center rounded-lg transition-all cursor-pointer"
+            style={{ width: 32, height: 32, background: "white", border: "1px solid var(--border)", color: "var(--muted)" }}
+            aria-label="Mois précédent"
+          >
+            <ChevIcon dir="left" />
+          </button>
+          <span className="text-sm font-extrabold capitalize" style={{ color: "var(--dark)" }}>{monthName}</span>
+          <button
+            onClick={() => setMonthOffset(o => o + 1)}
+            className="flex items-center justify-center rounded-lg transition-all cursor-pointer"
+            style={{ width: 32, height: 32, background: "white", border: "1px solid var(--border)", color: "var(--muted)" }}
+            aria-label="Mois suivant"
+          >
+            <ChevIcon dir="right" />
+          </button>
+        </div>
+
+        {/* Grille */}
+        <div style={{ padding: "12px 16px 16px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 6 }}>
+            {["L","M","M","J","V","S","D"].map((d, i) => (
+              <div key={i} style={{ textAlign: "center", fontSize: 11, fontWeight: 700, color: "var(--muted)", padding: "4px 0" }}>{d}</div>
+            ))}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+            {cells.map((d, i) => {
+              if (d === null) return <div key={i} />;
+              const dateStr = `${base.getFullYear()}-${String(base.getMonth()+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+              const isBusy = busySet.has(dateStr);
+              const isToday = base.getFullYear() === today.getFullYear() && base.getMonth() === today.getMonth() && d === today.getDate();
+              const isPast = new Date(dateStr) < new Date(today.toDateString());
+              return (
+                <div key={i} style={{
+                  textAlign: "center", borderRadius: 8, padding: "6px 2px",
+                  background: isBusy ? "rgba(251,146,60,0.12)" : isToday ? "rgba(74,108,247,0.1)" : "transparent",
+                  border: isToday ? "1.5px solid rgba(74,108,247,0.4)" : "1.5px solid transparent",
+                  opacity: isPast ? 0.4 : 1,
+                }}>
+                  <div style={{
+                    fontSize: 13, fontWeight: 700,
+                    color: isBusy ? "#ea580c" : isToday ? "var(--blue2)" : "var(--dark)",
+                  }}>{d}</div>
+                  <div style={{ fontSize: 9, fontWeight: 700, marginTop: 1,
+                    color: isBusy ? "#ea580c" : isToday ? "var(--blue2)" : "transparent" }}>
+                    {isBusy ? "Pris" : isToday ? "Auj." : "·"}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Légende */}
+        <div className="flex items-center gap-4 px-4 py-3"
+          style={{ borderTop: "1px solid var(--border)", background: "var(--bg2)" }}>
+          <div className="flex items-center gap-1.5">
+            <div style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(74,222,128,0.4)" }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)" }}>{freeCount} libre{freeCount > 1 ? "s" : ""}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(251,146,60,0.4)" }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)" }}>Pris</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProfileClient({ prestataire: p }: { prestataire: Prestataire }) {
   const [activeImg, setActiveImg] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
@@ -222,34 +345,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
             )}
 
             {/* Disponibilités */}
-            <div id="disponibilites" className="mt-4 rounded-2xl p-6 scroll-mt-20"
-              style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
-              <h2 className="font-black text-lg mb-3" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
-                Disponibilités
-              </h2>
-              <div className="flex items-center gap-3 p-4 rounded-xl"
-                style={{
-                  background: p.is_available ? "rgba(74,222,128,0.07)" : "rgba(251,146,60,0.07)",
-                  border: `1px solid ${p.is_available ? "rgba(74,222,128,0.3)" : "rgba(251,146,60,0.3)"}`,
-                }}>
-                <div className="w-3 h-3 rounded-full flex-shrink-0"
-                  style={{
-                    background: p.is_available ? "#4ADE80" : "#FB923C",
-                    boxShadow: p.is_available ? "0 0 8px #4ADE80" : "0 0 8px #FB923C",
-                  }} />
-                <div>
-                  <div className="text-sm font-extrabold"
-                    style={{ color: p.is_available ? "#16a34a" : "#ea580c" }}>
-                    {p.is_available ? "Disponible pour de nouvelles réservations" : "Agenda chargé en ce moment"}
-                  </div>
-                  <div className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
-                    {p.is_available
-                      ? "Contactez ce prestataire pour confirmer vos dates."
-                      : "Ce prestataire a un agenda chargé. Vous pouvez tout de même envoyer une demande."}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <DispoCalendar prestataire={p} />
           </div>
 
           {/* Right: Info card + contact */}

@@ -7,7 +7,6 @@ import './portal.css';
 
 const DEFAULT_TAGS = ['Mariage', 'Anniversaire', 'Corporate', 'Vinyl', 'House', 'Techno', 'Latino', 'Hip-Hop', 'Soirée étudiante', 'Cocktail', 'Brunch', 'Retro', 'Club'];
 
-// ─── Icons ───────────────────────────────────────────────────────────
 const Ico = {
   Check: ({ s = 16 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="20 6 9 17 4 12"/></svg>,
   X: ({ s = 14 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" aria-hidden><path d="M18 6L6 18M6 6l12 12"/></svg>,
@@ -26,11 +25,10 @@ const Ico = {
   Home: ({ s = 14 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
 };
 
-// ─── Local state type ────────────────────────────────────────────────
 interface PrestaState {
   nom: string; company: string; description: string; tags: string[];
   prix: number; price_note: string; telephone: string;
-  is_available: boolean; images: string[];
+  is_available: boolean; images: string[]; busy_dates: string[];
 }
 
 function fromDB(p: Prestataire): PrestaState {
@@ -44,10 +42,10 @@ function fromDB(p: Prestataire): PrestaState {
     telephone: p.telephone ?? '',
     is_available: p.is_available,
     images: p.images ?? [],
+    busy_dates: p.busy_dates ?? [],
   };
 }
 
-// ─── Completion bar ───────────────────────────────────────────────────
 function CompletionBar({ s }: { s: PrestaState }) {
   const checks = [
     { lbl: 'Photos (min. 3)', done: s.images.length >= 3 },
@@ -78,7 +76,6 @@ function CompletionBar({ s }: { s: PrestaState }) {
   );
 }
 
-// ─── Photos tab ───────────────────────────────────────────────────────
 function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: keyof PrestaState, v: unknown) => void; prestataireId: string }) {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
@@ -95,14 +92,12 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
       const supabase = createClient();
       const ext = file.name.split('.').pop() ?? 'jpg';
       const path = `${prestataireId}/${Date.now()}.${ext}`;
-      const { data, error } = await supabase.storage
-        .from('presta-photos')
-        .upload(path, file, { upsert: false });
+      const { data, error } = await supabase.storage.from('presta-photos').upload(path, file, { upsert: false });
       if (error) throw new Error(error.message);
       const { data: { publicUrl } } = supabase.storage.from('presta-photos').getPublicUrl(data.path);
       patch('images', [...s.images, publicUrl]);
     } catch (err: unknown) {
-      setUploadError(err instanceof Error ? err.message : 'Erreur lors de l\'upload.');
+      setUploadError(err instanceof Error ? err.message : "Erreur lors de l'upload.");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -127,13 +122,7 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
         </div>
         <div className="ce-tab-hd-meta"><span className="ce-chip"><Ico.Image s={12} /> {s.images.length}/8 photos</span></div>
       </header>
-      <input
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        ref={fileInputRef}
-        style={{ display: 'none' }}
-        onChange={handleFileSelect}
-      />
+      <input type="file" accept="image/jpeg,image/png,image/webp" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileSelect} />
       <div className="ce-photo-grid">
         {s.images.map((src, i) => (
           <div key={src + i}
@@ -152,11 +141,7 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
           </div>
         ))}
         {s.images.length < 8 && (
-          <button
-            className={`ce-photo-add${uploading ? ' is-uploading' : ''}`}
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-          >
+          <button className={`ce-photo-add${uploading ? ' is-uploading' : ''}`} onClick={() => fileInputRef.current?.click()} disabled={uploading}>
             {uploading ? (<><div className="ce-upload-spin" /><span>Upload…</span></>) : (
               <><div className="ce-photo-add-ico"><Ico.Upload s={22} /></div>
               <span className="ce-photo-add-lbl">Ajouter une photo</span>
@@ -165,9 +150,7 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
           </button>
         )}
       </div>
-      {uploadError && (
-        <p style={{ color: '#ef4444', fontSize: 12, marginTop: 10, fontWeight: 600 }}>{uploadError}</p>
-      )}
+      {uploadError && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 10, fontWeight: 600 }}>{uploadError}</p>}
       {s.images.length === 0 && (
         <div className="ce-empty">
           <div className="ce-empty-ico"><Ico.Image s={28} /></div>
@@ -179,21 +162,22 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
   );
 }
 
-// ─── Dispo tab ────────────────────────────────────────────────────────
+// DispoTab reçoit busy_dates depuis le state global et le persiste via patch
 function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, v: unknown) => void }) {
   const [monthOffset, setMonthOffset] = useState(0);
-  const [busy, setBusy] = useState(new Set<string>());
   const today = new Date();
   const base = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
   const monthName = base.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
   const firstDay = (base.getDay() + 6) % 7;
   const daysInMonth = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate();
 
-  const toggle = (dateStr: string) => setBusy(prev => {
-    const next = new Set(prev);
+  const busySet = new Set(s.busy_dates);
+
+  const toggle = (dateStr: string) => {
+    const next = new Set(busySet);
     next.has(dateStr) ? next.delete(dateStr) : next.add(dateStr);
-    return next;
-  });
+    patch('busy_dates', [...next]);
+  };
 
   const cells: (number | null)[] = [];
   for (let i = 0; i < firstDay; i++) cells.push(null);
@@ -204,7 +188,7 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
       <header className="ce-tab-hd">
         <div>
           <h2 className="ce-h2">Vos disponibilités</h2>
-          <p className="ce-tab-sub">Cliquez une date pour marquer Libre / Pris.</p>
+          <p className="ce-tab-sub">Cliquez une date pour la marquer Pris. Les clients verront ce calendrier.</p>
         </div>
       </header>
       <div className="ce-dispo-status">
@@ -228,7 +212,7 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
           {cells.map((d, i) => {
             if (d === null) return <div key={i} />;
             const dateStr = `${base.getFullYear()}-${String(base.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const isBusy = busy.has(dateStr);
+            const isBusy = busySet.has(dateStr);
             const isToday = base.getFullYear() === today.getFullYear() && base.getMonth() === today.getMonth() && d === today.getDate();
             return (
               <button key={i} onClick={() => toggle(dateStr)}
@@ -240,15 +224,14 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
           })}
         </div>
         <div className="ce-cal-summary">
-          <span className="ce-cal-sum-pill ce-cal-sum-ok"><i /> {daysInMonth - busy.size} libre{daysInMonth - busy.size > 1 ? 's' : ''}</span>
-          <span className="ce-cal-sum-pill ce-cal-sum-busy"><i /> {busy.size} pris</span>
+          <span className="ce-cal-sum-pill ce-cal-sum-ok"><i /> {daysInMonth - busySet.size} libre{daysInMonth - busySet.size > 1 ? 's' : ''}</span>
+          <span className="ce-cal-sum-pill ce-cal-sum-busy"><i /> {busySet.size} pris</span>
         </div>
       </div>
     </section>
   );
 }
 
-// ─── Profil tab ───────────────────────────────────────────────────────
 function ProfilTab({ s, patch, categorie }: { s: PrestaState; patch: (k: keyof PrestaState, v: unknown) => void; categorie: string }) {
   const toggleTag = (t: string) => {
     const has = s.tags.includes(t);
@@ -321,7 +304,7 @@ function ProfilTab({ s, patch, categorie }: { s: PrestaState; patch: (k: keyof P
                   {s.tags.length > 3 && <span className="ce-mc-more">+{s.tags.length - 3}</span>}
                 </div>
               )}
-              <p className="ce-mc-desc">{s.description || 'Votre description s\'affichera ici…'}</p>
+              <p className="ce-mc-desc">{s.description || "Votre description s'affichera ici…"}</p>
             </div>
           </div>
         </aside>
@@ -330,7 +313,6 @@ function ProfilTab({ s, patch, categorie }: { s: PrestaState; patch: (k: keyof P
   );
 }
 
-// ─── Root ─────────────────────────────────────────────────────────────
 export default function EditClient({ prestataire }: { prestataire: Prestataire }) {
   const [tab, setTab] = useState('photos');
   const [state, setState] = useState<PrestaState>(() => fromDB(prestataire));
@@ -360,6 +342,7 @@ export default function EditClient({ prestataire }: { prestataire: Prestataire }
         telephone: state.telephone || null,
         is_available: state.is_available,
         images: state.images,
+        busy_dates: state.busy_dates,
       }),
     });
     setSaving(false);
@@ -378,8 +361,7 @@ export default function EditClient({ prestataire }: { prestataire: Prestataire }
           <span className="ce-portal-pill"><Ico.User s={12} /> Espace de {state.nom}</span>
         </div>
         <div className="ce-portal-top-right">
-          <a
-            href="/"
+          <a href="/"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               height: 36, padding: '0 14px', borderRadius: 999,

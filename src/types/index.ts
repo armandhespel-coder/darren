@@ -28,6 +28,7 @@ export interface Prestataire {
   reviews?: number;
   price_note?: string;
   badge?: string | null;
+  busy_dates?: string[];
 }
 
 export interface Review {
