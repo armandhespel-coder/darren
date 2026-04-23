@@ -400,7 +400,7 @@ export default function HomePage() {
         <div className="absolute rounded-full pointer-events-none" style={{ width:400, height:400, background:"#D93FB5", bottom:-200, right:-100, filter:"blur(80px)", opacity:0.35 }} />
         <div className="absolute rounded-full pointer-events-none" style={{ width:300, height:300, background:"#F5842A", top:"50%", left:"50%", transform:"translate(-50%,-50%)", filter:"blur(80px)", opacity:0.35 }} />
 
-        <div className="relative z-10">
+        <div className="relative z-10 max-w-3xl mx-auto px-2">
           <h1
             className="font-black text-white leading-tight mb-4 anim-up"
             style={{ fontFamily: "var(--font-raleway)", fontSize: "clamp(2.2rem, 5vw, 4rem)" }}
@@ -412,33 +412,29 @@ export default function HomePage() {
             </em>
           </h1>
           <p className="mx-auto mb-12 anim-up" style={{ color: "rgba(255,255,255,0.6)", maxWidth: 500, lineHeight: 1.75, fontSize: "1rem", animationDelay: "0.1s" }}>
-            DJ, décoratrices, traiteurs, photographes, feux d&apos;artifice et bien plus encore —<br />
-            trouvez les meilleurs experts en Belgique.
+            DJ, décoratrices, traiteurs, photographes, feux d&apos;artifice et bien plus encore — trouvez les meilleurs experts en Belgique.
           </p>
 
           {/* Stats */}
-          <div className="flex flex-wrap justify-center gap-0 mb-0 anim-up" style={{ animationDelay: "0.2s" }}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-0 anim-up w-full max-w-sm sm:max-w-none mx-auto" style={{ animationDelay: "0.2s" }}>
             {[
               [String(categoryPills.length - 1), "Catégories"],
               [loading ? "..." : String(prestataires.length) + "+", "Prestataires"],
               ["Belgique", "Zone couverte"],
               ["100%", "Certifiés"],
-            ].map(([val, label], i, arr) => (
-              <div key={label} className="flex items-center">
-                <div
-                  className="text-center px-8 py-5"
-                  style={{
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: i === 0 ? "16px 0 0 16px" : i === arr.length - 1 ? "0 16px 16px 0" : "0",
-                    borderRight: i < arr.length - 1 ? "none" : "1px solid rgba(255,255,255,0.08)",
-                  }}
-                >
-                  <div className="font-black text-3xl" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                    {val}
-                  </div>
-                  <div className="text-[11px] uppercase tracking-widest mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{label}</div>
+            ].map(([val, label]) => (
+              <div
+                key={label}
+                className="text-center px-4 sm:px-8 py-4 sm:py-5 rounded-2xl"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <div className="font-black text-2xl sm:text-3xl" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  {val}
                 </div>
+                <div className="text-[11px] uppercase tracking-widest mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{label}</div>
               </div>
             ))}
           </div>

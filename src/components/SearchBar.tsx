@@ -129,10 +129,10 @@ export default function SearchBar({ filters, onChange, onSearch, categories = []
         </div>
 
         {/* Buttons */}
-        <div className="flex gap-2 flex-shrink-0">
+        <div className="flex gap-2 w-full sm:w-auto">
           <button
             onClick={onSearch}
-            className="text-white text-sm font-extrabold px-7 rounded-xl cursor-pointer transition-all duration-200"
+            className="flex-1 sm:flex-initial text-white text-sm font-extrabold px-7 rounded-xl cursor-pointer transition-all duration-200"
             style={{ height: 44, background: "var(--grad)", boxShadow: "0 6px 20px rgba(74,108,247,0.35)", letterSpacing: "0.06em" }}
             onMouseEnter={e => {
               (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
