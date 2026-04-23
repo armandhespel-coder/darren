@@ -329,19 +329,11 @@ export default function AdminPage() {
                 <Input value={form.company} onChange={v => up("company", v)} placeholder="Nom de l'entreprise" />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Catégorie *</Label>
-                  <Select value={form.categorie} onChange={v => up("categorie", v)}>
-                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </Select>
-                </div>
-                <div>
-                  <Label>Continent *</Label>
-                  <Select value={form.continent} onChange={v => up("continent", v)}>
-                    {CONTINENTS.map(c => <option key={c} value={c}>{c}</option>)}
-                  </Select>
-                </div>
+              <div>
+                <Label>Catégorie *</Label>
+                <Select value={form.categorie} onChange={v => up("categorie", v)}>
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </Select>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

@@ -44,11 +44,13 @@ function GradButton({ children, onClick, size = 'md', full = false, icon, disabl
   );
 }
 
-function GhostButton({ children, onClick, icon }: {
+function GhostButton({ children, onClick, icon, full, disabled }: {
   children: React.ReactNode; onClick?: () => void; icon?: React.ReactNode;
+  full?: boolean; disabled?: boolean;
 }) {
   return (
-    <button onClick={onClick} className="ce-ghost-btn" style={{ height: 48 }}>
+    <button onClick={onClick} disabled={disabled} className="ce-ghost-btn"
+      style={{ height: 48, width: full ? '100%' : undefined }}>
       {icon}<span>{children}</span>
     </button>
   );
@@ -82,6 +84,7 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
   const [scope, setScope] = useState<Record<string, boolean>>({ photos: true, availability: true, profile: true });
   const [note, setNote] = useState('');
   const [sending, setSending] = useState(false);
+  const [copying, setCopying] = useState(false);
   const [sent, setSent] = useState(false);
   const [sentLink, setSentLink] = useState('');
   const [copied, setCopied] = useState(false);
@@ -116,9 +119,7 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
         prestataire_id: selected.id,
         email: selected.email,
         nom: selected.nom,
-        expiry,
-        note,
-        reusable,
+        expiry, note, reusable, sendEmail: true,
       }),
     });
     const data = await res.json();
@@ -126,6 +127,28 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
     if (!res.ok) { setErr(data.error ?? 'Erreur lors de l\'envoi.'); return; }
     setSentLink(data.link);
     setSent(true);
+  };
+
+  const handleCopyLink = async () => {
+    if (!selected) return;
+    setErr(null);
+    setCopying(true);
+    const res = await fetch('/api/send-edit-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prestataire_id: selected.id,
+        email: selected.email ?? '',
+        nom: selected.nom,
+        expiry, note, reusable, sendEmail: false,
+      }),
+    });
+    const data = await res.json();
+    setCopying(false);
+    if (!res.ok) { setErr(data.error ?? 'Erreur.'); return; }
+    navigator.clipboard?.writeText(data.link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const copy = () => {
@@ -321,6 +344,10 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
               disabled={sending || !selected || !selected.email}>
               {sending ? 'Envoi en cours…' : `Envoyer à ${selected?.nom.split(' ')[0] ?? '—'}`}
             </GradButton>
+            <GhostButton full icon={copied ? <Ico.Check s={14} /> : <Ico.Copy s={14} />} onClick={handleCopyLink}
+              disabled={copying || !selected}>
+              {copying ? 'Génération…' : copied ? 'Lien copié !' : 'Copier le lien (sans email)'}
+            </GhostButton>
             <p className="ce-help"><Ico.Info s={12} /> {selected?.email ? 'Email prêt à être envoyé.' : 'Renseignez l\'email du prestataire pour envoyer.'}</p>
           </aside>
         </div>

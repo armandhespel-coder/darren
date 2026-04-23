@@ -3,16 +3,18 @@ import { Resend } from "resend";
 import { createServiceClient } from "@/lib/supabase/service";
 
 export async function POST(req: NextRequest) {
-  const { prestataire_id, email, nom, expiry, note, reusable } = await req.json();
+  const { prestataire_id, email, nom, expiry, note, reusable, sendEmail = true } = await req.json();
 
-  if (!prestataire_id || !email || !nom) {
+  if (!prestataire_id || !nom) {
     return NextResponse.json({ error: "Paramètres manquants." }, { status: 400 });
   }
-
-  if (!process.env.RESEND_API_KEY) {
+  if (sendEmail && !email) {
+    return NextResponse.json({ error: "Email requis pour l'envoi." }, { status: 400 });
+  }
+  if (sendEmail && !process.env.RESEND_API_KEY) {
     return NextResponse.json({ error: "RESEND_API_KEY non configurée." }, { status: 500 });
   }
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  const resend = sendEmail ? new Resend(process.env.RESEND_API_KEY!) : null;
 
   // Save email to DB
   const supabase = createServiceClient();
@@ -71,7 +73,11 @@ export async function POST(req: NextRequest) {
 </body>
 </html>`;
 
-  const { error } = await resend.emails.send({
+  if (!sendEmail) {
+    return NextResponse.json({ link });
+  }
+
+  const { error } = await resend!.emails.send({
     from: "Connect Event <no-reply@connectevent.be>",
     to: email,
     subject: "Mettez à jour votre profil Connect Event",
