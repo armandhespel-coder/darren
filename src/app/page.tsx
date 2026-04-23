@@ -447,7 +447,7 @@ export default function HomePage() {
       </div>
 
       {/* ── Main content ── */}
-      <main className="max-w-6xl mx-auto px-6 pt-14 pb-20" id="prestataires">
+      <main className="max-w-6xl mx-auto px-4 pt-14 pb-20" id="prestataires">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mb-10">
           {categoryPills.map(({ label, icon }) => {
             const count = label === "Tous" ? prestataires.length : prestataires.filter(p => p.categorie === label).length;
@@ -500,7 +500,7 @@ export default function HomePage() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-white rounded-2xl h-80 animate-pulse" style={{ border: "1px solid var(--border)" }} />
             ))}
@@ -530,7 +530,7 @@ export default function HomePage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {filtered.map(p => (
               <PrestaCard
                 key={p.id}
