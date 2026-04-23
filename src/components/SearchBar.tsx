@@ -99,9 +99,19 @@ export default function SearchBar({ filters, onChange, onSearch, categories = []
             <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest" style={{ color: "var(--blue2)" }}>
               <IconDollar /> Budget
             </div>
-            <span className="text-[11px] font-extrabold" style={{ color: "var(--dark)" }}>
-              {filters.budgetMax >= MAX_BUDGET ? "Tous budgets" : `≤ ${filters.budgetMax} €`}
-            </span>
+            <input
+              type="number"
+              min={0}
+              max={MAX_BUDGET}
+              value={filters.budgetMax >= MAX_BUDGET ? "" : filters.budgetMax}
+              onChange={e => {
+                const v = e.target.value === "" ? MAX_BUDGET : Math.min(MAX_BUDGET, Math.max(0, Number(e.target.value)));
+                update("budgetMax", v);
+              }}
+              placeholder="Max €"
+              className="text-[11px] font-extrabold text-right"
+              style={{ width: 72, background: "transparent", border: "none", outline: "none", color: "var(--dark)" }}
+            />
           </div>
           <input
             type="range"

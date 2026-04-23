@@ -225,20 +225,6 @@ export default function PrestaCard({ presta, onSelect, onContact, isFavorited, o
           </div>
         )}
 
-        {/* Availability ribbon */}
-        <div
-          className="absolute flex items-center gap-1.5 rounded-full text-xs font-bold text-white px-3 py-1"
-          style={{ bottom: 14, left: 14, background: "rgba(18,17,42,0.7)", backdropFilter: "blur(8px)" }}
-        >
-          <div
-            className="w-1.5 h-1.5 rounded-full"
-            style={{
-              background: presta.is_available ? "#4ADE80" : "#FB923C",
-              boxShadow: presta.is_available ? "0 0 6px #4ADE80" : "0 0 6px #FB923C",
-            }}
-          />
-          {presta.is_available ? "Disponible" : "Limité"}
-        </div>
       </div>
 
       {/* Body */}

@@ -89,7 +89,7 @@ export default function CGVPage() {
         </Section>
 
         <Section title="11. Contact">
-          <p><a href="mailto:contact@connectevent.be" style={{ color: "var(--blue2)" }}>contact@connectevent.be</a></p>
+          <p><a href="mailto:yagan_darren@hotmail.com" style={{ color: "var(--blue2)" }}>yagan_darren@hotmail.com</a></p>
         </Section>
       </main>
 

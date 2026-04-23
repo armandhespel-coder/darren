@@ -70,8 +70,8 @@ export default function AProposPage() {
         <section style={{ textAlign: "center", padding: "2rem 0" }}>
           <h2 style={{ fontFamily: "var(--font-raleway)", fontWeight: 900, fontSize: "1.4rem", color: "var(--dark2)", marginBottom: "0.75rem" }}>Une question ? Un partenariat ?</h2>
           <p style={{ color: "#666", marginBottom: "1.5rem" }}>On répond toujours aux messages.</p>
-          <a href="mailto:contact@connectevent.be" style={{ background: "var(--grad)", color: "white", padding: "0.9rem 2.5rem", borderRadius: 50, fontWeight: 700, textDecoration: "none", fontSize: "1rem", display: "inline-block" }}>
-            contact@connectevent.be
+          <a href="mailto:yagan_darren@hotmail.com" style={{ background: "var(--grad)", color: "white", padding: "0.9rem 2.5rem", borderRadius: 50, fontWeight: 700, textDecoration: "none", fontSize: "1rem", display: "inline-block" }}>
+            yagan_darren@hotmail.com
           </a>
         </section>
       </main>

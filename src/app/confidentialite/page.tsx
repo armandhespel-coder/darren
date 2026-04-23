@@ -33,7 +33,7 @@ export default function ConfidentialitePage() {
 
         <Section title="1. Responsable du traitement">
           <p>Connect Event, exploité par Hesperides Studio, est responsable du traitement de vos données personnelles collectées via la plateforme.</p>
-          <p>Contact : <a href="mailto:contact@connectevent.be" style={{ color: "var(--blue2)" }}>contact@connectevent.be</a></p>
+          <p>Contact : <a href="mailto:yagan_darren@hotmail.com" style={{ color: "var(--blue2)" }}>yagan_darren@hotmail.com</a></p>
         </Section>
 
         <Section title="2. Données collectées">
@@ -80,7 +80,7 @@ export default function ConfidentialitePage() {
             <li>Opposition au traitement</li>
             <li>Retrait du consentement à tout moment</li>
           </ul>
-          <p>Pour exercer ces droits : <a href="mailto:contact@connectevent.be" style={{ color: "var(--blue2)" }}>contact@connectevent.be</a></p>
+          <p>Pour exercer ces droits : <a href="mailto:yagan_darren@hotmail.com" style={{ color: "var(--blue2)" }}>yagan_darren@hotmail.com</a></p>
         </Section>
 
         <Section title="8. Cookies">

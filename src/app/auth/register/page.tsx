@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"client" | "pro">("client");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -22,7 +21,7 @@ export default function RegisterPage() {
       email,
       password,
       options: {
-        data: { role },
+        data: { role: "client" },
         emailRedirectTo: `${window.location.origin}/auth/login`,
       },
     });
@@ -31,13 +30,7 @@ export default function RegisterPage() {
       setLoading(false);
     } else {
       setSuccess(true);
-      setTimeout(() => {
-        if (role === "pro") {
-          router.push("/pro/onboarding");
-        } else {
-          router.push("/auth/login");
-        }
-      }, 2500);
+      setTimeout(() => router.push("/auth/login"), 2500);
     }
   };
 
@@ -49,7 +42,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex items-center justify-center mb-8">
-          <img src="/logo.png" alt="Connect Event" className="h-10 w-auto object-contain" />
+          <img src="/logo.png" alt="Connect Event" className="h-32 w-auto object-contain" />
         </div>
 
         <div className="glass rounded-2xl p-8">
@@ -61,11 +54,7 @@ export default function RegisterPage() {
                 </svg>
               </div>
               <h2 className="text-white text-xl font-bold mb-2" style={{ fontFamily: "var(--font-cormorant)" }}>Compte créé !</h2>
-              <p className="text-white/50 text-sm">
-                {role === "pro"
-                  ? "Compte créé ! Redirection vers votre espace pro..."
-                  : "Vérifiez votre email pour confirmer votre compte."}
-              </p>
+              <p className="text-white/50 text-sm">Vérifiez votre email pour confirmer votre compte.</p>
             </div>
           ) : (
             <>
@@ -75,23 +64,6 @@ export default function RegisterPage() {
               <p className="text-white/40 text-sm mb-6">Rejoignez Connect Event</p>
 
               <form onSubmit={handleRegister} className="flex flex-col gap-4">
-                {/* Role toggle */}
-                <div className="flex rounded-xl overflow-hidden border border-white/10">
-                  {(["client", "pro"] as const).map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setRole(r)}
-                      className={`flex-1 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer capitalize ${
-                        role === r ? "text-white" : "text-white/40 hover:text-white/60"
-                      }`}
-                      style={role === r ? { background: "linear-gradient(135deg, #7c3aed, #6366f1)" } : {}}
-                    >
-                      {r === "client" ? "Je cherche" : "Je propose"}
-                    </button>
-                  ))}
-                </div>
-
                 <div>
                   <label className="text-white/50 text-xs uppercase tracking-wider block mb-1.5">Email</label>
                   <input
@@ -129,7 +101,7 @@ export default function RegisterPage() {
                   className="w-full text-white font-semibold py-3 rounded-xl transition-all duration-200 hover:opacity-90 disabled:opacity-50 cursor-pointer mt-1"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}
                 >
-                  {loading ? "Création..." : "Créer mon compte"}
+                  {loading ? "Création..." : "S'inscrire"}
                 </button>
               </form>
 

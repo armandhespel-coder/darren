@@ -1,9 +1,16 @@
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Comment ça marche — Connect Event",
-};
+import { useState } from "react";
+import Link from "next/link";
+import DevenirPrestaireModal from "@/components/DevenirPrestaireModal";
+
+function IconStar() {
+  return (
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2l2.09 6.26L20 9.27l-5 4.87L16.18 22 12 18.77 7.82 22 9 14.14 4 9.27l5.91-.91L12 2z"/>
+    </svg>
+  );
+}
 
 const stepsClient = [
   { num: "01", title: "Recherchez", desc: "Filtrez par catégorie (DJ, traiteur, photo…), zone géographique et budget pour cibler les bons profils." },
@@ -20,8 +27,12 @@ const stepsPro = [
 ];
 
 export default function FonctionnementPage() {
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
+      {showModal && <DevenirPrestaireModal onClose={() => setShowModal(false)} />}
+
       <header style={{ background: "var(--dark2)", padding: "1.2rem 2rem" }}>
         <Link href="/" style={{ color: "white", fontFamily: "var(--font-raleway)", fontWeight: 900, fontSize: "1.4rem", textDecoration: "none" }}>
           Connect<span style={{ color: "var(--pink)" }}>Event</span>
@@ -82,9 +93,30 @@ export default function FonctionnementPage() {
             <Link href="/" style={{ background: "var(--grad)", color: "white", padding: "0.8rem 2rem", borderRadius: 50, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}>
               Trouver un prestataire
             </Link>
-            <Link href="/auth/register" style={{ background: "white", color: "var(--dark2)", padding: "0.8rem 2rem", borderRadius: 50, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}>
-              Inscrire mon activité
-            </Link>
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-2 text-white font-extrabold cursor-pointer transition-all"
+              style={{
+                background: "white",
+                color: "var(--dark2)",
+                padding: "0.8rem 2rem",
+                borderRadius: 50,
+                fontWeight: 700,
+                fontSize: "0.95rem",
+                border: "none",
+                boxShadow: "0 4px 14px rgba(255,255,255,0.15)",
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 24px rgba(255,255,255,0.25)";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.transform = "";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 14px rgba(255,255,255,0.15)";
+              }}
+            >
+              <IconStar /> Devenir prestataire
+            </button>
           </div>
         </div>
       </main>
