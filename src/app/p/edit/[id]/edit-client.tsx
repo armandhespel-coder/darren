@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { Prestataire } from '@/types';
 import './portal.css';
 
@@ -89,13 +88,13 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
     setUploading(true);
     setUploadError(null);
     try {
-      const supabase = createClient();
-      const ext = file.name.split('.').pop() ?? 'jpg';
-      const path = `${prestataireId}/${Date.now()}.${ext}`;
-      const { data, error } = await supabase.storage.from('presta-photos').upload(path, file, { upsert: false });
-      if (error) throw new Error(error.message);
-      const { data: { publicUrl } } = supabase.storage.from('presta-photos').getPublicUrl(data.path);
-      patch('images', [...s.images, publicUrl]);
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("prestataire_id", prestataireId);
+      const res = await fetch("/api/upload-photo", { method: "POST", body: fd });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Upload échoué."); }
+      const { url } = await res.json();
+      patch('images', [...s.images, url]);
     } catch (err: unknown) {
       setUploadError(err instanceof Error ? err.message : "Erreur lors de l'upload.");
     } finally {

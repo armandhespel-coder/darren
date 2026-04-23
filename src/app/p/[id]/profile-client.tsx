@@ -174,7 +174,10 @@ function DispoCalendar({ prestataire: p }: { prestataire: Prestataire }) {
 export default function ProfileClient({ prestataire: p }: { prestataire: Prestataire }) {
   const [activeImg, setActiveImg] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
-  const [msg, setMsg] = useState("");
+  const [bookingMsg, setBookingMsg] = useState("");
+  const [bookingDate, setBookingDate] = useState("");
+  const [bookingGuests, setBookingGuests] = useState("");
+  const [bookingLocation, setBookingLocation] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [msgError, setMsgError] = useState("");
@@ -202,16 +205,22 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!msg.trim()) return;
+    if (!bookingMsg.trim()) return;
     setSending(true);
     setMsgError("");
+    const parts: string[] = [];
+    if (bookingDate) parts.push(`📅 Date de l'événement : ${bookingDate}`);
+    if (bookingGuests) parts.push(`👥 Nombre de personnes : ${bookingGuests}`);
+    if (bookingLocation) parts.push(`📍 Lieu : ${bookingLocation}`);
+    parts.push(`💬 Message : ${bookingMsg.trim()}`);
+    const content = `Demande de réservation — ${p.nom}\n\n${parts.join("\n")}`;
     const res = await fetch("/api/messages/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         prestataire_id: p.id,
-        receiver_id: p.owner_id,
-        content: msg.trim(),
+        receiver_id: null,
+        content,
       }),
     });
     setSending(false);
@@ -220,7 +229,10 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
       setMsgError(d.error ?? "Erreur lors de l'envoi.");
     } else {
       setSent(true);
-      setMsg("");
+      setBookingMsg("");
+      setBookingDate("");
+      setBookingGuests("");
+      setBookingLocation("");
     }
   };
 
@@ -450,21 +462,65 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                 </div>
               ) : (
                 <form onSubmit={handleSendMessage} className="flex flex-col gap-3">
-                  <textarea
-                    rows={4}
-                    value={msg}
-                    onChange={(e) => setMsg(e.target.value)}
-                    required
-                    placeholder={`Bonjour ${p.nom.split(" ")[0]}, je cherche un prestataire pour...`}
-                    className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none transition-all"
-                    style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
-                    onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
-                    onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
-                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Date de l&apos;événement</label>
+                      <input
+                        type="date"
+                        value={bookingDate}
+                        onChange={(e) => setBookingDate(e.target.value)}
+                        className="rounded-xl px-3 py-2 text-sm outline-none"
+                        style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                        onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
+                        onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Nb de personnes</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={bookingGuests}
+                        onChange={(e) => setBookingGuests(e.target.value)}
+                        placeholder="ex: 150"
+                        className="rounded-xl px-3 py-2 text-sm outline-none"
+                        style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                        onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
+                        onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Lieu de l&apos;événement</label>
+                    <input
+                      type="text"
+                      value={bookingLocation}
+                      onChange={(e) => setBookingLocation(e.target.value)}
+                      placeholder="ex: Bruxelles, salle des fêtes..."
+                      className="w-full rounded-xl px-3 py-2 text-sm outline-none"
+                      style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                      onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
+                      onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Votre message *</label>
+                    <textarea
+                      rows={3}
+                      value={bookingMsg}
+                      onChange={(e) => setBookingMsg(e.target.value)}
+                      required
+                      placeholder={`Bonjour, je recherche un ${p.categorie?.toLowerCase() ?? "prestataire"} pour...`}
+                      className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none transition-all"
+                      style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                      onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
+                      onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                    />
+                  </div>
                   {msgError && (
                     <p className="text-red-500 text-xs font-semibold">{msgError}</p>
                   )}
-                  <button type="submit" disabled={sending || !msg.trim()}
+                  <button type="submit" disabled={sending || !bookingMsg.trim()}
                     className="w-full py-3 rounded-xl font-extrabold text-sm text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
                     style={{ background: "var(--grad)", boxShadow: "0 4px 16px rgba(217,63,181,0.25)" }}>
                     {sending ? "Envoi..." : "Envoyer ma demande"}
