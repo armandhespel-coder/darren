@@ -221,11 +221,11 @@ export default function HomePage() {
           borderBottom: "1px solid var(--border)",
           boxShadow: "0 2px 20px rgba(74,108,247,0.08)",
           padding: "0 clamp(16px, 4vw, 48px)",
-          height: 72,
+          height: 96,
         }}
       >
         <div className="flex items-center gap-3 cursor-pointer">
-          <img src="/logo.png" alt="Connect Event" className="h-14 md:h-40 w-auto object-contain" />
+          <img src="/logo.png" alt="Connect Event" className="h-20 md:h-24 w-auto object-contain" />
         </div>
 
         <div className="hidden md:flex items-center gap-1">
