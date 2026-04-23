@@ -29,6 +29,7 @@ export interface Prestataire {
   price_note?: string;
   badge?: string | null;
   busy_dates?: string[];
+  hide_company?: boolean;
 }
 
 export interface Review {

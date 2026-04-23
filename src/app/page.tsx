@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import PrestaCard from "@/components/PrestaCard";
@@ -298,6 +298,9 @@ export default function HomePage() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showPrestaireModal, setShowPrestaireModal] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [dbCategories, setDbCategories] = useState<Array<{ name: string; icon: string }>>([]);
 
   const router = useRouter();
   const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com", "studiohesperides@gmail.com"];
@@ -310,6 +313,21 @@ export default function HomePage() {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? null));
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.from("site_categories").select("name, icon").order("position").then(({ data }) => {
+      if (data?.length) setDbCategories(data as Array<{ name: string; icon: string }>);
+    });
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setShowMenu(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   const toggleFavorite = (id: string) => {
@@ -364,7 +382,14 @@ export default function HomePage() {
     });
   }, [prestataires, filters, activeCategory, showFavoritesOnly, favorites]);
 
-  const activeCat = CATEGORY_PILLS.find(c => c.label === activeCategory) ?? CATEGORY_PILLS[0];
+  const categoryPills = useMemo(() => [
+    { label: "Tous", icon: "✨" },
+    ...(dbCategories.length
+      ? dbCategories.map(c => ({ label: c.name, icon: c.icon }))
+      : CATEGORY_PILLS.slice(1)),
+  ], [dbCategories]);
+
+  const activeCat = categoryPills.find(c => c.label === activeCategory) ?? categoryPills[0];
 
   return (
     <>
@@ -462,22 +487,72 @@ export default function HomePage() {
                 onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border)"; }}>
                 Espace Pro
               </a>
-              <a href="/messages"
-                className="flex items-center gap-1.5 text-xs font-bold px-3 rounded-full transition-all"
-                style={{ height: 36, background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--blue2)"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(74,108,247,0.3)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border)"; }}>
-                💬 Messages
-              </a>
-              <button
-                onClick={async () => { const s = createClient(); await s.auth.signOut(); setUserEmail(null); }}
-                className="text-xs font-bold transition-colors duration-200 cursor-pointer bg-transparent border-none"
-                style={{ color: "var(--muted)" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "var(--blue2)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "var(--muted)")}
-              >
-                Déconnexion
-              </button>
+              {/* Menu hamburger */}
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setShowMenu(m => !m)}
+                  aria-label="Menu"
+                  className="flex flex-col items-center justify-center gap-[5px] cursor-pointer rounded-xl transition-all"
+                  style={{
+                    width: 40, height: 40,
+                    background: showMenu ? "rgba(74,108,247,0.08)" : "var(--bg2)",
+                    border: showMenu ? "1.5px solid rgba(74,108,247,0.35)" : "1.5px solid var(--border)",
+                  }}
+                >
+                  {[0, 1, 2].map(i => (
+                    <span key={i} style={{
+                      width: 16, height: 2,
+                      background: showMenu ? "var(--blue2)" : "var(--muted)",
+                      borderRadius: 2, display: "block", transition: "background 0.2s",
+                    }} />
+                  ))}
+                </button>
+                {showMenu && (
+                  <div
+                    className="absolute right-0 rounded-2xl overflow-hidden z-50"
+                    style={{
+                      top: "calc(100% + 8px)",
+                      background: "white",
+                      border: "1px solid var(--border)",
+                      boxShadow: "0 12px 40px rgba(74,108,247,0.18)",
+                      minWidth: 190,
+                    }}
+                  >
+                    <a
+                      href="/messages"
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
+                      style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      💬 Messages
+                    </a>
+                    <a
+                      href="/fonctionnement"
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
+                      style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      ❓ Aide
+                    </a>
+                    <button
+                      onClick={async () => {
+                        const s = createClient();
+                        await s.auth.signOut();
+                        setUserEmail(null);
+                        setShowMenu(false);
+                      }}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all w-full text-left cursor-pointer"
+                      style={{ color: "#dc2626", background: "transparent", border: "none" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.05)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      🚪 Déconnexion
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <a href="/auth/login"
@@ -572,7 +647,7 @@ export default function HomePage() {
       {/* ── Main content ── */}
       <main className="max-w-6xl mx-auto px-6 pt-14 pb-20" id="prestataires">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mb-10">
-          {CATEGORY_PILLS.map(({ label, icon }) => {
+          {categoryPills.map(({ label, icon }) => {
             const count = label === "Tous" ? prestataires.length : prestataires.filter(p => p.categorie === label).length;
             const isActive = activeCategory === label;
             return (

@@ -6,6 +6,7 @@ import './portal.css';
 
 const DEFAULT_TAGS = ['Mariage', 'Anniversaire', 'Corporate', 'Vinyl', 'House', 'Techno', 'Latino', 'Hip-Hop', 'Soirée étudiante', 'Cocktail', 'Brunch', 'Retro', 'Club'];
 
+
 const Ico = {
   Check: ({ s = 16 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="20 6 9 17 4 12"/></svg>,
   X: ({ s = 14 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" aria-hidden><path d="M18 6L6 18M6 6l12 12"/></svg>,
@@ -231,7 +232,7 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
   );
 }
 
-function ProfilTab({ s, patch, categorie }: { s: PrestaState; patch: (k: keyof PrestaState, v: unknown) => void; categorie: string }) {
+function ProfilTab({ s, patch, categorie, availableTags }: { s: PrestaState; patch: (k: keyof PrestaState, v: unknown) => void; categorie: string; availableTags: string[] }) {
   const toggleTag = (t: string) => {
     const has = s.tags.includes(t);
     patch('tags', has ? s.tags.filter(x => x !== t) : [...s.tags, t]);
@@ -271,7 +272,7 @@ function ProfilTab({ s, patch, categorie }: { s: PrestaState; patch: (k: keyof P
           <input className="ce-input" value={s.telephone} onChange={e => patch('telephone', e.target.value)} />
           <label className="ce-lbl" style={{ marginTop: 18 }}>Tags</label>
           <div className="ce-tag-cloud">
-            {DEFAULT_TAGS.map(t => (
+            {availableTags.map(t => (
               <button key={t} onClick={() => toggleTag(t)} className={`ce-tag${s.tags.includes(t) ? ' is-on' : ''}`}>
                 {s.tags.includes(t) && <Ico.Check s={11} />}{t}
               </button>
@@ -318,6 +319,15 @@ export default function EditClient({ prestataire }: { prestataire: Prestataire }
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [siteTags, setSiteTags] = useState<string[]>(DEFAULT_TAGS);
+
+  useEffect(() => {
+    import('@/lib/supabase/client').then(({ createClient }) => {
+      createClient().from('site_tags').select('name').order('name').then(({ data }) => {
+        if (data?.length) setSiteTags(data.map((t: { name: string }) => t.name));
+      });
+    });
+  }, []);
 
   const patch = (k: keyof PrestaState, v: unknown) => {
     setState(p => ({ ...p, [k]: v }));
@@ -414,7 +424,7 @@ export default function EditClient({ prestataire }: { prestataire: Prestataire }
           <CompletionBar s={state} />
           {tab === 'photos' && <PhotosTab s={state} patch={patch} prestataireId={prestataire.id} />}
           {tab === 'dispo' && <DispoTab s={state} patch={patch} />}
-          {tab === 'profil' && <ProfilTab s={state} patch={patch} categorie={prestataire.categorie} />}
+          {tab === 'profil' && <ProfilTab s={state} patch={patch} categorie={prestataire.categorie} availableTags={siteTags} />}
         </main>
       </div>
 

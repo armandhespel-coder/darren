@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Prestataire } from "@/types";
 
 interface Props {
@@ -43,7 +44,36 @@ function IconEvent() {
   );
 }
 
+function IconChevLeft() {
+  return (
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+  );
+}
+
+function IconChevRight() {
+  return (
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  );
+}
+
 export default function PrestaCard({ presta, onSelect, onContact, isFavorited, onToggleFavorite }: Props) {
+  const [imgIdx, setImgIdx] = useState(0);
+  const images = (presta.images ?? []).filter(Boolean);
+  const hasMultiple = images.length > 1;
+
+  const prev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setImgIdx(i => (i - 1 + images.length) % images.length);
+  };
+  const next = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setImgIdx(i => (i + 1) % images.length);
+  };
+
   return (
     <div
       className="bg-white rounded-2xl overflow-hidden cursor-pointer group"
@@ -68,9 +98,9 @@ export default function PrestaCard({ presta, onSelect, onContact, isFavorited, o
     >
       {/* Image */}
       <div className="relative" style={{ height: 210, overflow: "hidden" }}>
-        {presta.images[0] ? (
+        {images[imgIdx] ? (
           <img
-            src={presta.images[0]}
+            src={images[imgIdx]}
             alt={presta.nom}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.07]"
             loading="lazy"
@@ -89,18 +119,63 @@ export default function PrestaCard({ presta, onSelect, onContact, isFavorited, o
           style={{ background: "linear-gradient(to top, rgba(18,17,42,0.75) 0%, transparent 55%)" }}
         />
 
-        {/* Badge */}
-        {presta.badge && (
-          <div
-            className="absolute text-[10px] font-extrabold text-white uppercase tracking-wider px-3 py-1.5 rounded-full"
-            style={{
-              top: 14, left: 14,
-              background: "var(--grad)",
-              boxShadow: "0 4px 14px rgba(217,63,181,0.4)",
-            }}
-          >
-            {presta.badge}
-          </div>
+        {/* Carousel arrows */}
+        {hasMultiple && (
+          <>
+            <button
+              aria-label="Photo précédente"
+              onClick={prev}
+              className="absolute flex items-center justify-center rounded-full text-white transition-opacity duration-200 opacity-0 group-hover:opacity-100"
+              style={{
+                left: 10, top: "50%", transform: "translateY(-50%)",
+                width: 32, height: 32,
+                background: "rgba(0,0,0,0.55)",
+                backdropFilter: "blur(4px)",
+                border: "none",
+                zIndex: 10,
+              }}
+            >
+              <IconChevLeft />
+            </button>
+            <button
+              aria-label="Photo suivante"
+              onClick={next}
+              className="absolute flex items-center justify-center rounded-full text-white transition-opacity duration-200 opacity-0 group-hover:opacity-100"
+              style={{
+                right: 10, top: "50%", transform: "translateY(-50%)",
+                width: 32, height: 32,
+                background: "rgba(0,0,0,0.55)",
+                backdropFilter: "blur(4px)",
+                border: "none",
+                zIndex: 10,
+              }}
+            >
+              <IconChevRight />
+            </button>
+            {/* Dots */}
+            <div
+              className="absolute flex gap-1 items-center"
+              style={{ bottom: 42, left: "50%", transform: "translateX(-50%)", zIndex: 10 }}
+            >
+              {images.map((_, i) => (
+                <button
+                  key={i}
+                  aria-label={`Photo ${i + 1}`}
+                  onClick={(e) => { e.stopPropagation(); setImgIdx(i); }}
+                  style={{
+                    width: i === imgIdx ? 16 : 6,
+                    height: 6,
+                    borderRadius: 3,
+                    background: i === imgIdx ? "white" : "rgba(255,255,255,0.5)",
+                    border: "none",
+                    padding: 0,
+                    transition: "width 0.2s, background 0.2s",
+                    cursor: "pointer",
+                  }}
+                />
+              ))}
+            </div>
+          </>
         )}
 
         {/* Favorite heart button */}
@@ -175,7 +250,7 @@ export default function PrestaCard({ presta, onSelect, onContact, isFavorited, o
             >
               {presta.nom}
             </h3>
-            {presta.company && (
+            {presta.company && !presta.hide_company && (
               <p className="text-xs font-semibold mt-0.5" style={{ color: "var(--muted)" }}>
                 {presta.company}
               </p>
