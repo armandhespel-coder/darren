@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import PrestaCard from "@/components/PrestaCard";
 import PrestaModal from "@/components/PrestaModal";
@@ -298,6 +299,7 @@ export default function HomePage() {
   const [showPrestaireModal, setShowPrestaireModal] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
+  const router = useRouter();
   const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com", "studiohesperides@gmail.com"];
 
   useEffect(() => {
@@ -370,7 +372,7 @@ export default function HomePage() {
         <PrestaModal
           presta={selectedPresta}
           onClose={() => setSelectedPresta(null)}
-          onContact={() => setSelectedPresta(null)}
+          onContact={(p) => { setSelectedPresta(null); router.push(`/p/${p.id}`); }}
         />
       )}
       {showPrestaireModal && (
@@ -447,14 +449,26 @@ export default function HomePage() {
           {userEmail ? (
             <div className="hidden md:flex items-center gap-2">
               {ADMIN_EMAILS.includes(userEmail) && (
-                <a
-                  href="/admin"
+                <a href="/admin"
                   className="flex items-center gap-1.5 text-xs font-extrabold px-3 rounded-full transition-all"
-                  style={{ height: 36, background: "rgba(74,108,247,0.1)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.25)" }}
-                >
+                  style={{ height: 36, background: "rgba(74,108,247,0.1)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.25)" }}>
                   <IconLock /> Admin
                 </a>
               )}
+              <a href="/pro/dashboard"
+                className="text-xs font-bold px-3 rounded-full transition-all hidden md:flex items-center"
+                style={{ height: 36, background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--blue2)"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(74,108,247,0.3)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border)"; }}>
+                Espace Pro
+              </a>
+              <a href="/messages"
+                className="flex items-center gap-1.5 text-xs font-bold px-3 rounded-full transition-all"
+                style={{ height: 36, background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--blue2)"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(74,108,247,0.3)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border)"; }}>
+                💬 Messages
+              </a>
               <button
                 onClick={async () => { const s = createClient(); await s.auth.signOut(); setUserEmail(null); }}
                 className="text-xs font-bold transition-colors duration-200 cursor-pointer bg-transparent border-none"
@@ -475,9 +489,9 @@ export default function HomePage() {
             </a>
           )}
 
-          <button
-            onClick={() => setShowPrestaireModal(true)}
-            className="flex items-center gap-1.5 text-white text-xs font-extrabold px-4 rounded-full cursor-pointer transition-all duration-200 whitespace-nowrap"
+          <a
+            href="/auth/register"
+            className="flex items-center gap-1.5 text-white text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap"
             style={{
               height: 44,
               background: "var(--grad)",
@@ -485,16 +499,16 @@ export default function HomePage() {
               letterSpacing: "0.04em",
             }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 22px rgba(217,63,181,0.4)";
+              (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-1px)";
+              (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 8px 22px rgba(217,63,181,0.4)";
             }}
             onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 14px rgba(217,63,181,0.3)";
+              (e.currentTarget as HTMLAnchorElement).style.transform = "";
+              (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 4px 14px rgba(217,63,181,0.3)";
             }}
           >
             <IconStar /> Devenir prestataire
-          </button>
+          </a>
         </div>
       </nav>
 
@@ -645,7 +659,7 @@ export default function HomePage() {
                 key={p.id}
                 presta={p}
                 onSelect={setSelectedPresta}
-                onContact={setSelectedPresta}
+                onContact={(p) => router.push(`/p/${p.id}`)}
                 isFavorited={favorites.has(p.id)}
                 onToggleFavorite={toggleFavorite}
               />

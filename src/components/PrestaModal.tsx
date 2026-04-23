@@ -176,6 +176,27 @@ export default function PrestaModal({ presta, onClose, onContact }: Props) {
             </div>
           )}
 
+          <a
+            href={`/p/${presta.id}`}
+            className="flex items-center justify-center gap-2 w-full rounded-2xl font-bold text-sm mb-3 transition-all"
+            style={{
+              height: 44,
+              background: "var(--bg2)",
+              color: "var(--text)",
+              border: "1px solid var(--border)",
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--blue2)";
+              (e.currentTarget as HTMLAnchorElement).style.color = "var(--blue2)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border)";
+              (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
+            }}
+          >
+            Voir le profil complet →
+          </a>
+
           {presta.is_premium && presta.telephone ? (
             <a
               href={`tel:${presta.telephone}`}
