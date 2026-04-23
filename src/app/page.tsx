@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import PrestaCard from "@/components/PrestaCard";
 import PrestaModal from "@/components/PrestaModal";
-import SearchBar from "@/components/SearchBar";
+import SearchBar, { MAX_BUDGET } from "@/components/SearchBar";
 import { Prestataire } from "@/types";
 
 // ─── Types & constantes ───────────────────────────────────────────────────────
 
-const DEFAULT_FILTERS = { search: "", categorie: "Tous", budget: "Tous" };
+const DEFAULT_FILTERS = { search: "", categorie: "Tous", budgetMax: MAX_BUDGET };
 
 const CATEGORY_PILLS = [
   { label: "Tous", icon: "✨" },
@@ -24,13 +24,6 @@ const CATEGORY_PILLS = [
   { label: "Location de salle", icon: "🏛️" },
   { label: "Gâteau", icon: "🎂" },
 ];
-
-function parseBudget(budget: string): [number, number] {
-  if (budget === "< 500€") return [0, 500];
-  if (budget === "500–1500€") return [500, 1500];
-  if (budget === "> 1500€") return [1500, Infinity];
-  return [0, Infinity];
-}
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
 
@@ -301,6 +294,7 @@ export default function HomePage() {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const [dbCategories, setDbCategories] = useState<Array<{ name: string; icon: string }>>([]);
+  const [validTags, setValidTags] = useState<Set<string>>(new Set());
 
   const router = useRouter();
   const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com", "studiohesperides@gmail.com"];
@@ -319,6 +313,9 @@ export default function HomePage() {
     const supabase = createClient();
     supabase.from("site_categories").select("name, icon").order("position").then(({ data }) => {
       if (data?.length) setDbCategories(data as Array<{ name: string; icon: string }>);
+    });
+    supabase.from("site_tags").select("name").then(({ data }) => {
+      if (data?.length) setValidTags(new Set((data as Array<{ name: string }>).map(t => t.name)));
     });
   }, []);
 
@@ -367,7 +364,6 @@ export default function HomePage() {
   }, [prestataires, loading]);
 
   const filtered = useMemo(() => {
-    const [min, max] = parseBudget(filters.budget);
     return prestataires.filter((p) => {
       if (showFavoritesOnly && !favorites.has(p.id)) return false;
       if (filters.search) {
@@ -377,7 +373,7 @@ export default function HomePage() {
       }
       if (filters.categorie !== "Tous" && p.categorie !== filters.categorie) return false;
       if (activeCategory !== "Tous" && p.categorie !== activeCategory) return false;
-      if (p.prix < min || p.prix > max) return false;
+      if (filters.budgetMax < MAX_BUDGET && p.prix > filters.budgetMax) return false;
       return true;
     });
   }, [prestataires, filters, activeCategory, showFavoritesOnly, favorites]);
@@ -398,6 +394,7 @@ export default function HomePage() {
           presta={selectedPresta}
           onClose={() => setSelectedPresta(null)}
           onContact={(p) => { setSelectedPresta(null); router.push(`/p/${p.id}`); }}
+          validTags={validTags}
         />
       )}
       {showPrestaireModal && (
@@ -480,13 +477,6 @@ export default function HomePage() {
                   <IconLock /> Admin
                 </a>
               )}
-              <a href="/pro/dashboard"
-                className="text-xs font-bold px-3 rounded-full transition-all hidden md:flex items-center"
-                style={{ height: 36, background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--blue2)"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(74,108,247,0.3)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border)"; }}>
-                Espace Pro
-              </a>
               {/* Menu hamburger */}
               <div className="relative" ref={menuRef}>
                 <button
@@ -564,26 +554,27 @@ export default function HomePage() {
             </a>
           )}
 
-          <a
-            href="/auth/register"
-            className="flex items-center gap-1.5 text-white text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap"
+          <button
+            onClick={() => setShowPrestaireModal(true)}
+            className="flex items-center gap-1.5 text-white text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer"
             style={{
               height: 44,
               background: "var(--grad)",
               boxShadow: "0 4px 14px rgba(217,63,181,0.3)",
               letterSpacing: "0.04em",
+              border: "none",
             }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-1px)";
-              (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 8px 22px rgba(217,63,181,0.4)";
+              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 22px rgba(217,63,181,0.4)";
             }}
             onMouseLeave={e => {
-              (e.currentTarget as HTMLAnchorElement).style.transform = "";
-              (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 4px 14px rgba(217,63,181,0.3)";
+              (e.currentTarget as HTMLButtonElement).style.transform = "";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 14px rgba(217,63,181,0.3)";
             }}
           >
             <IconStar /> Devenir prestataire
-          </a>
+          </button>
         </div>
       </nav>
 
@@ -613,7 +604,7 @@ export default function HomePage() {
           {/* Stats */}
           <div className="flex flex-wrap justify-center gap-0 mb-0 anim-up" style={{ animationDelay: "0.2s" }}>
             {[
-              [String(CATEGORY_PILLS.length - 1), "Catégories"],
+              [String(categoryPills.length - 1), "Catégories"],
               [loading ? "..." : String(prestataires.length) + "+", "Prestataires"],
               ["Belgique", "Zone couverte"],
               ["100%", "Certifiés"],
@@ -641,7 +632,7 @@ export default function HomePage() {
 
       {/* ── Filter bar (floating) ── */}
       <div className="relative z-10 max-w-6xl mx-auto px-6" style={{ marginTop: -36 }}>
-        <SearchBar filters={filters} onChange={setFilters} onSearch={() => {}} />
+        <SearchBar filters={filters} onChange={setFilters} onSearch={() => {}} categories={dbCategories.map(c => c.name)} />
       </div>
 
       {/* ── Main content ── */}
@@ -737,6 +728,7 @@ export default function HomePage() {
                 onContact={(p) => router.push(`/p/${p.id}`)}
                 isFavorited={favorites.has(p.id)}
                 onToggleFavorite={toggleFavorite}
+                validTags={validTags}
               />
             ))}
           </div>

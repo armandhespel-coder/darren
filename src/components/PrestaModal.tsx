@@ -6,6 +6,7 @@ interface Props {
   presta: Prestataire;
   onClose: () => void;
   onContact: (presta: Prestataire) => void;
+  validTags?: Set<string>;
 }
 
 function IconX() {
@@ -49,7 +50,7 @@ function IconEvent() {
   );
 }
 
-export default function PrestaModal({ presta, onClose, onContact }: Props) {
+export default function PrestaModal({ presta, onClose, onContact, validTags }: Props) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -160,7 +161,7 @@ export default function PrestaModal({ presta, onClose, onContact }: Props) {
 
           {presta.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-6">
-              {presta.tags.map((tag, i) => (
+              {(validTags && validTags.size > 0 ? presta.tags.filter(t => validTags.has(t)) : presta.tags).map((tag, i) => (
                 <span
                   key={tag}
                   className="text-xs font-bold px-3 py-1 rounded-full"

@@ -18,7 +18,7 @@ interface FormData {
   prix: string; price_note: string;
   hide_company: boolean;
   images: string[];
-  tags: string; description: string;
+  tags: string[]; description: string;
   is_available: boolean; is_premium: boolean; telephone: string;
 }
 
@@ -28,7 +28,7 @@ function emptyForm(cats: string[]): FormData {
     prix: "", price_note: "",
     hide_company: false,
     images: [],
-    tags: "", description: "",
+    tags: [], description: "",
     is_available: true, is_premium: false, telephone: "",
   };
 }
@@ -224,18 +224,20 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [stats, setStats] = useState({ premium: 0, users: 0, messages: 0 });
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [userProfiles, setUserProfiles] = useState<Array<{ created_at: string }>>([]);
 
   const up = (k: keyof FormData, v: string | boolean | string[]) => setForm(f => ({ ...f, [k]: v }));
 
   const load = useCallback(async () => {
-    const [{ data }, premiumRes, usersRes, msgsRes, { data: catsData }, { data: profilesData }] = await Promise.all([
+    const [{ data }, premiumRes, usersRes, msgsRes, { data: catsData }, { data: profilesData }, { data: tagsData }] = await Promise.all([
       supabase.from("prestataires").select("*").order("created_at", { ascending: false }),
       supabase.from("prestataires").select("*", { count: "exact", head: true }).eq("is_premium", true),
       supabase.from("profiles").select("*", { count: "exact", head: true }),
       supabase.from("messages").select("*", { count: "exact", head: true }),
       supabase.from("site_categories").select("name").order("position"),
       supabase.from("profiles").select("created_at").order("created_at", { ascending: false }).limit(200),
+      supabase.from("site_tags").select("name").order("name"),
     ]);
     setPrestataires((data as Prestataire[]) ?? []);
     setStats({ premium: premiumRes.count ?? 0, users: usersRes.count ?? 0, messages: msgsRes.count ?? 0 });
@@ -243,6 +245,9 @@ export default function AdminPage() {
     if (catsData?.length) {
       const cats = (catsData as Array<{ name: string }>).map(c => c.name);
       setCategories(cats);
+    }
+    if (tagsData?.length) {
+      setAvailableTags((tagsData as Array<{ name: string }>).map(t => t.name));
     }
     setLoading(false);
   }, [supabase]);
@@ -268,7 +273,7 @@ export default function AdminPage() {
       prix: Number(form.prix) || 0,
       price_note: form.price_note.trim() || null,
       images: form.images,
-      tags: form.tags ? form.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
+      tags: form.tags,
       description: form.description.trim() || null,
       is_available: form.is_available,
       is_premium: form.is_premium,
@@ -305,7 +310,7 @@ export default function AdminPage() {
       prix: String(p.prix), price_note: p.price_note ?? "",
       hide_company: p.hide_company ?? false,
       images: p.images ?? [],
-      tags: p.tags?.join(", ") ?? "", description: p.description ?? "",
+      tags: p.tags ?? [], description: p.description ?? "",
       is_available: p.is_available, is_premium: p.is_premium,
       telephone: p.telephone ?? "",
     });
@@ -568,8 +573,33 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <Label>Tags (virgules)</Label>
-                <Input value={form.tags} onChange={v => up("tags", v)} placeholder="Mariage, Luxe, Photo" />
+                <Label>Tags</Label>
+                {availableTags.length === 0 ? (
+                  <p className="text-xs font-semibold" style={{ color: "var(--muted)" }}>
+                    Aucun tag défini — ajoutez-en via <a href="/admin/tags" style={{ color: "var(--blue2)" }}>Admin › Tags</a>.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {availableTags.map(tag => {
+                      const isOn = form.tags.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => up("tags", isOn ? form.tags.filter(t => t !== tag) : [...form.tags, tag])}
+                          className="text-xs font-bold px-3 py-1.5 rounded-full cursor-pointer transition-all"
+                          style={{
+                            background: isOn ? "rgba(74,108,247,0.12)" : "var(--bg)",
+                            color: isOn ? "var(--blue2)" : "var(--muted)",
+                            border: isOn ? "1.5px solid rgba(74,108,247,0.35)" : "1.5px solid var(--border)",
+                          }}
+                        >
+                          {isOn ? "✓ " : ""}{tag}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               <div>

@@ -81,7 +81,6 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
   const [selected, setSelected] = useState<PrestaRow | null>(prestaList[0] ?? null);
   const [expiry, setExpiry] = useState('7');
   const [reusable, setReusable] = useState(false);
-  const [scope, setScope] = useState<Record<string, boolean>>({ photos: true, availability: true, profile: true });
   const [note, setNote] = useState('');
   const [sending, setSending] = useState(false);
   const [copying, setCopying] = useState(false);
@@ -258,18 +257,17 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
             <h2 className="ce-card-title" style={{ marginTop: 32 }}>2. Permissions du lien</h2>
             <div className="ce-scope">
               {[
-                { k: 'photos', lbl: 'Photos du profil', sub: 'Upload, réordonner, supprimer' },
-                { k: 'availability', lbl: 'Calendrier de disponibilités', sub: 'Marquer dates prises / libres' },
-                { k: 'profile', lbl: 'Description & informations', sub: 'Bio, tags, prix indicatif' },
+                { lbl: 'Photos du profil', sub: 'Upload, réordonner, supprimer' },
+                { lbl: 'Calendrier de disponibilités', sub: 'Marquer dates prises / libres' },
+                { lbl: 'Description & informations', sub: 'Bio, tags, prix indicatif' },
               ].map(o => (
-                <label key={o.k} className={`ce-scope-row${scope[o.k] ? ' is-on' : ''}`}>
-                  <input type="checkbox" checked={scope[o.k]} onChange={e => setScope(s => ({ ...s, [o.k]: e.target.checked }))} />
-                  <div className="ce-scope-check" aria-hidden>{scope[o.k] && <Ico.Check s={14} />}</div>
+                <div key={o.lbl} className="ce-scope-row is-on" style={{ cursor: 'default' }}>
+                  <div className="ce-scope-check" aria-hidden><Ico.Check s={14} /></div>
                   <div>
                     <div className="ce-scope-lbl">{o.lbl}</div>
                     <div className="ce-scope-sub">{o.sub}</div>
                   </div>
-                </label>
+                </div>
               ))}
             </div>
 

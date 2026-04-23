@@ -9,6 +9,7 @@ interface Props {
   onContact: (presta: Prestataire) => void;
   isFavorited: boolean;
   onToggleFavorite: (id: string) => void;
+  validTags?: Set<string>;
 }
 
 function IconCalendar() {
@@ -60,7 +61,7 @@ function IconChevRight() {
   );
 }
 
-export default function PrestaCard({ presta, onSelect, onContact, isFavorited, onToggleFavorite }: Props) {
+export default function PrestaCard({ presta, onSelect, onContact, isFavorited, onToggleFavorite, validTags }: Props) {
   const [imgIdx, setImgIdx] = useState(0);
   const images = (presta.images ?? []).filter(Boolean);
   const hasMultiple = images.length > 1;
@@ -270,7 +271,7 @@ export default function PrestaCard({ presta, onSelect, onContact, isFavorited, o
 
         {presta.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
-            {presta.tags.slice(0, 4).map((tag, i) => (
+            {(validTags && validTags.size > 0 ? presta.tags.filter(t => validTags.has(t)) : presta.tags).slice(0, 4).map((tag, i) => (
               <span
                 key={tag}
                 className="text-[11px] font-bold px-2.5 py-1 rounded-full"

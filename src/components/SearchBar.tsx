@@ -1,10 +1,14 @@
 "use client";
 
-interface Filters { search: string; categorie: string; budget: string; }
-interface Props { filters: Filters; onChange: (filters: Filters) => void; onSearch: () => void; }
+interface Filters { search: string; categorie: string; budgetMax: number; }
+interface Props {
+  filters: Filters;
+  onChange: (filters: Filters) => void;
+  onSearch: () => void;
+  categories?: string[];
+}
 
-const CATEGORIES = ["Tous", "DJ", "Décoratrice", "Matériel", "Voiture", "Traiteur", "Photo & Caméra", "Feux d'artifice", "Location de salle", "Gâteau"];
-const BUDGETS = ["Tous", "< 500€", "500–1500€", "> 1500€"];
+export const MAX_BUDGET = 5000;
 
 function IconSearch() {
   return (
@@ -38,9 +42,10 @@ function IconX() {
   );
 }
 
-export default function SearchBar({ filters, onChange, onSearch }: Props) {
-  const update = (key: keyof Filters, value: string) => onChange({ ...filters, [key]: value });
-  const reset = () => onChange({ search: "", categorie: "Tous", budget: "Tous" });
+export default function SearchBar({ filters, onChange, onSearch, categories = [] }: Props) {
+  const update = (key: keyof Filters, value: string | number) => onChange({ ...filters, [key]: value });
+  const reset = () => onChange({ search: "", categorie: "Tous", budgetMax: MAX_BUDGET });
+  const cats = ["Tous", ...categories];
 
   return (
     <div
@@ -56,19 +61,20 @@ export default function SearchBar({ filters, onChange, onSearch }: Props) {
             background: "var(--bg)",
             border: "1.5px solid var(--border)",
             transition: "border-color 0.2s",
+            outline: "none",
           }}
-          onFocusCapture={(e) => (e.currentTarget.style.borderColor = "var(--blue2)")}
-          onBlurCapture={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+          onFocusCapture={e => (e.currentTarget.style.borderColor = "var(--blue2)")}
+          onBlurCapture={e => (e.currentTarget.style.borderColor = "var(--border)")}
         >
-          <span style={{ color: "var(--muted)" }}><IconSearch /></span>
+          <span style={{ color: "var(--muted)", flexShrink: 0 }}><IconSearch /></span>
           <input
             type="text"
             placeholder="Rechercher un prestataire, style..."
             value={filters.search}
-            onChange={(e) => update("search", e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && onSearch()}
-            className="flex-1 outline-none text-sm font-semibold py-3 bg-transparent"
-            style={{ color: "var(--text)" }}
+            onChange={e => update("search", e.target.value)}
+            onKeyDown={e => e.key === "Enter" && onSearch()}
+            className="flex-1 py-3 bg-transparent text-sm font-semibold"
+            style={{ outline: "none", border: "none", color: "var(--text)", boxShadow: "none" }}
           />
         </div>
 
@@ -79,37 +85,37 @@ export default function SearchBar({ filters, onChange, onSearch }: Props) {
           </div>
           <select
             value={filters.categorie}
-            onChange={(e) => update("categorie", e.target.value)}
-            className="w-full rounded-xl px-3.5 py-2.5 text-sm font-semibold outline-none cursor-pointer"
-            style={{
-              background: "var(--bg)",
-              border: "1.5px solid var(--border)",
-              color: "var(--text)",
-              appearance: "none",
-            }}
+            onChange={e => update("categorie", e.target.value)}
+            className="w-full rounded-xl px-3.5 py-2.5 text-sm font-semibold cursor-pointer"
+            style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)", appearance: "none", outline: "none" }}
           >
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            {cats.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
 
-        {/* Budget */}
-        <div className="flex-1 min-w-[130px]">
-          <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>
-            <IconDollar /> Budget
+        {/* Budget slider */}
+        <div className="flex-1 min-w-[160px]">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest" style={{ color: "var(--blue2)" }}>
+              <IconDollar /> Budget
+            </div>
+            <span className="text-[11px] font-extrabold" style={{ color: "var(--dark)" }}>
+              {filters.budgetMax >= MAX_BUDGET ? "Tous budgets" : `≤ ${filters.budgetMax} €`}
+            </span>
           </div>
-          <select
-            value={filters.budget}
-            onChange={(e) => update("budget", e.target.value)}
-            className="w-full rounded-xl px-3.5 py-2.5 text-sm font-semibold outline-none cursor-pointer"
-            style={{
-              background: "var(--bg)",
-              border: "1.5px solid var(--border)",
-              color: "var(--text)",
-              appearance: "none",
-            }}
-          >
-            {BUDGETS.map((b) => <option key={b} value={b}>{b === "Tous" ? "Tous budgets" : b}</option>)}
-          </select>
+          <input
+            type="range"
+            min={0}
+            max={MAX_BUDGET}
+            step={50}
+            value={filters.budgetMax}
+            onChange={e => update("budgetMax", Number(e.target.value))}
+            style={{ width: "100%", accentColor: "var(--blue2)", cursor: "pointer" }}
+          />
+          <div className="flex justify-between text-[9px] font-semibold mt-0.5" style={{ color: "var(--muted)" }}>
+            <span>0 €</span>
+            <span>{MAX_BUDGET}+ €</span>
+          </div>
         </div>
 
         {/* Buttons */}
@@ -117,17 +123,12 @@ export default function SearchBar({ filters, onChange, onSearch }: Props) {
           <button
             onClick={onSearch}
             className="text-white text-sm font-extrabold px-7 rounded-xl cursor-pointer transition-all duration-200"
-            style={{
-              height: 44,
-              background: "var(--grad)",
-              boxShadow: "0 6px 20px rgba(74,108,247,0.35)",
-              letterSpacing: "0.06em",
-            }}
-            onMouseEnter={(e) => {
+            style={{ height: 44, background: "var(--grad)", boxShadow: "0 6px 20px rgba(74,108,247,0.35)", letterSpacing: "0.06em" }}
+            onMouseEnter={e => {
               (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
               (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 10px 28px rgba(74,108,247,0.45)";
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={e => {
               (e.currentTarget as HTMLButtonElement).style.transform = "";
               (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(74,108,247,0.35)";
             }}
@@ -138,8 +139,8 @@ export default function SearchBar({ filters, onChange, onSearch }: Props) {
             onClick={reset}
             className="flex items-center gap-1.5 text-sm font-bold px-4 rounded-xl cursor-pointer transition-all duration-200"
             style={{ height: 44, background: "var(--bg2)", color: "var(--muted)" }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text)"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--muted)"; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "var(--muted)"; }}
           >
             <IconX /> Effacer
           </button>
