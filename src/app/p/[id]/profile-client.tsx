@@ -219,7 +219,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         prestataire_id: p.id,
-        receiver_id: null,
+        receiver_id: p.owner_id,
         content,
       }),
     });
