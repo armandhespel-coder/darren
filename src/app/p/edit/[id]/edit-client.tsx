@@ -1,17 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import { Prestataire } from '@/types';
 import './portal.css';
-
-const STOCK_IMAGES = [
-  'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80',
-  'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80',
-  'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80',
-  'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&q=80',
-  'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800&q=80',
-  'https://images.unsplash.com/photo-1483000805330-4eaf0a0d82da?w=800&q=80',
-];
 
 const DEFAULT_TAGS = ['Mariage', 'Anniversaire', 'Corporate', 'Vinyl', 'House', 'Techno', 'Latino', 'Hip-Hop', 'Soirée étudiante', 'Cocktail', 'Brunch', 'Retro', 'Club'];
 
@@ -31,6 +23,7 @@ const Ico = {
     const rot: Record<string, number> = { down: 0, up: 180, left: 90, right: -90 };
     return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" style={{ transform: `rotate(${rot[dir]}deg)` }} aria-hidden><polyline points="6 9 12 15 18 9"/></svg>;
   },
+  Home: ({ s = 14 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
 };
 
 // ─── Local state type ────────────────────────────────────────────────
@@ -86,19 +79,36 @@ function CompletionBar({ s }: { s: PrestaState }) {
 }
 
 // ─── Photos tab ───────────────────────────────────────────────────────
-function PhotosTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, v: unknown) => void }) {
+function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: keyof PrestaState, v: unknown) => void; prestataireId: string }) {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const addPhoto = () => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || s.images.length >= 8) return;
     setUploading(true);
-    setTimeout(() => {
-      const remaining = STOCK_IMAGES.filter(img => !s.images.includes(img));
-      if (remaining.length) patch('images', [...s.images, remaining[0]]);
+    setUploadError(null);
+    try {
+      const supabase = createClient();
+      const ext = file.name.split('.').pop() ?? 'jpg';
+      const path = `${prestataireId}/${Date.now()}.${ext}`;
+      const { data, error } = await supabase.storage
+        .from('presta-photos')
+        .upload(path, file, { upsert: false });
+      if (error) throw new Error(error.message);
+      const { data: { publicUrl } } = supabase.storage.from('presta-photos').getPublicUrl(data.path);
+      patch('images', [...s.images, publicUrl]);
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : 'Erreur lors de l\'upload.');
+    } finally {
       setUploading(false);
-    }, 900);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
+
   const remove = (i: number) => patch('images', s.images.filter((_, idx) => idx !== i));
   const move = (from: number, to: number) => {
     if (from === to) return;
@@ -117,6 +127,13 @@ function PhotosTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState,
         </div>
         <div className="ce-tab-hd-meta"><span className="ce-chip"><Ico.Image s={12} /> {s.images.length}/8 photos</span></div>
       </header>
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        onChange={handleFileSelect}
+      />
       <div className="ce-photo-grid">
         {s.images.map((src, i) => (
           <div key={src + i}
@@ -135,15 +152,22 @@ function PhotosTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState,
           </div>
         ))}
         {s.images.length < 8 && (
-          <button className={`ce-photo-add${uploading ? ' is-uploading' : ''}`} onClick={addPhoto} disabled={uploading}>
+          <button
+            className={`ce-photo-add${uploading ? ' is-uploading' : ''}`}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+          >
             {uploading ? (<><div className="ce-upload-spin" /><span>Upload…</span></>) : (
               <><div className="ce-photo-add-ico"><Ico.Upload s={22} /></div>
               <span className="ce-photo-add-lbl">Ajouter une photo</span>
-              <span className="ce-photo-add-sub">JPG, PNG · 10 MB max</span></>
+              <span className="ce-photo-add-sub">JPG, PNG, WEBP · 10 MB max</span></>
             )}
           </button>
         )}
       </div>
+      {uploadError && (
+        <p style={{ color: '#ef4444', fontSize: 12, marginTop: 10, fontWeight: 600 }}>{uploadError}</p>
+      )}
       {s.images.length === 0 && (
         <div className="ce-empty">
           <div className="ce-empty-ico"><Ico.Image s={28} /></div>
@@ -354,6 +378,20 @@ export default function EditClient({ prestataire }: { prestataire: Prestataire }
           <span className="ce-portal-pill"><Ico.User s={12} /> Espace de {state.nom}</span>
         </div>
         <div className="ce-portal-top-right">
+          <a
+            href="/"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              height: 36, padding: '0 14px', borderRadius: 999,
+              background: 'var(--bg2)', color: 'var(--muted)',
+              border: '1px solid var(--border)', fontSize: 12,
+              fontWeight: 700, textDecoration: 'none', transition: 'color 0.2s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--blue2)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}
+          >
+            <Ico.Home s={13} /> Accueil
+          </a>
           {dirty && <span className="ce-unsaved">Modifications non enregistrées</span>}
           <button className="ce-grad-btn" style={{ height: 40 }} onClick={save} disabled={saving || !dirty}>
             <Ico.Check s={14} /><span>{saving ? 'Enregistrement…' : 'Enregistrer'}</span>
@@ -393,7 +431,7 @@ export default function EditClient({ prestataire }: { prestataire: Prestataire }
 
         <main className="ce-portal-main">
           <CompletionBar s={state} />
-          {tab === 'photos' && <PhotosTab s={state} patch={patch} />}
+          {tab === 'photos' && <PhotosTab s={state} patch={patch} prestataireId={prestataire.id} />}
           {tab === 'dispo' && <DispoTab s={state} patch={patch} />}
           {tab === 'profil' && <ProfilTab s={state} patch={patch} categorie={prestataire.categorie} />}
         </main>

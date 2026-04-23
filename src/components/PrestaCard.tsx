@@ -221,29 +221,28 @@ export default function PrestaCard({ presta, onSelect, onContact, isFavorited, o
         )}
 
         <div className="flex gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect(presta);
-            }}
-            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer"
+          <a
+            href={`/p/${presta.id}#disponibilites`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold rounded-xl transition-all duration-200"
             style={{
               height: 44,
               background: "var(--bg2)",
               color: "var(--text)",
               border: "1px solid transparent",
+              textDecoration: "none",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--blue2)";
-              (e.currentTarget as HTMLButtonElement).style.color = "var(--blue2)";
+              (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--blue2)";
+              (e.currentTarget as HTMLAnchorElement).style.color = "var(--blue2)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "transparent";
-              (e.currentTarget as HTMLButtonElement).style.color = "var(--text)";
+              (e.currentTarget as HTMLAnchorElement).style.borderColor = "transparent";
+              (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
             }}
           >
             <IconCalendar /> Disponibilités
-          </button>
+          </a>
 
           {presta.is_premium && presta.telephone ? (
             <a

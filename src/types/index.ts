@@ -30,6 +30,15 @@ export interface Prestataire {
   badge?: string | null;
 }
 
+export interface Review {
+  id: string;
+  prestataire_id: string;
+  user_id: string | null;
+  note: number;
+  commentaire: string | null;
+  created_at: string;
+}
+
 export interface Message {
   id: string;
   sender_id: string;

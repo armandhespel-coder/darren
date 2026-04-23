@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { Prestataire } from "@/types";
+import type { Prestataire, Review } from "@/types";
 
 const STARS = (note: number) =>
   Array.from({ length: 5 }, (_, i) => (
@@ -12,6 +12,42 @@ const STARS = (note: number) =>
     </svg>
   ));
 
+function StarInput({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  const [hover, setHover] = useState(0);
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map(n => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onChange(n)}
+          onMouseEnter={() => setHover(n)}
+          onMouseLeave={() => setHover(0)}
+          style={{ background: "none", border: "none", cursor: "pointer", padding: 2, lineHeight: 0 }}
+          aria-label={`${n} étoile${n > 1 ? "s" : ""}`}
+        >
+          <svg width={28} height={28} viewBox="0 0 24 24"
+            fill={n <= (hover || value) ? "#f59e0b" : "none"}
+            stroke="#f59e0b" strokeWidth={1.5} aria-hidden>
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days === 0) return "Aujourd'hui";
+  if (days === 1) return "Hier";
+  if (days < 30) return `Il y a ${days} jours`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `Il y a ${months} mois`;
+  return `Il y a ${Math.floor(months / 12)} an${Math.floor(months / 12) > 1 ? "s" : ""}`;
+}
+
 export default function ProfileClient({ prestataire: p }: { prestataire: Prestataire }) {
   const [activeImg, setActiveImg] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
@@ -20,10 +56,26 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
   const [sent, setSent] = useState(false);
   const [msgError, setMsgError] = useState("");
 
+  // Reviews state
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+  const [reviewNote, setReviewNote] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewSent, setReviewSent] = useState(false);
+  const [reviewError, setReviewError] = useState("");
+
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
   }, []);
+
+  useEffect(() => {
+    fetch(`/api/reviews?prestataire_id=${p.id}`)
+      .then(r => r.json())
+      .then(d => { setReviews(d.reviews ?? []); setLoadingReviews(false); })
+      .catch(() => setLoadingReviews(false));
+  }, [p.id]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +101,30 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
     }
   };
 
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewNote) return;
+    setSubmittingReview(true);
+    setReviewError("");
+    const res = await fetch("/api/reviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prestataire_id: p.id, note: reviewNote, commentaire: reviewComment }),
+    });
+    setSubmittingReview(false);
+    if (!res.ok) {
+      const d = await res.json();
+      setReviewError(d.error ?? "Erreur lors de l'envoi.");
+    } else {
+      const d = await res.json();
+      setReviews(prev => [d.review, ...prev]);
+      setReviewSent(true);
+      setReviewNote(0);
+      setReviewComment("");
+    }
+  };
+
+  const avgNote = reviews.length ? reviews.reduce((a, r) => a + r.note, 0) / reviews.length : 0;
   const images = p.images?.length ? p.images : ["https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80"];
 
   return (
@@ -144,6 +220,36 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                 </div>
               </div>
             )}
+
+            {/* Disponibilités */}
+            <div id="disponibilites" className="mt-4 rounded-2xl p-6 scroll-mt-20"
+              style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
+              <h2 className="font-black text-lg mb-3" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
+                Disponibilités
+              </h2>
+              <div className="flex items-center gap-3 p-4 rounded-xl"
+                style={{
+                  background: p.is_available ? "rgba(74,222,128,0.07)" : "rgba(251,146,60,0.07)",
+                  border: `1px solid ${p.is_available ? "rgba(74,222,128,0.3)" : "rgba(251,146,60,0.3)"}`,
+                }}>
+                <div className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{
+                    background: p.is_available ? "#4ADE80" : "#FB923C",
+                    boxShadow: p.is_available ? "0 0 8px #4ADE80" : "0 0 8px #FB923C",
+                  }} />
+                <div>
+                  <div className="text-sm font-extrabold"
+                    style={{ color: p.is_available ? "#16a34a" : "#ea580c" }}>
+                    {p.is_available ? "Disponible pour de nouvelles réservations" : "Agenda chargé en ce moment"}
+                  </div>
+                  <div className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
+                    {p.is_available
+                      ? "Contactez ce prestataire pour confirmer vos dates."
+                      : "Ce prestataire a un agenda chargé. Vous pouvez tout de même envoyer une demande."}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right: Info card + contact */}
@@ -170,15 +276,15 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                 <p className="text-sm font-semibold mb-3" style={{ color: "var(--muted)" }}>{p.company}</p>
               )}
 
-              {p.note > 0 && (
+              {(avgNote > 0 || p.note > 0) && (
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="flex">{STARS(p.note)}</div>
-                  <span className="text-sm font-extrabold" style={{ color: "var(--dark)" }}>{p.note.toFixed(1)}</span>
-                  {p.reviews && (
-                    <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>
-                      ({p.reviews} avis)
-                    </span>
-                  )}
+                  <div className="flex">{STARS(avgNote || p.note)}</div>
+                  <span className="text-sm font-extrabold" style={{ color: "var(--dark)" }}>
+                    {(avgNote || p.note).toFixed(1)}
+                  </span>
+                  <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>
+                    ({reviews.length || p.reviews || 0} avis)
+                  </span>
                 </div>
               )}
 
@@ -266,6 +372,139 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                     className="w-full py-3 rounded-xl font-extrabold text-sm text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
                     style={{ background: "var(--grad)", boxShadow: "0 4px 16px rgba(217,63,181,0.25)" }}>
                     {sending ? "Envoi..." : "Envoyer ma demande"}
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Reviews section (full width) ── */}
+        <div className="mt-8" id="avis">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-black text-2xl" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
+              Avis clients{" "}
+              {reviews.length > 0 && (
+                <span style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  ({reviews.length})
+                </span>
+              )}
+            </h2>
+            {avgNote > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="flex">{STARS(avgNote)}</div>
+                <span className="font-extrabold text-lg" style={{ color: "var(--dark)" }}>{avgNote.toFixed(1)}</span>
+                <span className="text-sm" style={{ color: "var(--muted)" }}>/ 5</span>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
+            {/* Reviews list */}
+            <div className="flex flex-col gap-4">
+              {loadingReviews ? (
+                Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="rounded-2xl h-28 animate-pulse"
+                    style={{ background: "white", border: "1px solid var(--border)" }} />
+                ))
+              ) : reviews.length === 0 ? (
+                <div className="rounded-2xl p-8 text-center"
+                  style={{ background: "white", border: "2px dashed var(--border)" }}>
+                  <div className="text-3xl mb-3">⭐</div>
+                  <p className="font-bold text-sm" style={{ color: "var(--dark)" }}>Aucun avis pour l&apos;instant</p>
+                  <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Soyez le premier à laisser un avis !</p>
+                </div>
+              ) : (
+                reviews.map(r => (
+                  <div key={r.id} className="rounded-2xl p-5"
+                    style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                          style={{ background: "var(--grad2)" }}>
+                          A
+                        </div>
+                        <div>
+                          <div className="flex gap-0.5">{STARS(r.note)}</div>
+                        </div>
+                      </div>
+                      <span className="text-xs" style={{ color: "var(--muted)" }}>{timeAgo(r.created_at)}</span>
+                    </div>
+                    {r.commentaire && (
+                      <p className="text-sm leading-relaxed mt-2" style={{ color: "var(--text)" }}>
+                        {r.commentaire}
+                      </p>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Add review form */}
+            <div className="rounded-2xl p-6"
+              style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
+              <h3 className="font-black text-lg mb-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
+                Laisser un avis
+              </h3>
+              <p className="text-xs font-semibold mb-4" style={{ color: "var(--muted)" }}>
+                Partagez votre expérience avec ce prestataire
+              </p>
+
+              {reviewSent ? (
+                <div className="text-center py-6">
+                  <div className="text-3xl mb-3">🎉</div>
+                  <p className="font-bold text-sm" style={{ color: "var(--dark)" }}>Merci pour votre avis !</p>
+                  <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Votre retour aide les autres clients.</p>
+                </div>
+              ) : !userId ? (
+                <div className="text-center py-4">
+                  <p className="text-sm mb-3" style={{ color: "var(--muted)" }}>
+                    Connectez-vous pour laisser un avis.
+                  </p>
+                  <a href={`/auth/login?next=/p/${p.id}#avis`}
+                    className="inline-block text-sm font-extrabold px-5 py-2.5 rounded-xl text-white"
+                    style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}>
+                    Se connecter
+                  </a>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmitReview} className="flex flex-col gap-4">
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>
+                      Note *
+                    </label>
+                    <StarInput value={reviewNote} onChange={setReviewNote} />
+                    {reviewNote > 0 && (
+                      <span className="text-xs mt-1 block" style={{ color: "var(--muted)" }}>
+                        {["", "Mauvais", "Passable", "Bien", "Très bien", "Excellent !"][reviewNote]}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>
+                      Commentaire <span style={{ color: "var(--muted)", textTransform: "none", letterSpacing: 0 }}>(optionnel)</span>
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value)}
+                      placeholder="Décrivez votre expérience..."
+                      className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none transition-all"
+                      style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                      onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
+                      onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                    />
+                  </div>
+                  {reviewError && (
+                    <p className="text-red-500 text-xs font-semibold">{reviewError}</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={submittingReview || reviewNote === 0}
+                    className="w-full py-3 rounded-xl font-extrabold text-sm text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                    style={{ background: "var(--grad)", boxShadow: "0 4px 16px rgba(217,63,181,0.25)" }}
+                  >
+                    {submittingReview ? "Envoi..." : "Publier mon avis"}
                   </button>
                 </form>
               )}
