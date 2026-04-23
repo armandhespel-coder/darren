@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Nunito, Raleway } from "next/font/google";
 import "./globals.css";
 
@@ -14,6 +14,11 @@ const raleway = Raleway({
   weight: ["300", "400", "700", "900"],
   style: ["normal", "italic"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Connect Event — Les meilleurs prestataires pour votre événement",
