@@ -22,7 +22,7 @@ export default function RegisterPage() {
       password,
       options: {
         data: { role: "client" },
-        emailRedirectTo: `${window.location.origin}/auth/login`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
     if (error) {
