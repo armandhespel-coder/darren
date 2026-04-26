@@ -26,10 +26,10 @@ function IconTag() {
   );
 }
 
-function IconDollar() {
+function IconEuro() {
   return (
     <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+      <path d="M17.6 7.4A7 7 0 1 0 17.6 16.6M3 10h11M3 14h11"/>
     </svg>
   );
 }
@@ -97,7 +97,7 @@ export default function SearchBar({ filters, onChange, onSearch, categories = []
         <div className="flex-1 min-w-[160px]">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest" style={{ color: "var(--blue2)" }}>
-              <IconDollar /> Budget
+              <IconEuro /> Budget
             </div>
             <input
               type="number"

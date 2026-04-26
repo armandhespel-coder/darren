@@ -191,10 +191,16 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewSent, setReviewSent] = useState(false);
   const [reviewError, setReviewError] = useState("");
+  // Avis uniquement accessibles via lien partagé ?avis=1
+  const [canReview, setCanReview] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+  }, []);
+
+  useEffect(() => {
+    setCanReview(new URLSearchParams(window.location.search).get("avis") === "1");
   }, []);
 
   useEffect(() => {
@@ -328,6 +334,28 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                     <img src={img} alt="" className="w-full h-full object-cover" />
                   </button>
                 ))}
+              </div>
+            )}
+
+            {/* Vidéo */}
+            {p.video_url && (
+              <div className="mt-4 rounded-2xl overflow-hidden"
+                style={{ background: "var(--dark2)", border: "1px solid var(--border)" }}>
+                {p.video_url.includes("youtube.com") || p.video_url.includes("youtu.be") ? (
+                  <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
+                    <iframe
+                      src={p.video_url.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/")}
+                      title="Vidéo prestataire"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
+                    />
+                  </div>
+                ) : (
+                  <video controls className="w-full" style={{ maxHeight: 400 }}>
+                    <source src={p.video_url} />
+                  </video>
+                )}
               </div>
             )}
 
@@ -620,75 +648,77 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
               )}
             </div>
 
-            {/* Add review form */}
-            <div className="rounded-2xl p-6"
-              style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
-              <h3 className="font-black text-lg mb-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
-                Laisser un avis
-              </h3>
-              <p className="text-xs font-semibold mb-4" style={{ color: "var(--muted)" }}>
-                Partagez votre expérience avec ce prestataire
-              </p>
+            {/* Add review form — visible uniquement via lien partagé ?avis=1 */}
+            {canReview ? (
+              <div className="rounded-2xl p-6"
+                style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
+                <h3 className="font-black text-lg mb-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
+                  Laisser un avis
+                </h3>
+                <p className="text-xs font-semibold mb-4" style={{ color: "var(--muted)" }}>
+                  Partagez votre expérience avec ce prestataire
+                </p>
 
-              {reviewSent ? (
-                <div className="text-center py-6">
-                  <div className="text-3xl mb-3">🎉</div>
-                  <p className="font-bold text-sm" style={{ color: "var(--dark)" }}>Merci pour votre avis !</p>
-                  <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Votre retour aide les autres clients.</p>
-                </div>
-              ) : !userId ? (
-                <div className="text-center py-4">
-                  <p className="text-sm mb-3" style={{ color: "var(--muted)" }}>
-                    Connectez-vous pour laisser un avis.
-                  </p>
-                  <a href={`/auth/login?next=/p/${p.id}#avis`}
-                    className="inline-block text-sm font-extrabold px-5 py-2.5 rounded-xl text-white"
-                    style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}>
-                    Se connecter
-                  </a>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmitReview} className="flex flex-col gap-4">
-                  <div>
-                    <label className="block text-xs font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>
-                      Note *
-                    </label>
-                    <StarInput value={reviewNote} onChange={setReviewNote} />
-                    {reviewNote > 0 && (
-                      <span className="text-xs mt-1 block" style={{ color: "var(--muted)" }}>
-                        {["", "Mauvais", "Passable", "Bien", "Très bien", "Excellent !"][reviewNote]}
-                      </span>
+                {reviewSent ? (
+                  <div className="text-center py-6">
+                    <div className="text-3xl mb-3">🎉</div>
+                    <p className="font-bold text-sm" style={{ color: "var(--dark)" }}>Merci pour votre avis !</p>
+                    <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Votre retour aide les autres clients.</p>
+                  </div>
+                ) : !userId ? (
+                  <div className="text-center py-4">
+                    <p className="text-sm mb-3" style={{ color: "var(--muted)" }}>
+                      Connectez-vous pour laisser un avis.
+                    </p>
+                    <a href={`/auth/login?next=/p/${p.id}?avis=1#avis`}
+                      className="inline-block text-sm font-extrabold px-5 py-2.5 rounded-xl text-white"
+                      style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}>
+                      Se connecter
+                    </a>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmitReview} className="flex flex-col gap-4">
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>
+                        Note *
+                      </label>
+                      <StarInput value={reviewNote} onChange={setReviewNote} />
+                      {reviewNote > 0 && (
+                        <span className="text-xs mt-1 block" style={{ color: "var(--muted)" }}>
+                          {["", "Mauvais", "Passable", "Bien", "Très bien", "Excellent !"][reviewNote]}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>
+                        Commentaire <span style={{ color: "var(--muted)", textTransform: "none", letterSpacing: 0 }}>(optionnel)</span>
+                      </label>
+                      <textarea
+                        rows={4}
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
+                        placeholder="Décrivez votre expérience..."
+                        className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none transition-all"
+                        style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                        onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
+                        onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                      />
+                    </div>
+                    {reviewError && (
+                      <p className="text-red-500 text-xs font-semibold">{reviewError}</p>
                     )}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>
-                      Commentaire <span style={{ color: "var(--muted)", textTransform: "none", letterSpacing: 0 }}>(optionnel)</span>
-                    </label>
-                    <textarea
-                      rows={4}
-                      value={reviewComment}
-                      onChange={(e) => setReviewComment(e.target.value)}
-                      placeholder="Décrivez votre expérience..."
-                      className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none transition-all"
-                      style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
-                      onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
-                      onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
-                    />
-                  </div>
-                  {reviewError && (
-                    <p className="text-red-500 text-xs font-semibold">{reviewError}</p>
-                  )}
-                  <button
-                    type="submit"
-                    disabled={submittingReview || reviewNote === 0}
-                    className="w-full py-3 rounded-xl font-extrabold text-sm text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
-                    style={{ background: "var(--grad)", boxShadow: "0 4px 16px rgba(217,63,181,0.25)" }}
-                  >
-                    {submittingReview ? "Envoi..." : "Publier mon avis"}
-                  </button>
-                </form>
-              )}
-            </div>
+                    <button
+                      type="submit"
+                      disabled={submittingReview || reviewNote === 0}
+                      className="w-full py-3 rounded-xl font-extrabold text-sm text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                      style={{ background: "var(--grad)", boxShadow: "0 4px 16px rgba(217,63,181,0.25)" }}
+                    >
+                      {submittingReview ? "Envoi..." : "Publier mon avis"}
+                    </button>
+                  </form>
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

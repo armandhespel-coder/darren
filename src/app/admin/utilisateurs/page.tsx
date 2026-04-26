@@ -33,8 +33,9 @@ export default function AdminUsersPage() {
 
   const roleCount = {
     total: users.length,
-    pro: users.filter((u) => u.role === "pro").length,
+    prestataire: users.filter((u) => u.role === "prestataire").length,
     client: users.filter((u) => u.role === "client").length,
+    admin: users.filter((u) => u.role === "admin").length,
   };
 
   return (
@@ -75,11 +76,12 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-4 gap-4 mb-6">
           {[
             { label: "Total", value: roleCount.total, icon: "👥", color: "var(--blue2)", bg: "rgba(74,108,247,0.08)" },
-            { label: "Pros", value: roleCount.pro, icon: "🎵", color: "#7c3aed", bg: "rgba(124,58,237,0.08)" },
+            { label: "Prestataires", value: roleCount.prestataire, icon: "🎵", color: "#7c3aed", bg: "rgba(124,58,237,0.08)" },
             { label: "Clients", value: roleCount.client, icon: "👤", color: "#16a34a", bg: "rgba(22,163,74,0.08)" },
+            { label: "Admins", value: roleCount.admin, icon: "🔐", color: "#dc2626", bg: "rgba(220,38,38,0.08)" },
           ].map((s) => (
             <div key={s.label} className="rounded-2xl p-5"
               style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
@@ -153,10 +155,10 @@ export default function AdminUsersPage() {
                     <td className="px-5 py-3">
                       <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-full"
                         style={{
-                          background: u.role === "pro" ? "rgba(124,58,237,0.1)" : "rgba(34,197,94,0.1)",
-                          color: u.role === "pro" ? "#7c3aed" : "#16a34a",
+                          background: u.role === "prestataire" ? "rgba(124,58,237,0.1)" : u.role === "admin" ? "rgba(220,38,38,0.1)" : "rgba(34,197,94,0.1)",
+                          color: u.role === "prestataire" ? "#7c3aed" : u.role === "admin" ? "#dc2626" : "#16a34a",
                         }}>
-                        {u.role === "pro" ? "🎵 Pro" : "👤 Client"}
+                        {u.role === "prestataire" ? "🎵 Prestataire" : u.role === "admin" ? "🔐 Admin" : "👤 Client"}
                       </span>
                     </td>
                     <td className="px-5 py-3 text-sm font-semibold" style={{ color: "var(--muted)" }}>

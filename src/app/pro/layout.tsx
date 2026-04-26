@@ -15,7 +15,7 @@ export default async function ProLayout({ children }: { children: React.ReactNod
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.role !== "pro") {
+  if (!profile || profile.role !== "prestataire") {
     redirect("/");
   }
 

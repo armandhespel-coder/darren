@@ -9,22 +9,7 @@ import SearchBar, { MAX_BUDGET } from "@/components/SearchBar";
 import DevenirPrestaireModal from "@/components/DevenirPrestaireModal";
 import { Prestataire } from "@/types";
 
-// ─── Types & constantes ───────────────────────────────────────────────────────
-
 const DEFAULT_FILTERS = { search: "", categorie: "Tous", budgetMax: MAX_BUDGET };
-
-const CATEGORY_PILLS = [
-  { label: "Tous", icon: "✨" },
-  { label: "DJ", icon: "🎧" },
-  { label: "Décoratrice", icon: "🌸" },
-  { label: "Matériel", icon: "🎪" },
-  { label: "Voiture", icon: "🚗" },
-  { label: "Traiteur", icon: "🍽️" },
-  { label: "Photo & Caméra", icon: "📸" },
-  { label: "Feux d'artifice", icon: "🎆" },
-  { label: "Location de salle", icon: "🏛️" },
-  { label: "Gâteau", icon: "🎂" },
-];
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
 
@@ -95,8 +80,8 @@ function IconStar({ size = 14 }: { size?: number }) {
 export default function HomePage() {
   const [prestataires, setPrestataires] = useState<Prestataire[]>([]);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [selectedTag, setSelectedTag] = useState("");
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("Tous");
   const [selectedPresta, setSelectedPresta] = useState<Prestataire | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
@@ -160,7 +145,6 @@ export default function HomePage() {
       });
   }, []);
 
-  // Nettoyer les favoris orphelins après chargement
   useEffect(() => {
     if (loading) return;
     const validIds = new Set(prestataires.map(p => p.id));
@@ -174,6 +158,21 @@ export default function HomePage() {
     });
   }, [prestataires, loading]);
 
+  const handleFiltersChange = (newFilters: typeof filters) => {
+    if (newFilters.categorie !== filters.categorie) setSelectedTag("");
+    setFilters(newFilters);
+  };
+
+  // Tags disponibles pour la catégorie sélectionnée (sous-catégories)
+  const availableTags = useMemo(() => {
+    if (filters.categorie === "Tous") return [];
+    const tags = new Set<string>();
+    prestataires
+      .filter(p => p.categorie === filters.categorie)
+      .forEach(p => p.tags.forEach(t => { if (validTags.size === 0 || validTags.has(t)) tags.add(t); }));
+    return [...tags].sort();
+  }, [prestataires, filters.categorie, validTags]);
+
   const filtered = useMemo(() => {
     return prestataires.filter((p) => {
       if (showFavoritesOnly && !favorites.has(p.id)) return false;
@@ -183,20 +182,18 @@ export default function HomePage() {
         if (!haystack.includes(q)) return false;
       }
       if (filters.categorie !== "Tous" && p.categorie !== filters.categorie) return false;
-      if (activeCategory !== "Tous" && p.categorie !== activeCategory) return false;
+      if (selectedTag && !p.tags.includes(selectedTag)) return false;
       if (filters.budgetMax < MAX_BUDGET && p.prix > filters.budgetMax) return false;
       return true;
     });
-  }, [prestataires, filters, activeCategory, showFavoritesOnly, favorites]);
+  }, [prestataires, filters, selectedTag, showFavoritesOnly, favorites]);
 
-  const categoryPills = useMemo(() => [
-    { label: "Tous", icon: "✨" },
-    ...(dbCategories.length
-      ? dbCategories.map(c => ({ label: c.name, icon: c.icon }))
-      : CATEGORY_PILLS.slice(1)),
-  ], [dbCategories]);
+  const activeCatIcon = useMemo(() => {
+    if (filters.categorie === "Tous") return "✨";
+    return dbCategories.find(c => c.name === filters.categorie)?.icon ?? "✨";
+  }, [filters.categorie, dbCategories]);
 
-  const activeCat = categoryPills.find(c => c.label === activeCategory) ?? categoryPills[0];
+  const categoryCount = useMemo(() => dbCategories.length || 8, [dbCategories]);
 
   return (
     <>
@@ -220,14 +217,16 @@ export default function HomePage() {
           backdropFilter: "blur(20px)",
           borderBottom: "1px solid var(--border)",
           boxShadow: "0 2px 20px rgba(74,108,247,0.08)",
-          padding: "0 clamp(16px, 4vw, 48px)",
-          height: 96,
+          padding: "0 clamp(12px, 4vw, 48px)",
+          height: 80,
         }}
       >
-        <div className="flex items-center gap-3 cursor-pointer">
-          <img src="/logo.png" alt="Connect Event" className="h-20 md:h-24 w-auto object-contain" />
-        </div>
+        {/* Logo — toujours à gauche */}
+        <a href="/" className="flex items-center gap-2 flex-shrink-0">
+          <img src="/logo.png" alt="Connect Event" className="h-16 md:h-20 w-auto object-contain" />
+        </a>
 
+        {/* Liens desktop */}
         <div className="hidden md:flex items-center gap-1">
           {[
             { label: "Accueil", href: "/", icon: <IconHome /> },
@@ -257,13 +256,15 @@ export default function HomePage() {
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* Droite : favoris + devenir prestataire + hamburger */}
+        <div className="flex items-center gap-2">
+          {/* Favoris */}
           <button
             aria-label={showFavoritesOnly ? "Masquer les favoris" : "Afficher les favoris"}
             onClick={() => setShowFavoritesOnly(f => !f)}
             className="flex items-center gap-1.5 px-3 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer"
             style={{
-              height: 44,
+              height: 40,
               background: showFavoritesOnly ? "rgba(217,63,181,0.1)" : "var(--bg2)",
               color: showFavoritesOnly ? "var(--pink)" : "var(--muted)",
               border: showFavoritesOnly ? "1.5px solid rgba(217,63,181,0.3)" : "1.5px solid transparent",
@@ -274,47 +275,68 @@ export default function HomePage() {
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
-            {favorites.size > 0 && (
-              <span className="font-extrabold">{favorites.size}</span>
-            )}
+            {favorites.size > 0 && <span className="font-extrabold">{favorites.size}</span>}
           </button>
 
-          {userEmail ? (
-            <div className="flex items-center gap-2">
-              {/* Menu hamburger */}
-              <div className="relative" ref={menuRef}>
-                <button
-                  onClick={() => setShowMenu(m => !m)}
-                  aria-label="Menu"
-                  className="flex flex-col items-center justify-center gap-[5px] cursor-pointer rounded-xl transition-all"
-                  style={{
-                    width: 40, height: 40,
-                    background: showMenu ? "rgba(74,108,247,0.08)" : "var(--bg2)",
-                    border: showMenu ? "1.5px solid rgba(74,108,247,0.35)" : "1.5px solid var(--border)",
-                  }}
-                >
-                  {[0, 1, 2].map(i => (
-                    <span key={i} style={{
-                      width: 16, height: 2,
-                      background: showMenu ? "var(--blue2)" : "var(--muted)",
-                      borderRadius: 2, display: "block", transition: "background 0.2s",
-                    }} />
-                  ))}
-                </button>
-                {showMenu && (
-                  <div
-                    className="absolute right-0 rounded-2xl overflow-hidden z-50"
-                    style={{
-                      top: "calc(100% + 8px)",
-                      background: "white",
-                      border: "1px solid var(--border)",
-                      boxShadow: "0 12px 40px rgba(74,108,247,0.18)",
-                      minWidth: 190,
-                    }}
-                  >
+          {/* Devenir prestataire — desktop uniquement */}
+          <button
+            onClick={() => setShowPrestaireModal(true)}
+            className="hidden sm:flex items-center gap-1.5 text-white text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer"
+            style={{
+              height: 40,
+              background: "var(--grad)",
+              boxShadow: "0 4px 14px rgba(217,63,181,0.3)",
+              border: "none",
+              letterSpacing: "0.04em",
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 22px rgba(217,63,181,0.4)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 14px rgba(217,63,181,0.3)";
+            }}
+          >
+            <IconStar /> Devenir prestataire
+          </button>
+
+          {/* Hamburger — TOUJOURS visible */}
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setShowMenu(m => !m)}
+              aria-label="Menu"
+              className="flex flex-col items-center justify-center gap-[5px] cursor-pointer rounded-xl transition-all"
+              style={{
+                width: 40, height: 40,
+                background: showMenu ? "rgba(74,108,247,0.08)" : "var(--bg2)",
+                border: showMenu ? "1.5px solid rgba(74,108,247,0.35)" : "1.5px solid var(--border)",
+              }}
+            >
+              {[0, 1, 2].map(i => (
+                <span key={i} style={{
+                  width: 16, height: 2,
+                  background: showMenu ? "var(--blue2)" : "var(--muted)",
+                  borderRadius: 2, display: "block", transition: "background 0.2s",
+                }} />
+              ))}
+            </button>
+
+            {showMenu && (
+              <div
+                className="absolute right-0 rounded-2xl overflow-hidden z-50"
+                style={{
+                  top: "calc(100% + 8px)",
+                  background: "white",
+                  border: "1px solid var(--border)",
+                  boxShadow: "0 12px 40px rgba(74,108,247,0.18)",
+                  minWidth: 200,
+                }}
+              >
+                {userEmail ? (
+                  <>
                     {ADMIN_EMAILS.includes(userEmail) && (
-                      <a
-                        href="/admin"
+                      <a href="/admin"
                         className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
                         style={{ color: "var(--blue2)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
                         onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
@@ -323,8 +345,7 @@ export default function HomePage() {
                         <IconLock size={14} /> Admin
                       </a>
                     )}
-                    <a
-                      href="/messages"
+                    <a href="/messages"
                       className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
                       style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
@@ -332,8 +353,15 @@ export default function HomePage() {
                     >
                       💬 Messages
                     </a>
-                    <a
-                      href="/fonctionnement"
+                    <a href="/pro/dashboard"
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
+                      style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      🏠 Espace Pro
+                    </a>
+                    <a href="/fonctionnement"
                       className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
                       style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
@@ -355,41 +383,48 @@ export default function HomePage() {
                     >
                       🚪 Déconnexion
                     </button>
-                  </div>
+                  </>
+                ) : (
+                  <>
+                    <a href="/auth/login"
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
+                      style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      🔑 Connexion
+                    </a>
+                    <a href="/auth/register"
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
+                      style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      📝 Créer un compte
+                    </a>
+                    {/* Devenir prestataire — mobile uniquement */}
+                    <button
+                      onClick={() => { setShowPrestaireModal(true); setShowMenu(false); }}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-extrabold transition-all w-full text-left cursor-pointer sm:hidden"
+                      style={{ color: "var(--pink)", background: "transparent", border: "none" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(217,63,181,0.05)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      ✨ Devenir prestataire
+                    </button>
+                    <a href="/fonctionnement"
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
+                      style={{ color: "var(--muted)", textDecoration: "none" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      ❓ Aide
+                    </a>
+                  </>
                 )}
               </div>
-            </div>
-          ) : (
-            <a href="/auth/login"
-              className="text-xs font-bold transition-colors duration-200"
-              style={{ color: "var(--muted)" }}
-              onMouseEnter={e => (e.currentTarget.style.color = "var(--blue2)")}
-              onMouseLeave={e => (e.currentTarget.style.color = "var(--muted)")}>
-              Connexion
-            </a>
-          )}
-
-          <button
-            onClick={() => setShowPrestaireModal(true)}
-            className="flex items-center gap-1.5 text-white text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer hidden sm:flex"
-            style={{
-              height: 44,
-              background: "var(--grad)",
-              boxShadow: "0 4px 14px rgba(217,63,181,0.3)",
-              letterSpacing: "0.04em",
-              border: "none",
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 22px rgba(217,63,181,0.4)";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 14px rgba(217,63,181,0.3)";
-            }}
-          >
-            <IconStar /> Devenir prestataire
-          </button>
+            )}
+          </div>
         </div>
       </nav>
 
@@ -411,14 +446,54 @@ export default function HomePage() {
               événement
             </em>
           </h1>
-          <p className="mx-auto mb-12 anim-up" style={{ color: "rgba(255,255,255,0.6)", maxWidth: 500, lineHeight: 1.75, fontSize: "1rem", animationDelay: "0.1s" }}>
+          <p className="mx-auto mb-8 anim-up" style={{ color: "rgba(255,255,255,0.6)", maxWidth: 500, lineHeight: 1.75, fontSize: "1rem", animationDelay: "0.1s" }}>
             DJ, décoratrices, traiteurs, photographes, feux d&apos;artifice et bien plus encore — trouvez les meilleurs experts en Belgique.
           </p>
 
+          {/* CTA buttons — bien visibles */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10 anim-up" style={{ animationDelay: "0.15s" }}>
+            <button
+              onClick={() => setShowPrestaireModal(true)}
+              className="flex items-center justify-center gap-2 text-white font-extrabold px-8 py-4 rounded-2xl transition-all duration-200 cursor-pointer"
+              style={{
+                background: "var(--grad)",
+                boxShadow: "0 8px 28px rgba(217,63,181,0.45)",
+                fontSize: "1rem",
+                letterSpacing: "0.02em",
+                border: "none",
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 14px 36px rgba(217,63,181,0.55)";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.transform = "";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 28px rgba(217,63,181,0.45)";
+              }}
+            >
+              <IconStar size={16} /> Devenir prestataire
+            </button>
+            <a
+              href="#prestataires"
+              className="flex items-center justify-center gap-2 font-bold px-8 py-4 rounded-2xl transition-all duration-200"
+              style={{
+                color: "white",
+                background: "rgba(255,255,255,0.08)",
+                border: "1.5px solid rgba(255,255,255,0.25)",
+                fontSize: "1rem",
+                textDecoration: "none",
+              }}
+              onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.15)")}
+              onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.08)")}
+            >
+              Découvrir les prestataires →
+            </a>
+          </div>
+
           {/* Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-0 anim-up w-full max-w-sm sm:max-w-none mx-auto" style={{ animationDelay: "0.2s" }}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 anim-up" style={{ animationDelay: "0.2s" }}>
             {[
-              [String(categoryPills.length - 1), "Catégories"],
+              [String(categoryCount), "Catégories"],
               [loading ? "..." : String(prestataires.length) + "+", "Prestataires"],
               ["Belgique", "Zone couverte"],
               ["100%", "Certifiés"],
@@ -442,55 +517,70 @@ export default function HomePage() {
       </section>
 
       {/* ── Filter bar (floating) ── */}
-      <div className="relative z-10 max-w-6xl mx-auto px-6" style={{ marginTop: -36 }}>
-        <SearchBar filters={filters} onChange={setFilters} onSearch={() => {}} categories={dbCategories.map(c => c.name)} />
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6" style={{ marginTop: -36 }}>
+        <SearchBar filters={filters} onChange={handleFiltersChange} onSearch={() => {}} categories={dbCategories.map(c => c.name)} />
       </div>
 
-      {/* ── Main content ── */}
-      <main className="max-w-6xl mx-auto px-4 pt-14 pb-20" id="prestataires">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mb-10">
-          {categoryPills.map(({ label, icon }) => {
-            const count = label === "Tous" ? prestataires.length : prestataires.filter(p => p.categorie === label).length;
-            const isActive = activeCategory === label;
-            return (
-              <button
-                key={label}
-                onClick={() => { setActiveCategory(label); setShowFavoritesOnly(false); }}
-                className="flex-shrink-0 flex items-center gap-2 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap"
-                style={{
-                  padding: "10px 22px",
-                  background: isActive ? "var(--grad2)" : "white",
-                  color: isActive ? "white" : "var(--muted)",
-                  border: isActive ? "1.5px solid transparent" : "1.5px solid var(--border)",
-                  boxShadow: isActive ? "0 6px 20px rgba(74,108,247,0.3)" : "none",
-                }}
-              >
-                <span>{icon}</span>
-                {label}
-                <span
-                  className="text-[10px] font-extrabold px-2 py-0.5 rounded-full"
-                  style={isActive
-                    ? { background: "rgba(255,255,255,0.25)" }
-                    : { background: "var(--bg2)", color: "var(--muted)" }
-                  }
+      {/* ── Sous-catégories (tags) — apparaissent quand une catégorie est sélectionnée ── */}
+      {availableTags.length > 0 && (
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
+          <p className="text-[10px] font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>
+            Sous-catégories — {filters.categorie}
+          </p>
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            <button
+              onClick={() => setSelectedTag("")}
+              className="flex-shrink-0 text-xs font-bold rounded-full whitespace-nowrap cursor-pointer transition-all"
+              style={{
+                padding: "8px 18px",
+                background: !selectedTag ? "var(--grad2)" : "white",
+                color: !selectedTag ? "white" : "var(--muted)",
+                border: !selectedTag ? "1.5px solid transparent" : "1.5px solid var(--border)",
+                boxShadow: !selectedTag ? "0 4px 14px rgba(74,108,247,0.25)" : "none",
+              }}
+            >
+              Tous
+            </button>
+            {availableTags.map(tag => {
+              const isActive = selectedTag === tag;
+              return (
+                <button
+                  key={tag}
+                  onClick={() => setSelectedTag(t => t === tag ? "" : tag)}
+                  className="flex-shrink-0 text-xs font-bold rounded-full whitespace-nowrap cursor-pointer transition-all"
+                  style={{
+                    padding: "8px 18px",
+                    background: isActive ? "var(--grad2)" : "white",
+                    color: isActive ? "white" : "var(--muted)",
+                    border: isActive ? "1.5px solid transparent" : "1.5px solid var(--border)",
+                    boxShadow: isActive ? "0 4px 14px rgba(74,108,247,0.25)" : "none",
+                  }}
                 >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
+                  {tag}
+                </button>
+              );
+            })}
+          </div>
         </div>
+      )}
 
+      {/* ── Main content ── */}
+      <main className="max-w-6xl mx-auto px-4 pt-10 pb-20" id="prestataires">
         <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
           <div>
             <h2
-              className="font-black text-[1.7rem]"
+              className="font-black text-[1.5rem] sm:text-[1.7rem]"
               style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}
             >
-              {showFavoritesOnly ? "❤️ Mes" : `${activeCat.icon} ${activeCat.label === "Tous" ? "Tous les" : ""}`}{" "}
+              {showFavoritesOnly ? "❤️ Mes" : `${activeCatIcon} ${filters.categorie === "Tous" ? "Tous les" : ""}`}{" "}
               <span style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                {showFavoritesOnly ? "favoris" : activeCat.label === "Tous" ? "prestataires" : activeCat.label + "s"}
+                {showFavoritesOnly ? "favoris" : filters.categorie === "Tous" ? "prestataires" : filters.categorie}
               </span>
+              {selectedTag && (
+                <span className="text-sm font-bold ml-2" style={{ color: "var(--muted)", WebkitTextFillColor: "var(--muted)" }}>
+                  · {selectedTag}
+                </span>
+              )}
             </h2>
             <p className="text-xs font-semibold mt-1" style={{ color: "var(--muted)" }}>Découvrez nos experts disponibles</p>
           </div>
@@ -500,9 +590,9 @@ export default function HomePage() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl h-80 animate-pulse" style={{ border: "1px solid var(--border)" }} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl h-72 animate-pulse" style={{ border: "1px solid var(--border)" }} />
             ))}
           </div>
         ) : filtered.length === 0 ? (
@@ -520,7 +610,7 @@ export default function HomePage() {
               {showFavoritesOnly ? "Cliquez sur ♥ sur les cartes pour ajouter vos favoris." : "Essayez de modifier vos filtres."}
             </p>
             <button
-              onClick={() => { setFilters(DEFAULT_FILTERS); setActiveCategory("Tous"); setShowFavoritesOnly(false); }}
+              onClick={() => { setFilters(DEFAULT_FILTERS); setSelectedTag(""); setShowFavoritesOnly(false); }}
               className="mt-4 text-xs font-bold px-5 py-2 rounded-full cursor-pointer transition-all"
               style={{ background: "var(--bg2)", color: "var(--muted)" }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text)"; }}
@@ -530,7 +620,7 @@ export default function HomePage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {filtered.map(p => (
               <PrestaCard
                 key={p.id}
@@ -638,11 +728,7 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Facebook"
+            <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook"
               className="flex items-center justify-center rounded-full transition-all"
               style={{ width: 36, height: 36, background: "rgba(255,255,255,0.1)" }}
               onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.2)")}
@@ -652,11 +738,7 @@ export default function HomePage() {
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
             </a>
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
+            <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram"
               className="flex items-center justify-center rounded-full transition-all"
               style={{ width: 36, height: 36, background: "rgba(255,255,255,0.1)" }}
               onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.2)")}

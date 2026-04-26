@@ -40,7 +40,6 @@ export default function RegisterPage() {
       style={{ background: "radial-gradient(ellipse at 20% 0%, #1e0a3c 0%, #090b1a 45%, #080d28 100%)" }}
     >
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="flex items-center justify-center mb-8">
           <img src="/logo.png" alt="Connect Event" className="h-20 md:h-32 w-auto object-contain" />
         </div>
@@ -53,12 +52,12 @@ export default function RegisterPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-white text-xl font-bold mb-2" style={{ fontFamily: "var(--font-cormorant)" }}>Compte créé !</h2>
+              <h2 className="text-white text-xl font-bold mb-2">Compte créé !</h2>
               <p className="text-white/50 text-sm">Vérifiez votre email pour confirmer votre compte.</p>
             </div>
           ) : (
             <>
-              <h1 className="text-white text-2xl font-bold mb-1" style={{ fontFamily: "var(--font-cormorant)" }}>
+              <h1 className="text-white text-2xl font-bold mb-1">
                 Créer un compte
               </h1>
               <p className="text-white/40 text-sm mb-6">Rejoignez Connect Event</p>

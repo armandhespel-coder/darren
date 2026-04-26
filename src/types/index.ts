@@ -1,4 +1,4 @@
-export type Role = "client" | "pro";
+export type Role = "client" | "prestataire" | "admin";
 
 export interface Profile {
   id: string;
@@ -30,6 +30,7 @@ export interface Prestataire {
   badge?: string | null;
   busy_dates?: string[];
   hide_company?: boolean;
+  video_url?: string | null;
 }
 
 export interface Review {

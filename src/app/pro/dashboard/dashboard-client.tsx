@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import type { Prestataire } from "@/types";
@@ -22,8 +23,165 @@ function completionScore(p: Prestataire) {
   return { done, total: checks.length, pct: Math.round((done / checks.length) * 100) };
 }
 
+function ChevIcon({ dir }: { dir: "left" | "right" }) {
+  const rot = dir === "left" ? 90 : -90;
+  return (
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}
+      strokeLinecap="round" strokeLinejoin="round" style={{ transform: `rotate(${rot}deg)` }} aria-hidden>
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  );
+}
+
+function EditableCalendar({ prestataire: p }: { prestataire: Prestataire }) {
+  const [monthOffset, setMonthOffset] = useState(0);
+  const [busyDates, setBusyDates] = useState<string[]>(p.busy_dates ?? []);
+  const [isAvailable, setIsAvailable] = useState(p.is_available);
+  const [saving, setSaving] = useState(false);
+
+  const today = new Date();
+  const base = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
+  const monthName = base.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+  const firstDay = (base.getDay() + 6) % 7;
+  const daysInMonth = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate();
+  const busySet = new Set(busyDates);
+
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  const toggleDate = async (dateStr: string) => {
+    const next = new Set(busySet);
+    if (next.has(dateStr)) next.delete(dateStr);
+    else next.add(dateStr);
+    const nextArr = [...next];
+    setBusyDates(nextArr);
+    setSaving(true);
+    const supabase = createClient();
+    await supabase.from("prestataires").update({ busy_dates: nextArr }).eq("id", p.id);
+    setSaving(false);
+  };
+
+  const toggleAvailable = async () => {
+    const next = !isAvailable;
+    setIsAvailable(next);
+    const supabase = createClient();
+    await supabase.from("prestataires").update({ is_available: next }).eq("id", p.id);
+  };
+
+  return (
+    <div>
+      {/* Statut global + sauvegarde */}
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <button
+          onClick={toggleAvailable}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-extrabold transition-all cursor-pointer"
+          style={{
+            background: isAvailable ? "rgba(74,222,128,0.1)" : "rgba(251,146,60,0.1)",
+            border: `1.5px solid ${isAvailable ? "rgba(74,222,128,0.4)" : "rgba(251,146,60,0.4)"}`,
+            color: isAvailable ? "#16a34a" : "#ea580c",
+          }}
+        >
+          <div style={{
+            width: 8, height: 8, borderRadius: "50%",
+            background: isAvailable ? "#4ADE80" : "#FB923C",
+            boxShadow: isAvailable ? "0 0 6px #4ADE80" : "0 0 6px #FB923C",
+            flexShrink: 0,
+          }} />
+          {isAvailable ? "Disponible — cliquer pour changer" : "Agenda chargé — cliquer pour changer"}
+        </button>
+        {saving && (
+          <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>
+            Sauvegarde...
+          </span>
+        )}
+      </div>
+
+      {/* Calendrier */}
+      <div style={{ border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
+        {/* Navigation mois */}
+        <div className="flex items-center justify-between px-4 py-3"
+          style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)" }}>
+          <button
+            onClick={() => setMonthOffset(o => o - 1)}
+            className="flex items-center justify-center rounded-lg transition-all cursor-pointer"
+            style={{ width: 32, height: 32, background: "white", border: "1px solid var(--border)", color: "var(--muted)" }}
+            aria-label="Mois précédent"
+          >
+            <ChevIcon dir="left" />
+          </button>
+          <span className="text-sm font-extrabold capitalize" style={{ color: "var(--dark)" }}>{monthName}</span>
+          <button
+            onClick={() => setMonthOffset(o => o + 1)}
+            className="flex items-center justify-center rounded-lg transition-all cursor-pointer"
+            style={{ width: 32, height: 32, background: "white", border: "1px solid var(--border)", color: "var(--muted)" }}
+            aria-label="Mois suivant"
+          >
+            <ChevIcon dir="right" />
+          </button>
+        </div>
+
+        {/* Grille */}
+        <div style={{ padding: "12px 16px 16px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 6 }}>
+            {["L","M","M","J","V","S","D"].map((d, i) => (
+              <div key={i} style={{ textAlign: "center", fontSize: 11, fontWeight: 700, color: "var(--muted)", padding: "4px 0" }}>{d}</div>
+            ))}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+            {cells.map((d, i) => {
+              if (d === null) return <div key={i} />;
+              const dateStr = `${base.getFullYear()}-${String(base.getMonth()+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+              const isBusy = busySet.has(dateStr);
+              const isToday = base.getFullYear() === today.getFullYear() && base.getMonth() === today.getMonth() && d === today.getDate();
+              const isPast = new Date(dateStr) < new Date(today.toDateString());
+              return (
+                <button
+                  key={i}
+                  onClick={() => !isPast && toggleDate(dateStr)}
+                  disabled={isPast}
+                  title={isPast ? undefined : (isBusy ? "Marquer comme libre" : "Marquer comme pris")}
+                  style={{
+                    textAlign: "center", borderRadius: 8, padding: "6px 2px",
+                    background: isBusy ? "rgba(251,146,60,0.18)" : isToday ? "rgba(74,108,247,0.1)" : "transparent",
+                    border: isBusy ? "1.5px solid rgba(251,146,60,0.5)" : isToday ? "1.5px solid rgba(74,108,247,0.4)" : "1.5px solid transparent",
+                    opacity: isPast ? 0.35 : 1,
+                    cursor: isPast ? "default" : "pointer",
+                    transition: "background 0.15s, border 0.15s",
+                  }}
+                  onMouseEnter={e => { if (!isPast) (e.currentTarget as HTMLButtonElement).style.background = isBusy ? "rgba(251,146,60,0.28)" : "rgba(74,108,247,0.08)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isBusy ? "rgba(251,146,60,0.18)" : isToday ? "rgba(74,108,247,0.1)" : "transparent"; }}
+                >
+                  <div style={{ fontSize: 13, fontWeight: 700, color: isBusy ? "#ea580c" : isToday ? "var(--blue2)" : "var(--dark)" }}>{d}</div>
+                  <div style={{ fontSize: 9, fontWeight: 700, marginTop: 1, color: isBusy ? "#ea580c" : isToday ? "var(--blue2)" : "transparent" }}>
+                    {isBusy ? "Pris" : isToday ? "Auj." : "·"}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Légende */}
+        <div className="flex items-center gap-4 px-4 py-3 flex-wrap"
+          style={{ borderTop: "1px solid var(--border)", background: "var(--bg2)" }}>
+          <div className="flex items-center gap-1.5">
+            <div style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(74,222,128,0.4)" }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)" }}>Libre (cliquer pour bloquer)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(251,146,60,0.4)" }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)" }}>Pris (cliquer pour libérer)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardClient({ prestataire: p, userEmail, msgCount, unreadCount }: Props) {
   const router = useRouter();
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -51,6 +209,7 @@ export default function DashboardClient({ prestataire: p, userEmail, msgCount, u
           boxShadow: "0 2px 20px rgba(74,108,247,0.08)",
           height: 68,
         }}>
+        {/* Logo toujours à gauche */}
         <div className="flex items-center gap-3">
           <a href="/"><img src="/logo.png" alt="Connect Event" className="h-14 w-auto object-contain" /></a>
           <span className="text-xs font-extrabold px-3 py-1 rounded-full"
@@ -58,6 +217,7 @@ export default function DashboardClient({ prestataire: p, userEmail, msgCount, u
             Espace Pro
           </span>
         </div>
+        {/* Hamburger toujours à droite */}
         <div className="flex items-center gap-3">
           <a href={`/p/${p.id}`} target="_blank"
             className="text-xs font-bold px-4 py-2 rounded-full"
@@ -72,7 +232,7 @@ export default function DashboardClient({ prestataire: p, userEmail, msgCount, u
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {/* Welcome */}
         <div className="mb-8">
           <h1 className="font-black text-3xl mb-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
@@ -151,7 +311,7 @@ export default function DashboardClient({ prestataire: p, userEmail, msgCount, u
               </h2>
               <div className="flex flex-col gap-3">
                 {[
-                  { href: `/p/edit/${p.id}`, icon: "✏️", label: "Modifier mon profil", sub: "Photos, description, disponibilités" },
+                  { href: `/p/edit/${p.id}`, icon: "✏️", label: "Modifier mon profil", sub: "Photos, description, prix" },
                   { href: "/pro/demandes", icon: "💬", label: "Voir mes demandes", sub: `${msgCount} message${msgCount > 1 ? "s" : ""} reçu${msgCount > 1 ? "s" : ""}` },
                   { href: `/p/${p.id}`, icon: "👁️", label: "Voir ma fiche publique", sub: "Tel que vu par les clients" },
                 ].map((item) => (
@@ -169,6 +329,48 @@ export default function DashboardClient({ prestataire: p, userEmail, msgCount, u
                   </a>
                 ))}
               </div>
+            </div>
+
+            {/* ── Disponibilités — calendrier inline ── */}
+            <div className="rounded-2xl p-6"
+              style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="font-black text-lg" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
+                    📅 Disponibilités
+                  </h2>
+                  <p className="text-xs font-semibold mt-0.5" style={{ color: "var(--muted)" }}>
+                    Gérez votre calendrier directement ici
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowCalendar(v => !v)}
+                  className="flex items-center gap-1.5 text-xs font-extrabold px-4 py-2 rounded-full cursor-pointer transition-all"
+                  style={{
+                    background: showCalendar ? "var(--grad2)" : "var(--bg2)",
+                    color: showCalendar ? "white" : "var(--blue2)",
+                    border: "1.5px solid var(--border)",
+                  }}
+                >
+                  {showCalendar ? "Fermer ▲" : "Ouvrir ▼"}
+                </button>
+              </div>
+
+              {showCalendar && <EditableCalendar prestataire={p} />}
+
+              {!showCalendar && (
+                <div className="flex items-center gap-3 p-3 rounded-xl"
+                  style={{
+                    background: p.is_available ? "rgba(74,222,128,0.07)" : "rgba(251,146,60,0.07)",
+                    border: `1px solid ${p.is_available ? "rgba(74,222,128,0.25)" : "rgba(251,146,60,0.25)"}`,
+                  }}>
+                  <div className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    style={{ background: p.is_available ? "#4ADE80" : "#FB923C", boxShadow: p.is_available ? "0 0 6px #4ADE80" : "0 0 6px #FB923C" }} />
+                  <span className="text-sm font-extrabold" style={{ color: p.is_available ? "#16a34a" : "#ea580c" }}>
+                    {p.is_available ? "Disponible pour de nouvelles réservations" : "Agenda chargé en ce moment"}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
