@@ -91,6 +91,7 @@ export default function HomePage() {
   const menuRef = useRef<HTMLDivElement>(null);
   const [dbCategories, setDbCategories] = useState<Array<{ name: string; icon: string }>>([]);
   const [validTags, setValidTags] = useState<Set<string>>(new Set());
+  const [dbTags, setDbTags] = useState<Array<{ name: string; category_name: string | null }>>([]);
 
   const router = useRouter();
   const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com", "studiohesperides@gmail.com"];
@@ -110,8 +111,12 @@ export default function HomePage() {
     supabase.from("site_categories").select("name, icon").order("position").then(({ data }) => {
       if (data?.length) setDbCategories(data as Array<{ name: string; icon: string }>);
     });
-    supabase.from("site_tags").select("name").then(({ data }) => {
-      if (data?.length) setValidTags(new Set((data as Array<{ name: string }>).map(t => t.name)));
+    supabase.from("site_tags").select("name, category_name").then(({ data }) => {
+      if (data?.length) {
+        const typed = data as Array<{ name: string; category_name: string | null }>;
+        setDbTags(typed);
+        setValidTags(new Set(typed.map(t => t.name)));
+      }
     });
   }, []);
 
@@ -166,12 +171,16 @@ export default function HomePage() {
   // Tags disponibles pour la catégorie sélectionnée (sous-catégories)
   const availableTags = useMemo(() => {
     if (filters.categorie === "Tous") return [];
+    // Priorité : tags admin liés à cette catégorie
+    const categoryTags = dbTags.filter(t => t.category_name === filters.categorie).map(t => t.name);
+    if (categoryTags.length > 0) return categoryTags.sort();
+    // Fallback : tags issus des prestataires de cette catégorie
     const tags = new Set<string>();
     prestataires
       .filter(p => p.categorie === filters.categorie)
       .forEach(p => p.tags.forEach(t => { if (validTags.size === 0 || validTags.has(t)) tags.add(t); }));
     return [...tags].sort();
-  }, [prestataires, filters.categorie, validTags]);
+  }, [dbTags, prestataires, filters.categorie, validTags]);
 
   const filtered = useMemo(() => {
     return prestataires.filter((p) => {

@@ -215,6 +215,8 @@ export default function AdminPage() {
   const supabase = createClient();
   const newPrestaIdRef = useRef(crypto.randomUUID());
 
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [prestataires, setPrestataires] = useState<Prestataire[]>([]);
   const [categories, setCategories] = useState<string[]>(FALLBACK_CATS);
@@ -258,6 +260,14 @@ export default function AdminPage() {
       load();
     });
   }, [load, router, supabase.auth]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) setShowMobileMenu(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -362,14 +372,15 @@ export default function AdminPage() {
       >
         <div className="flex items-center gap-4">
           <a href="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Connect Event" className="h-16 w-auto object-contain" />
+            <img src="/logo.png" alt="Connect Event" className="h-16 md:h-20 w-auto object-contain" />
           </a>
           <div className="text-xs font-extrabold px-3 py-1 rounded-full"
             style={{ background: "rgba(74,108,247,0.1)", color: "var(--blue2)" }}>
             🔐 Admin
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        {/* Desktop links */}
+        <div className="hidden md:flex items-center gap-3">
           <a href="/admin/tags"
             className="text-xs font-bold px-4 py-2 rounded-full transition-all"
             style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
@@ -407,6 +418,54 @@ export default function AdminPage() {
           >
             Déconnexion
           </button>
+        </div>
+
+        {/* Mobile hamburger */}
+        <div className="md:hidden relative" ref={mobileMenuRef}>
+          <button
+            onClick={() => setShowMobileMenu(m => !m)}
+            aria-label="Menu"
+            className="flex flex-col items-center justify-center gap-[5px] cursor-pointer rounded-xl transition-all"
+            style={{
+              width: 40, height: 40,
+              background: showMobileMenu ? "rgba(74,108,247,0.08)" : "var(--bg2)",
+              border: showMobileMenu ? "1.5px solid rgba(74,108,247,0.35)" : "1.5px solid var(--border)",
+            }}
+          >
+            {[0,1,2].map(i => (
+              <span key={i} style={{ width:16, height:2, background: showMobileMenu ? "var(--blue2)" : "var(--muted)", borderRadius:2, display:"block" }} />
+            ))}
+          </button>
+          {showMobileMenu && (
+            <div className="absolute right-0 rounded-2xl overflow-hidden z-50"
+              style={{ top: "calc(100% + 8px)", background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 40px rgba(74,108,247,0.18)", minWidth: 200 }}>
+              {[
+                { href: "/admin/tags", label: "🏷️ Tags" },
+                { href: "/admin/categories", label: "📂 Catégories" },
+                { href: "/admin/utilisateurs", label: "👥 Utilisateurs" },
+                { href: "/admin/messages", label: "💬 Messages" },
+                { href: "/admin/portail", label: "✉️ Portail" },
+                { href: "/", label: "← Site" },
+              ].map((item, i, arr) => (
+                <a key={item.href} href={item.href}
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
+                  style={{ color: "var(--text)", textDecoration: "none", borderBottom: i < arr.length - 1 ? "1px solid var(--border)" : "none" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                >
+                  {item.label}
+                </a>
+              ))}
+              <button onClick={handleLogout}
+                className="flex items-center gap-3 px-4 py-3 text-sm font-extrabold w-full text-left cursor-pointer transition-all"
+                style={{ color: "#dc2626", background: "transparent", border: "none", borderTop: "1px solid var(--border)" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.05)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+              >
+                🚪 Déconnexion
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

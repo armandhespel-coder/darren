@@ -68,7 +68,7 @@ export default function AdminCategoriesPage() {
         }}
       >
         <div className="flex items-center gap-4">
-          <a href="/"><img src="/logo.png" alt="Connect Event" className="h-16 w-auto object-contain" /></a>
+          <a href="/"><img src="/logo.png" alt="Connect Event" className="h-16 md:h-20 w-auto object-contain" /></a>
           <span className="text-xs font-extrabold px-3 py-1 rounded-full"
             style={{ background: "rgba(74,108,247,0.1)", color: "var(--blue2)" }}>
             🔐 Admin · Catégories

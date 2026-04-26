@@ -24,10 +24,9 @@ const Ico = {
 // ─── Logo ────────────────────────────────────────────────────────────
 function Logo() {
   return (
-    <div className="ce-logo">
-      <div className="ce-logo-mark" aria-hidden><span>CE</span></div>
-      <span className="ce-logo-text">Connect Event</span>
-    </div>
+    <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+      <img src="/logo.png" alt="Connect Event" style={{ height: 52, width: 'auto', objectFit: 'contain' }} />
+    </a>
   );
 }
 
@@ -79,6 +78,7 @@ function toRow(p: Prestataire): PrestaRow {
 function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
   const [rows, setRows] = useState(prestaList);
   const [selected, setSelected] = useState<PrestaRow | null>(prestaList[0] ?? null);
+  const [showMenu, setShowMenu] = useState(false);
   const [expiry, setExpiry] = useState('7');
   const [reusable, setReusable] = useState(false);
   const [note, setNote] = useState('');
@@ -199,9 +199,35 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
     <div className="ce-admin-wrap">
       <header className="ce-admin-top">
         <Logo />
-        <div className="ce-admin-top-right">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <a href="/admin" className="ce-ghost-btn" style={{ height: 40 }}>← Admin</a>
-          <span className="ce-pill-tag"><Ico.Shield s={12} /> Admin · Portail</span>
+          <span className="ce-pill-tag" style={{ display: 'none' }} id="portal-tag-desktop"><Ico.Shield s={12} /> Admin · Portail</span>
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowMenu(m => !m)}
+              aria-label="Menu"
+              style={{
+                width: 40, height: 40, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', gap: 5, cursor: 'pointer', borderRadius: 12,
+                background: showMenu ? 'rgba(74,108,247,0.08)' : 'var(--bg2)',
+                border: showMenu ? '1.5px solid rgba(74,108,247,0.35)' : '1.5px solid var(--border)',
+              }}
+            >
+              {[0,1,2].map(i => <span key={i} style={{ width:16, height:2, background: showMenu ? 'var(--blue2)' : 'var(--muted)', borderRadius:2, display:'block' }} />)}
+            </button>
+            {showMenu && (
+              <div style={{
+                position: 'absolute', right: 0, top: 'calc(100% + 8px)', background: 'white',
+                border: '1px solid var(--border)', boxShadow: '0 12px 40px rgba(74,108,247,0.18)',
+                borderRadius: 16, overflow: 'hidden', minWidth: 180, zIndex: 50,
+              }}>
+                <a href="/admin" style={{ display:'flex',alignItems:'center',gap:8,padding:'12px 16px',fontSize:13,fontWeight:700,color:'var(--text)',textDecoration:'none',borderBottom:'1px solid var(--border)' }}>← Admin</a>
+                <a href="/admin/categories" style={{ display:'flex',alignItems:'center',gap:8,padding:'12px 16px',fontSize:13,fontWeight:700,color:'var(--text)',textDecoration:'none',borderBottom:'1px solid var(--border)' }}>📂 Catégories</a>
+                <a href="/admin/tags" style={{ display:'flex',alignItems:'center',gap:8,padding:'12px 16px',fontSize:13,fontWeight:700,color:'var(--text)',textDecoration:'none',borderBottom:'1px solid var(--border)' }}>🏷️ Tags</a>
+                <a href="/" style={{ display:'flex',alignItems:'center',gap:8,padding:'12px 16px',fontSize:13,fontWeight:700,color:'var(--muted)',textDecoration:'none' }}>← Site</a>
+              </div>
+            )}
+          </div>
         </div>
       </header>
       <main className="ce-admin-main">
@@ -254,24 +280,7 @@ function AdminPanel({ prestaList }: { prestaList: PrestaRow[] }) {
               </div>
             )}
 
-            <h2 className="ce-card-title" style={{ marginTop: 32 }}>2. Permissions du lien</h2>
-            <div className="ce-scope">
-              {[
-                { lbl: 'Photos du profil', sub: 'Upload, réordonner, supprimer' },
-                { lbl: 'Calendrier de disponibilités', sub: 'Marquer dates prises / libres' },
-                { lbl: 'Description & informations', sub: 'Bio, tags, prix indicatif' },
-              ].map(o => (
-                <div key={o.lbl} className="ce-scope-row is-on" style={{ cursor: 'default' }}>
-                  <div className="ce-scope-check" aria-hidden><Ico.Check s={14} /></div>
-                  <div>
-                    <div className="ce-scope-lbl">{o.lbl}</div>
-                    <div className="ce-scope-sub">{o.sub}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <h2 className="ce-card-title" style={{ marginTop: 32 }}>3. Expiration & message</h2>
+            <h2 className="ce-card-title" style={{ marginTop: 32 }}>2. Expiration & message</h2>
             <div className="ce-form-grid">
               <div>
                 <label className="ce-lbl">Durée de validité</label>

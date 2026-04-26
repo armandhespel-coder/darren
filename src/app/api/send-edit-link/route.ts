@@ -14,14 +14,35 @@ export async function POST(req: NextRequest) {
   if (sendEmail && !process.env.RESEND_API_KEY) {
     return NextResponse.json({ error: "RESEND_API_KEY non configurée." }, { status: 500 });
   }
-  const resend = sendEmail ? new Resend(process.env.RESEND_API_KEY!) : null;
+
+  const supabase = createServiceClient();
 
   // Save email to DB
-  const supabase = createServiceClient();
-  await supabase.from("prestataires").update({ email }).eq("id", prestataire_id);
+  if (email) {
+    await supabase.from("prestataires").update({ email }).eq("id", prestataire_id);
+  }
+
+  // Compute expires_at
+  let expires_at: string | null = null;
+  if (expiry !== "inf") {
+    const d = new Date();
+    d.setDate(d.getDate() + Number(expiry));
+    expires_at = d.toISOString();
+  }
+
+  // Create secure token in edit_tokens table
+  const { data: tokenData, error: tokenError } = await supabase
+    .from("edit_tokens")
+    .insert({ prestataire_id, expires_at, reusable: !!reusable })
+    .select("id")
+    .single();
+
+  if (tokenError || !tokenData) {
+    return NextResponse.json({ error: "Erreur création token : " + (tokenError?.message ?? "inconnu") }, { status: 500 });
+  }
 
   const origin = new URL(req.url).origin;
-  const link = `${origin}/p/edit/${prestataire_id}`;
+  const link = `${origin}/p/edit/${tokenData.id}`;
   const expiryLabel =
     expiry === "inf" ? "sans expiration" : expiry === "1" ? "24 heures" : `${expiry} jours`;
 
@@ -33,13 +54,11 @@ export async function POST(req: NextRequest) {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#F7F8FC;padding:40px 20px;">
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(74,108,247,0.1);">
-        <!-- Header -->
         <tr>
           <td style="background:linear-gradient(135deg,#4A6CF7,#D93FB5);padding:28px 36px;">
             <span style="color:white;font-weight:900;font-size:20px;letter-spacing:-0.02em;">Connect Event</span>
           </td>
         </tr>
-        <!-- Body -->
         <tr>
           <td style="padding:36px 36px 28px;">
             <h1 style="color:#12112A;font-size:22px;font-weight:900;margin:0 0 12px;">Bonjour ${nom.split(" ")[0]},</h1>
@@ -77,7 +96,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ link });
   }
 
-  const { error } = await resend!.emails.send({
+  const resend = new Resend(process.env.RESEND_API_KEY!);
+  const { error } = await resend.emails.send({
     from: "Connect Event <no-reply@connectevent.be>",
     to: email,
     subject: "Mettez à jour votre profil Connect Event",

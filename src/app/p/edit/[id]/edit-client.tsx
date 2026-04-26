@@ -13,6 +13,7 @@ const Ico = {
   Image: ({ s = 16 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>,
   Calendar: ({ s = 16 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
   User: ({ s = 16 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  Video: ({ s = 16 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>,
   Upload: ({ s = 24 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
   Trash: ({ s = 14 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>,
   Drag: ({ s = 14 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" aria-hidden><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>,
@@ -29,6 +30,7 @@ interface PrestaState {
   nom: string; company: string; description: string; tags: string[];
   prix: number; price_note: string; telephone: string;
   is_available: boolean; images: string[]; busy_dates: string[];
+  video_url: string;
 }
 
 function fromDB(p: Prestataire): PrestaState {
@@ -43,6 +45,7 @@ function fromDB(p: Prestataire): PrestaState {
     is_available: p.is_available,
     images: p.images ?? [],
     busy_dates: p.busy_dates ?? [],
+    video_url: p.video_url ?? '',
   };
 }
 
@@ -162,7 +165,6 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
   );
 }
 
-// DispoTab reçoit busy_dates depuis le state global et le persiste via patch
 function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, v: unknown) => void }) {
   const [monthOffset, setMonthOffset] = useState(0);
   const today = new Date();
@@ -270,6 +272,17 @@ function ProfilTab({ s, patch, categorie, availableTags }: { s: PrestaState; pat
           </div>
           <label className="ce-lbl" style={{ marginTop: 18 }}>Téléphone <span className="ce-lbl-opt">(visible en premium)</span></label>
           <input className="ce-input" value={s.telephone} onChange={e => patch('telephone', e.target.value)} />
+          <label className="ce-lbl" style={{ marginTop: 18 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Ico.Video s={13} /> Vidéo <span className="ce-lbl-opt">(URL YouTube ou lien direct)</span>
+            </span>
+          </label>
+          <input
+            className="ce-input"
+            value={s.video_url}
+            onChange={e => patch('video_url', e.target.value)}
+            placeholder="https://youtube.com/watch?v=… ou https://…/video.mp4"
+          />
           <label className="ce-lbl" style={{ marginTop: 18 }}>Tags</label>
           <div className="ce-tag-cloud">
             {availableTags.map(t => (
@@ -352,6 +365,7 @@ export default function EditClient({ prestataire }: { prestataire: Prestataire }
         is_available: state.is_available,
         images: state.images,
         busy_dates: state.busy_dates,
+        video_url: state.video_url || null,
       }),
     });
     setSaving(false);
@@ -362,27 +376,13 @@ export default function EditClient({ prestataire }: { prestataire: Prestataire }
   return (
     <div className="ce-root">
       <header className="ce-portal-top">
-        <div className="ce-logo">
-          <div className="ce-logo-mark" aria-hidden><span>CE</span></div>
-          <span className="ce-logo-text">Connect Event</span>
-        </div>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <img src="/logo.png" alt="Connect Event" style={{ height: 52, width: 'auto', objectFit: 'contain' }} />
+        </a>
         <div className="ce-portal-top-center">
           <span className="ce-portal-pill"><Ico.User s={12} /> Espace de {state.nom}</span>
         </div>
         <div className="ce-portal-top-right">
-          <a href="/"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              height: 36, padding: '0 14px', borderRadius: 999,
-              background: 'var(--bg2)', color: 'var(--muted)',
-              border: '1px solid var(--border)', fontSize: 12,
-              fontWeight: 700, textDecoration: 'none', transition: 'color 0.2s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--blue2)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}
-          >
-            <Ico.Home s={13} /> Accueil
-          </a>
           {dirty && <span className="ce-unsaved">Modifications non enregistrées</span>}
           <button className="ce-grad-btn" style={{ height: 40 }} onClick={save} disabled={saving || !dirty}>
             <Ico.Check s={14} /><span>{saving ? 'Enregistrement…' : 'Enregistrer'}</span>
@@ -400,7 +400,7 @@ export default function EditClient({ prestataire }: { prestataire: Prestataire }
             {[
               { k: 'photos', lbl: 'Photos', ico: <Ico.Image s={14} />, badge: `${state.images.length}/8` },
               { k: 'dispo', lbl: 'Disponibilités', ico: <Ico.Calendar s={14} /> },
-              { k: 'profil', lbl: 'Profil', ico: <Ico.User s={14} /> },
+              { k: 'profil', lbl: 'Profil & Vidéo', ico: <Ico.User s={14} /> },
             ].map(i => (
               <li key={i.k}>
                 <button className={tab === i.k ? 'is-active' : ''} onClick={() => setTab(i.k)}>
