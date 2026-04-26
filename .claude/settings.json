@@ -2,6 +2,9 @@
   "permissions": {
     "additionalDirectories": [
       "c:\\Users\\arman\\Documents\\GitHub\\darren\\public"
+    ],
+    "allow": [
+      "Bash(curl -s -X POST http://localhost:3000/api/send-edit-link -H 'Content-Type: application/json' -d '{\"prestataire_id\":\"test\",\"nom\":\"Test\",\"email\":\"armand.hespel@hotmail.com\",\"expiry\":\"7\",\"reusable\":false,\"sendEmail\":true}')"
     ]
   }
 }
