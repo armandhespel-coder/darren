@@ -32,17 +32,24 @@ function IconCheckWhite() {
 export default function DevenirPrestaireModal({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState<ProForm>({ nom: "", service: "", email: "", telephone: "", message: "" });
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const update = (k: keyof ProForm, v: string) => setForm(f => ({ ...f, [k]: v }));
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.nom || !form.email || !form.service) return;
-    const subject = encodeURIComponent(`Candidature prestataire — ${form.service} — ${form.nom}`);
-    const body = encodeURIComponent(
-      `Nom : ${form.nom}\nService : ${form.service}\nEmail : ${form.email}\nTéléphone : ${form.telephone}\n\nMessage :\n${form.message}`
-    );
-    window.location.href = `mailto:yagan_darren@hotmail.com?subject=${subject}&body=${body}`;
+    setLoading(true);
+    await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: form.nom,
+        email: form.email,
+        message: `Candidature prestataire\n\nService : ${form.service}\nTéléphone : ${form.telephone || "—"}\n\n${form.message}`,
+      }),
+    });
+    setLoading(false);
     setSuccess(true);
   };
 
@@ -173,7 +180,8 @@ export default function DevenirPrestaireModal({ onClose }: { onClose: () => void
             <button
               type="submit"
               className="w-full flex items-center justify-center gap-2 text-white font-extrabold rounded-xl cursor-pointer transition-all text-sm mt-1"
-              style={{ height: 52, background: "var(--grad)", boxShadow: "0 6px 22px rgba(217,63,181,0.3)", letterSpacing: "0.06em", border: "none" }}
+              disabled={loading}
+              style={{ height: 52, background: "var(--grad)", boxShadow: "0 6px 22px rgba(217,63,181,0.3)", letterSpacing: "0.06em", border: "none", opacity: loading ? 0.7 : 1 }}
               onMouseEnter={e => {
                 (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
                 (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 12px 30px rgba(217,63,181,0.4)";
@@ -183,7 +191,7 @@ export default function DevenirPrestaireModal({ onClose }: { onClose: () => void
                 (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 22px rgba(217,63,181,0.3)";
               }}
             >
-              <IconCheck /> Envoyer ma candidature
+              <IconCheck /> {loading ? "Envoi…" : "Envoyer ma candidature"}
             </button>
           </form>
         )}
