@@ -8,8 +8,6 @@ import type { Prestataire } from "@/types";
 interface Props {
   prestataire: Prestataire;
   userEmail: string;
-  msgCount: number;
-  unreadCount: number;
 }
 
 function completionScore(p: Prestataire) {
@@ -179,7 +177,7 @@ function EditableCalendar({ prestataire: p }: { prestataire: Prestataire }) {
   );
 }
 
-export default function DashboardClient({ prestataire: p, userEmail, msgCount, unreadCount }: Props) {
+export default function DashboardClient({ prestataire: p, userEmail }: Props) {
   const router = useRouter();
   const [showCalendar, setShowCalendar] = useState(false);
 
@@ -192,8 +190,6 @@ export default function DashboardClient({ prestataire: p, userEmail, msgCount, u
   const { done, total, pct } = completionScore(p);
 
   const stats = [
-    { label: "Demandes reçues", value: msgCount, icon: "💬", color: "var(--blue2)", bg: "rgba(74,108,247,0.08)" },
-    { label: "Non lues", value: unreadCount, icon: "🔔", color: "#d97706", bg: "rgba(217,119,6,0.08)" },
     { label: "Profil complété", value: `${pct}%`, icon: "✨", color: "#16a34a", bg: "rgba(22,163,74,0.08)" },
     { label: "Statut", value: p.is_premium ? "Premium" : "Standard", icon: p.is_premium ? "⭐" : "○", color: p.is_premium ? "#7c3aed" : "var(--muted)", bg: p.is_premium ? "rgba(124,58,237,0.08)" : "var(--bg2)" },
   ];
@@ -245,7 +241,7 @@ export default function DashboardClient({ prestataire: p, userEmail, msgCount, u
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 gap-4 mb-6">
           {stats.map((s) => (
             <div key={s.label} className="rounded-2xl p-5"
               style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
@@ -312,7 +308,6 @@ export default function DashboardClient({ prestataire: p, userEmail, msgCount, u
               <div className="flex flex-col gap-3">
                 {[
                   { href: `/p/edit/${p.id}`, icon: "✏️", label: "Modifier mon profil", sub: "Photos, description, prix" },
-                  { href: "/pro/demandes", icon: "💬", label: "Voir mes demandes", sub: `${msgCount} message${msgCount > 1 ? "s" : ""} reçu${msgCount > 1 ? "s" : ""}` },
                   { href: `/p/${p.id}`, icon: "👁️", label: "Voir ma fiche publique", sub: "Tel que vu par les clients" },
                 ].map((item) => (
                   <a key={item.href} href={item.href}

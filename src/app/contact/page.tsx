@@ -133,28 +133,6 @@ export default function ContactPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <a
-            href="/pro/dashboard"
-            className="hidden sm:flex items-center gap-1.5 text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer"
-            style={{
-              height: 40,
-              background: "var(--bg2)",
-              color: "var(--muted)",
-              border: "1.5px solid var(--border)",
-              textDecoration: "none",
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLAnchorElement).style.color = "var(--blue2)";
-              (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--blue2)";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)";
-              (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border)";
-            }}
-          >
-            🏠 Espace prestataire
-          </a>
-
           <button
             onClick={() => setShowPrestaireModal(true)}
             className="hidden sm:flex items-center gap-1.5 text-white text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer"

@@ -75,6 +75,7 @@ export default function HomePage() {
   const [dbCategories, setDbCategories] = useState<Array<{ name: string; icon: string }>>([]);
   const [validTags, setValidTags] = useState<Set<string>>(new Set());
   const [dbTags, setDbTags] = useState<Array<{ name: string; category_name: string | null }>>([]);
+  const [userIsPrestataire, setUserIsPrestataire] = useState(false);
 
   const router = useRouter();
   const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com", "studiohesperides@gmail.com"];
@@ -86,7 +87,13 @@ export default function HomePage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? null));
+    supabase.auth.getUser().then(async ({ data }) => {
+      setUserEmail(data.user?.email ?? null);
+      if (data.user) {
+        const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
+        setUserIsPrestataire(profile?.role === "prestataire");
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -270,29 +277,6 @@ export default function HomePage() {
             {favorites.size > 0 && <span className="font-extrabold">{favorites.size}</span>}
           </button>
 
-          {/* Espace prestataire — desktop uniquement */}
-          <a
-            href="/pro/dashboard"
-            className="hidden sm:flex items-center gap-1.5 text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap"
-            style={{
-              height: 40,
-              background: "var(--bg2)",
-              color: "var(--muted)",
-              border: "1.5px solid var(--border)",
-              textDecoration: "none",
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLAnchorElement).style.color = "var(--blue2)";
-              (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--blue2)";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)";
-              (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border)";
-            }}
-          >
-            🏠 Espace prestataire
-          </a>
-
           {/* Devenir prestataire — desktop uniquement */}
           <button
             onClick={() => setShowPrestaireModal(true)}
@@ -368,14 +352,19 @@ export default function HomePage() {
                     >
                       💬 Messages
                     </a>
-                    <a href="/pro/dashboard"
-                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
-                      style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
+                    <button
+                      onClick={() => {
+                        if (userIsPrestataire) { router.push("/pro/dashboard"); }
+                        else { setShowPrestaireModal(true); }
+                        setShowMenu(false);
+                      }}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all w-full text-left cursor-pointer"
+                      style={{ color: "var(--text)", background: "transparent", border: "none", borderBottom: "1px solid var(--border)" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
                       onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                     >
                       🏠 Espace Pro
-                    </a>
+                    </button>
                     <a href="/fonctionnement"
                       className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
                       style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
@@ -521,7 +510,7 @@ export default function HomePage() {
                   border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                <div className="font-black text-base sm:text-3xl whitespace-nowrap" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                <div className="font-black text-sm sm:text-3xl whitespace-nowrap" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                   {val}
                 </div>
                 <div className="text-[11px] uppercase tracking-widest mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{label}</div>
@@ -533,51 +522,16 @@ export default function HomePage() {
 
       {/* ── Filter bar (floating) ── */}
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6" style={{ marginTop: -36 }}>
-        <SearchBar filters={filters} onChange={handleFiltersChange} onSearch={() => {}} categories={dbCategories.map(c => c.name)} />
+        <SearchBar
+          filters={filters}
+          onChange={handleFiltersChange}
+          onSearch={() => {}}
+          categories={dbCategories.map(c => c.name)}
+          subcategories={availableTags}
+          selectedSubcategory={selectedTag}
+          onSubcategoryChange={setSelectedTag}
+        />
       </div>
-
-      {/* ── Sous-catégories (tags) — apparaissent quand une catégorie est sélectionnée ── */}
-      {availableTags.length > 0 && (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
-          <p className="text-[10px] font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>
-            Sous-catégories — {filters.categorie}
-          </p>
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-            <button
-              onClick={() => setSelectedTag("")}
-              className="flex-shrink-0 text-xs font-bold rounded-full whitespace-nowrap cursor-pointer transition-all"
-              style={{
-                padding: "8px 18px",
-                background: !selectedTag ? "var(--grad2)" : "white",
-                color: !selectedTag ? "white" : "var(--muted)",
-                border: !selectedTag ? "1.5px solid transparent" : "1.5px solid var(--border)",
-                boxShadow: !selectedTag ? "0 4px 14px rgba(74,108,247,0.25)" : "none",
-              }}
-            >
-              Tous
-            </button>
-            {availableTags.map(tag => {
-              const isActive = selectedTag === tag;
-              return (
-                <button
-                  key={tag}
-                  onClick={() => setSelectedTag(t => t === tag ? "" : tag)}
-                  className="flex-shrink-0 text-xs font-bold rounded-full whitespace-nowrap cursor-pointer transition-all"
-                  style={{
-                    padding: "8px 18px",
-                    background: isActive ? "var(--grad2)" : "white",
-                    color: isActive ? "white" : "var(--muted)",
-                    border: isActive ? "1.5px solid transparent" : "1.5px solid var(--border)",
-                    boxShadow: isActive ? "0 4px 14px rgba(74,108,247,0.25)" : "none",
-                  }}
-                >
-                  {tag}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* ── Main content ── */}
       <main className="max-w-6xl mx-auto px-4 pt-10 pb-20" id="prestataires">

@@ -6,6 +6,9 @@ interface Props {
   onChange: (filters: Filters) => void;
   onSearch: () => void;
   categories?: string[];
+  subcategories?: string[];
+  selectedSubcategory?: string;
+  onSubcategoryChange?: (v: string) => void;
 }
 
 export const MAX_BUDGET = 5000;
@@ -42,10 +45,11 @@ function IconX() {
   );
 }
 
-export default function SearchBar({ filters, onChange, onSearch, categories = [] }: Props) {
+export default function SearchBar({ filters, onChange, onSearch, categories = [], subcategories, selectedSubcategory, onSubcategoryChange }: Props) {
   const update = (key: keyof Filters, value: string | number) => onChange({ ...filters, [key]: value });
-  const reset = () => onChange({ search: "", categorie: "Tous", budgetMax: MAX_BUDGET });
+  const reset = () => { onChange({ search: "", categorie: "Tous", budgetMax: MAX_BUDGET }); onSubcategoryChange?.(""); };
   const cats = ["Tous", ...categories];
+  const showSub = subcategories && subcategories.length > 0;
 
   return (
     <div
@@ -92,6 +96,24 @@ export default function SearchBar({ filters, onChange, onSearch, categories = []
             {cats.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
+
+        {/* Sous-catégorie — apparaît si la catégorie a des sous-catégories */}
+        {showSub && (
+          <div className="flex-1 min-w-[150px]">
+            <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--pink)" }}>
+              <IconTag /> Sous-catégorie
+            </div>
+            <select
+              value={selectedSubcategory ?? ""}
+              onChange={e => onSubcategoryChange?.(e.target.value)}
+              className="w-full rounded-xl px-3.5 py-2.5 text-sm font-semibold cursor-pointer"
+              style={{ background: "var(--bg)", border: "1.5px solid rgba(217,63,181,0.4)", color: "var(--text)", appearance: "none", outline: "none" }}
+            >
+              <option value="">Toutes</option>
+              {subcategories!.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        )}
 
         {/* Budget slider */}
         <div className="flex-1 min-w-[160px]">

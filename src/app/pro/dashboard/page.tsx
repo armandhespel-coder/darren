@@ -18,23 +18,10 @@ export default async function ProDashboardPage() {
 
   if (!prestataire) redirect("/pro/onboarding");
 
-  const { count: msgCount } = await service
-    .from("messages")
-    .select("id", { count: "exact", head: true })
-    .eq("prestataire_id", prestataire.id);
-
-  const { count: unreadCount } = await service
-    .from("messages")
-    .select("id", { count: "exact", head: true })
-    .eq("prestataire_id", prestataire.id)
-    .eq("read", false);
-
   return (
     <DashboardClient
       prestataire={prestataire}
       userEmail={user.email ?? ""}
-      msgCount={msgCount ?? 0}
-      unreadCount={unreadCount ?? 0}
     />
   );
 }
