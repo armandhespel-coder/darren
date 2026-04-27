@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import type { Prestataire } from "@/types";
-import DashboardClient from "./dashboard-client";
 
 export default async function ProDashboardPage() {
   const supabase = await createClient();
@@ -13,33 +11,11 @@ export default async function ProDashboardPage() {
 
   const { data: prestataire } = await service
     .from("prestataires")
-    .select("*")
-    .eq("owner_id", user.id)
+    .select("id")
+    .eq("owner_id", user!.id)
     .single();
 
-  if (!prestataire) {
-    redirect("/pro/onboarding");
-  }
+  if (!prestataire) redirect("/pro/onboarding");
 
-  redirect(`/p/edit/${prestataire.id}`);
-
-  const { count: msgCount } = await service
-    .from("messages")
-    .select("*", { count: "exact", head: true })
-    .eq("receiver_id", user.id);
-
-  const { count: unreadCount } = await service
-    .from("messages")
-    .select("*", { count: "exact", head: true })
-    .eq("receiver_id", user.id)
-    .eq("read", false);
-
-  return (
-    <DashboardClient
-      prestataire={prestataire as Prestataire}
-      userEmail={user.email ?? ""}
-      msgCount={msgCount ?? 0}
-      unreadCount={unreadCount ?? 0}
-    />
-  );
+  redirect(`/p/edit/${prestataire!.id}`);
 }
