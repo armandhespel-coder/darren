@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -11,6 +11,8 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isPro = searchParams.get("role") === "pro";
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,8 +23,8 @@ export default function RegisterPage() {
       email,
       password,
       options: {
-        data: { role: "client" },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: { role: isPro ? "prestataire" : "client" },
+        emailRedirectTo: `${window.location.origin}/auth/callback${isPro ? "?next=/pro/onboarding" : ""}`,
       },
     });
     if (error) {
@@ -58,9 +60,11 @@ export default function RegisterPage() {
           ) : (
             <>
               <h1 className="text-white text-2xl font-bold mb-1">
-                Créer un compte
+                {isPro ? "Créer un compte prestataire" : "Créer un compte"}
               </h1>
-              <p className="text-white/40 text-sm mb-6">Rejoignez Connect Event</p>
+              <p className="text-white/40 text-sm mb-6">
+                {isPro ? "Gérez votre profil Connect Event" : "Rejoignez Connect Event"}
+              </p>
 
               <form onSubmit={handleRegister} className="flex flex-col gap-4">
                 <div>
