@@ -2,10 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(curl -s -X POST http://localhost:3000/api/send-edit-link -H 'Content-Type: application/json' -d '{\"prestataire_id\":\"test\",\"nom\":\"Test\",\"email\":\"armand.hespel@hotmail.com\",\"expiry\":\"7\",\"reusable\":false,\"sendEmail\":true}')",
-      "Bash(SUPABASE_ACCESS_TOKEN=sbp_7363ac8d8d0512f3bc5efe691f9d8c774865ee72 npx supabase migration repair --status applied 20260419000001)",
-      "Bash(SUPABASE_ACCESS_TOKEN=sbp_7363ac8d8d0512f3bc5efe691f9d8c774865ee72 npx supabase migration repair --status applied 20260423_site_config)",
-      "Bash(SUPABASE_ACCESS_TOKEN=sbp_7363ac8d8d0512f3bc5efe691f9d8c774865ee72 npx supabase migration list)",
-      "Bash(SUPABASE_ACCESS_TOKEN=sbp_7363ac8d8d0512f3bc5efe691f9d8c774865ee72 npx supabase migration repair --status applied 20260423)"
+      "Bash(npx supabase migration repair --status applied *)",
+      "Bash(npx supabase migration list)",
+      "Bash(npx supabase db push --linked)"
     ],
     "additionalDirectories": [
       "c:\\Users\\arman\\Documents\\GitHub\\darren\\public"
