@@ -405,9 +405,6 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                     {p.categorie}
                   </span>
                 </div>
-                {p.continent && (
-                  <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>📍 {p.continent}</span>
-                )}
               </div>
 
               <h1 className="font-black text-2xl mb-0.5" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
@@ -441,26 +438,13 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                 )}
               </div>
 
-              {p.is_premium && p.telephone ? (
-                <a href={`tel:${p.telephone}`}
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-extrabold text-sm text-white transition-all hover:opacity-90"
-                  style={{ background: "var(--grad)", boxShadow: "0 6px 22px rgba(217,63,181,0.3)" }}>
-                  📞 Appeler — {p.telephone}
-                </a>
-              ) : (
-                <a href="#contact"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-extrabold text-sm text-white transition-all hover:opacity-90"
-                  style={{ background: "var(--grad)", boxShadow: "0 6px 22px rgba(217,63,181,0.3)" }}>
-                  ✉️ Envoyer une demande
-                </a>
-              )}
             </div>
 
             {/* Contact form */}
             <div id="contact" className="rounded-2xl p-6"
               style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
               <h2 className="font-black text-lg mb-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
-                Envoyer un message
+                Envoyer une demande
               </h2>
               <p className="text-xs font-semibold mb-4" style={{ color: "var(--muted)" }}>
                 Décrivez votre projet et votre date
@@ -475,7 +459,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                   </div>
                   <p className="text-sm font-bold" style={{ color: "var(--dark)" }}>Message envoyé !</p>
                   <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-                    {p.nom.split(" ")[0]} vous répondra rapidement.
+                    On vous répondra rapidement.
                   </p>
                   <button onClick={() => setSent(false)}
                     className="text-xs mt-3 font-semibold underline" style={{ color: "var(--blue2)" }}>

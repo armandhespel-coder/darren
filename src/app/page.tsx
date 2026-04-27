@@ -535,7 +535,7 @@ export default function HomePage() {
                   border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                <div className="font-black text-sm sm:text-3xl" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", wordBreak: "break-word" }}>
+                <div className="font-black" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", whiteSpace: "nowrap", fontSize: "clamp(0.6rem, 2.6vw, 1.875rem)" }}>
                   {val}
                 </div>
                 <div className="text-[11px] uppercase tracking-widest mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{label}</div>
@@ -640,7 +640,7 @@ export default function HomePage() {
               <PrestaCard
                 key={p.id}
                 presta={p}
-                onSelect={setSelectedPresta}
+                onSelect={(p) => router.push(`/p/${p.id}`)}
                 onContact={(p) => router.push(`/p/${p.id}`)}
                 isFavorited={favorites.has(p.id)}
                 onToggleFavorite={toggleFavorite}
