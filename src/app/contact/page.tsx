@@ -48,7 +48,7 @@ export default function ContactPage() {
       <header style={{ background: "white", borderBottom: "1px solid var(--border)", padding: "0 clamp(16px,4vw,48px)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0" }}>
           <a href="/">
-            <img src="/logo.png" alt="Connect Event" className="h-64 md:h-80 w-auto object-contain" />
+            <img src="/logo.png" alt="Connect Event" className="h-32 md:h-40 w-auto object-contain" />
           </a>
           <a href="/" style={{ color: "var(--muted)", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
             ← Retour à l&apos;accueil
@@ -180,25 +180,6 @@ export default function ContactPage() {
 
         {/* Contact info */}
         <div style={{ marginTop: 32, display: "flex", gap: 16, flexWrap: "wrap" }}>
-          <div style={{
-            flex: 1,
-            minWidth: 200,
-            background: "white",
-            borderRadius: 14,
-            padding: "20px 24px",
-            border: "1px solid var(--border)",
-            boxShadow: "var(--shadow2)",
-          }}>
-            <div style={{ fontSize: 24, marginBottom: 8 }}>📧</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Email</div>
-            <a
-              href="mailto:contact@connectevent.be"
-              style={{ fontSize: 14, fontWeight: 700, color: "var(--blue2)", textDecoration: "none" }}
-            >
-              contact@connectevent.be
-            </a>
-          </div>
-
           <div style={{
             flex: 1,
             minWidth: 200,

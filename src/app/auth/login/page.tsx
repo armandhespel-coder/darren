@@ -3,12 +3,14 @@
 import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
+import DevenirPrestaireModal from "@/components/DevenirPrestaireModal";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const isPro = searchParams.get("next") === "/pro/dashboard";
@@ -28,7 +30,9 @@ function LoginForm() {
   };
 
   return (
-    <div className="glass rounded-2xl p-8">
+    <>
+      {showModal && <DevenirPrestaireModal onClose={() => setShowModal(false)} />}
+      <div className="glass rounded-2xl p-8">
       <h1 className="text-white text-2xl font-bold mb-1" style={{ fontFamily: "var(--font-cormorant)" }}>
         {isPro ? "Espace Prestataire" : "Connexion"}
       </h1>
@@ -38,7 +42,7 @@ function LoginForm() {
       {isPro && (
         <div className="mb-4 px-4 py-3 rounded-xl text-xs font-semibold" style={{ background: "rgba(74,108,247,0.12)", border: "1px solid rgba(74,108,247,0.25)", color: "rgba(180,190,255,0.9)" }}>
           Pas encore de compte prestataire ?{" "}
-          <a href="/pro/onboarding" className="underline text-purple-300">Envoyer une demande</a>
+          <button onClick={() => setShowModal(true)} className="underline text-purple-300 cursor-pointer bg-transparent border-none p-0 font-semibold">Envoyer une demande</button>
         </div>
       )}
 
@@ -96,6 +100,7 @@ function LoginForm() {
         </a>
       </p>
     </div>
+    </>
   );
 }
 

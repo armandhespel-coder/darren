@@ -655,12 +655,7 @@ export default function HomePage() {
         <div className="absolute rounded-full pointer-events-none" style={{ width:200, height:200, background:"#D93FB5", bottom:-80, left:100, filter:"blur(60px)", opacity:0.15 }} />
         <div className="relative flex flex-wrap gap-6 items-center justify-between" style={{ padding: "clamp(24px,4vw,48px) clamp(16px,4vw,48px)" }}>
           <div className="flex items-center gap-4">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black"
-              style={{ background: "var(--grad2)", boxShadow: "0 6px 20px rgba(74,108,247,0.4)" }}
-            >
-              CE
-            </div>
+            <img src="/logo.png" alt="Connect Event" className="h-12 w-auto object-contain" />
             <span className="font-black text-white text-lg" style={{ fontFamily: "var(--font-raleway)" }}>
               Connect Event
             </span>
@@ -729,7 +724,7 @@ export default function HomePage() {
           </div>
 
           <div className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-            © 2025{" "}
+            © 2026{" "}
             <span style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", fontWeight: 800 }}>
               Connect Event
             </span>{" "}
