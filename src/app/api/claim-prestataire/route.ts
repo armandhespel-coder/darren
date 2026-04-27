@@ -20,7 +20,8 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (!presta) return NextResponse.json({ error: "Prestataire introuvable." }, { status: 404 });
-  if (presta.owner_id) return NextResponse.json({ error: "Ce profil est déjà réclamé." }, { status: 409 });
+  const unclaimed = !presta.owner_id || presta.owner_id === "00000000-0000-0000-0000-000000000000";
+  if (!unclaimed) return NextResponse.json({ error: "Ce profil est déjà réclamé." }, { status: 409 });
 
   // Claim : lier le user + passer role à 'pro'
   const [{ error: e1 }, { error: e2 }] = await Promise.all([

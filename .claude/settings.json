@@ -7,7 +7,8 @@
       "Bash(npx supabase db push --linked)",
       "Bash(cat .env.local)",
       "Bash(cat .env)",
-      "Bash(sed -n '430,445p' src/app/p/edit/[id]/edit-client.tsx)"
+      "Bash(sed -n '430,445p' src/app/p/edit/[id]/edit-client.tsx)",
+      "Bash(curl -s -X POST https://cxifqvdvoahyiafhokcz.supabase.co/rest/v1/rpc/exec_sql -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4aWZxdmR2b2FoeWlhZmhva2N6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjMzNjUzMywiZXhwIjoyMDkxOTEyNTMzfQ.TepFiBgU_sD9Ss97Y9gCbhzbXCEnYK40VsVxEeW8KiA' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4aWZxdmR2b2FoeWlhZmhva2N6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjMzNjUzMywiZXhwIjoyMDkxOTEyNTMzfQ.TepFiBgU_sD9Ss97Y9gCbhzbXCEnYK40VsVxEeW8KiA' -H 'Content-Type: application/json' -d '{\"query\":\"ALTER TABLE prestataires ALTER COLUMN owner_id DROP NOT NULL;\"}')"
     ],
     "additionalDirectories": [
       "c:\\Users\\arman\\Documents\\GitHub\\darren\\public"

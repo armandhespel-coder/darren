@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Prestataire } from "@/types";
 
 const CONTINENTS = ["Europe", "Afrique", "Amérique", "Asie", "Océanie"];
+const UNCLAIMED_ID = "00000000-0000-0000-0000-000000000000";
 const FALLBACK_CATS = [
   "DJ", "Décoratrice", "Matériel", "Voiture", "Traiteur",
   "Photo & Caméra", "Feux d'artifice", "Location de salle", "Gâteau",
@@ -294,7 +295,7 @@ export default function AdminPage() {
       const { error } = await supabase.from("prestataires").insert({
         ...payload,
         id: createdId,
-        owner_id: null,
+        owner_id: UNCLAIMED_ID,
       });
       if (error) setMsg({ type: "err", text: error.message });
       else {
@@ -865,7 +866,7 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td className="px-5 py-3">
-                          {p.owner_id ? (
+                          {p.owner_id && p.owner_id !== UNCLAIMED_ID ? (
                             <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-full"
                               style={{ background: "rgba(22,163,74,0.1)", color: "#16a34a" }}>
                               ✓ Réclamé
