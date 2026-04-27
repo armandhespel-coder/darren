@@ -21,6 +21,8 @@ export default async function ProDashboardPage() {
     redirect("/pro/onboarding");
   }
 
+  redirect(`/p/edit/${prestataire.id}`);
+
   const { count: msgCount } = await service
     .from("messages")
     .select("*", { count: "exact", head: true })

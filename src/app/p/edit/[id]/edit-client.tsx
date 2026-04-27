@@ -326,7 +326,7 @@ function ProfilTab({ s, patch, categorie, availableTags }: { s: PrestaState; pat
   );
 }
 
-function ProAuthCard({ tokenId }: { tokenId: string }) {
+function ProAuthCard({ tokenId, prestataireId }: { tokenId: string; prestataireId: string }) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -367,7 +367,7 @@ function ProAuthCard({ tokenId }: { tokenId: string }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: tokenId }),
     });
-    window.location.href = '/pro/dashboard';
+    window.location.href = `/p/edit/${prestataireId}`;
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -378,7 +378,7 @@ function ProAuthCard({ tokenId }: { tokenId: string }) {
       email, password,
       options: {
         data: { role: 'prestataire' },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/pro/dashboard&ptoken=${tokenId}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/p/edit/${prestataireId}&ptoken=${tokenId}`,
       },
     });
     if (err) { setError(err.message); setLoading(false); return; }
@@ -515,7 +515,7 @@ export default function EditClient({ prestataire, tokenId }: { prestataire: Pres
               <p>Les profils avec 4+ photos reçoivent 3× plus de demandes.</p>
             </div>
           </div>
-          {tokenId && <ProAuthCard tokenId={tokenId} />}
+          {tokenId && <ProAuthCard tokenId={tokenId} prestataireId={prestataire.id} />}
         </nav>
 
         <main className="ce-portal-main">
