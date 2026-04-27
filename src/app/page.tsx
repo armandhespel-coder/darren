@@ -232,7 +232,7 @@ export default function HomePage() {
       >
         {/* Logo — toujours à gauche */}
         <a href="/" className="flex items-center gap-2 flex-shrink-0">
-          <img src="/logo.png" alt="Connect Event" className="h-16 md:h-20 w-auto object-contain" />
+          <img src="/logo.png" alt="Connect Event" className="h-32 md:h-40 w-auto object-contain" />
         </a>
 
         {/* Liens desktop */}
@@ -240,7 +240,7 @@ export default function HomePage() {
           {[
             { label: "Accueil", href: "/", icon: <IconHome /> },
             { label: "Prestataires", href: "#prestataires", icon: <IconUsers /> },
-            { label: "Contact", href: "#contact", icon: <IconPhone /> },
+            { label: "Contact", href: "/contact", icon: <IconPhone /> },
           ].map((item, i) => (
             <a
               key={item.label}

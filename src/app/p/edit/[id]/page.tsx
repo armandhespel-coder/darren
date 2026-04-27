@@ -44,7 +44,7 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
       .single();
 
     if (!data) notFound();
-    return <EditClient prestataire={data as Prestataire} />;
+    return <EditClient prestataire={data as Prestataire} tokenId={id} />;
   }
 
   // Fallback: direct prestataire_id (admin direct access)

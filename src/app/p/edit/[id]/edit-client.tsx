@@ -326,7 +326,104 @@ function ProfilTab({ s, patch, categorie, availableTags }: { s: PrestaState; pat
   );
 }
 
-export default function EditClient({ prestataire }: { prestataire: Prestataire }) {
+function ProAuthCard({ tokenId }: { tokenId: string }) {
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState('');
+
+  const cardStyle: React.CSSProperties = {
+    padding: "14px",
+    borderRadius: 14,
+    background: "linear-gradient(135deg, rgba(74,108,247,0.06), rgba(217,63,181,0.06))",
+    border: "1px solid rgba(74,108,247,0.15)",
+  };
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '8px 10px', borderRadius: 8,
+    border: '1.5px solid rgba(74,108,247,0.2)', background: 'white',
+    fontSize: 12, outline: 'none', boxSizing: 'border-box', color: 'var(--dark)',
+    fontFamily: 'inherit',
+  };
+
+  if (done) return (
+    <div style={cardStyle}>
+      <div style={{ fontSize: 12, fontWeight: 800, color: "var(--dark)", marginBottom: 4 }}>📧 Vérifiez votre email</div>
+      <p style={{ margin: 0, fontSize: 11, color: "var(--muted)", fontWeight: 600, lineHeight: 1.5 }}>
+        Confirmez votre adresse pour activer votre accès prestataire permanent.
+      </p>
+    </div>
+  );
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true); setError('');
+    const { createClient } = await import('@/lib/supabase/client');
+    const { error: err } = await createClient().auth.signInWithPassword({ email, password });
+    if (err) { setError(err.message); setLoading(false); return; }
+    await fetch('/api/link-prestataire', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: tokenId }),
+    });
+    window.location.href = '/pro/dashboard';
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true); setError('');
+    const { createClient } = await import('@/lib/supabase/client');
+    const { error: err } = await createClient().auth.signUp({
+      email, password,
+      options: {
+        data: { role: 'prestataire' },
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/pro/dashboard&ptoken=${tokenId}`,
+      },
+    });
+    if (err) { setError(err.message); setLoading(false); return; }
+    setDone(true); setLoading(false);
+  };
+
+  return (
+    <div style={cardStyle}>
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ fontSize: 12, fontWeight: 800, color: "var(--dark)", marginBottom: 2 }}>🔐 Accès permanent</div>
+        <div style={{ fontSize: 11, color: "var(--muted)", fontWeight: 600, lineHeight: 1.5 }}>
+          Connectez-vous ou créez un compte pour gérer votre profil à tout moment.
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
+        {(['login', 'register'] as const).map(m => (
+          <button key={m} type="button" onClick={() => { setMode(m); setError(''); }} style={{
+            flex: 1, padding: '6px 4px', borderRadius: 7,
+            border: mode === m ? 'none' : '1px solid rgba(74,108,247,0.2)',
+            background: mode === m ? 'linear-gradient(135deg, #4A6CF7, #D93FB5)' : 'white',
+            color: mode === m ? 'white' : 'var(--muted)',
+            fontSize: 11, fontWeight: 700, cursor: 'pointer',
+          }}>
+            {m === 'login' ? 'Se connecter' : "S'inscrire"}
+          </button>
+        ))}
+      </div>
+      <form onSubmit={mode === 'login' ? handleLogin : handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="Email" style={inputStyle} />
+        <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} placeholder="Mot de passe (min. 6 carac.)" style={inputStyle} />
+        {error && <p style={{ fontSize: 11, color: '#e53e3e', margin: 0 }}>{error}</p>}
+        <button type="submit" disabled={loading} style={{
+          width: '100%', padding: '9px', borderRadius: 9, border: 'none',
+          background: 'linear-gradient(135deg, #4A6CF7, #D93FB5)',
+          color: 'white', fontSize: 12, fontWeight: 700,
+          cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1,
+        }}>
+          {loading ? '…' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export default function EditClient({ prestataire, tokenId }: { prestataire: Prestataire; tokenId?: string }) {
   const [tab, setTab] = useState('photos');
   const [state, setState] = useState<PrestaState>(() => fromDB(prestataire));
   const [dirty, setDirty] = useState(false);
@@ -418,6 +515,7 @@ export default function EditClient({ prestataire }: { prestataire: Prestataire }
               <p>Les profils avec 4+ photos reçoivent 3× plus de demandes.</p>
             </div>
           </div>
+          {tokenId && <ProAuthCard tokenId={tokenId} />}
         </nav>
 
         <main className="ce-portal-main">
