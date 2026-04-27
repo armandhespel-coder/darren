@@ -40,23 +40,6 @@ function IconPhone({ size = 15 }: { size?: number }) {
   );
 }
 
-function IconMail({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="2" y="4" width="20" height="16" rx="2"/>
-      <path d="M22 7l-10 7L2 7"/>
-    </svg>
-  );
-}
-
-function IconMapPin({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-      <circle cx="12" cy="10" r="3"/>
-    </svg>
-  );
-}
 
 function IconLock({ size = 12 }: { size?: number }) {
   return (
@@ -286,6 +269,29 @@ export default function HomePage() {
             </svg>
             {favorites.size > 0 && <span className="font-extrabold">{favorites.size}</span>}
           </button>
+
+          {/* Espace prestataire — desktop uniquement */}
+          <a
+            href="/pro/dashboard"
+            className="hidden sm:flex items-center gap-1.5 text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap"
+            style={{
+              height: 40,
+              background: "var(--bg2)",
+              color: "var(--muted)",
+              border: "1.5px solid var(--border)",
+              textDecoration: "none",
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLAnchorElement).style.color = "var(--blue2)";
+              (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--blue2)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)";
+              (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border)";
+            }}
+          >
+            🏠 Espace prestataire
+          </a>
 
           {/* Devenir prestataire — desktop uniquement */}
           <button
@@ -644,61 +650,6 @@ export default function HomePage() {
           </div>
         )}
       </main>
-
-      {/* ── Contact band ── */}
-      <section
-        id="contact"
-        className="relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg, var(--dark2) 0%, #2A1042 100%)", marginTop: 40 }}
-      >
-        <div className="absolute rounded-full pointer-events-none" style={{ width:300, height:300, background:"#4A6CF7", top:-100, right:100, filter:"blur(80px)", opacity:0.15 }} />
-        <div className="absolute rounded-full pointer-events-none" style={{ width:200, height:200, background:"#D93FB5", bottom:-80, left:100, filter:"blur(60px)", opacity:0.15 }} />
-        <div className="relative flex flex-wrap gap-6 items-center justify-between" style={{ padding: "clamp(24px,4vw,48px) clamp(16px,4vw,48px)" }}>
-          <div className="flex items-center gap-4">
-            <img src="/logo.png" alt="Connect Event" className="h-12 w-auto object-contain" />
-            <span className="font-black text-white text-lg" style={{ fontFamily: "var(--font-raleway)" }}>
-              Connect Event
-            </span>
-          </div>
-
-          <div className="flex flex-wrap gap-6">
-            {[
-              { icon: <IconMail />, label: "Email", val: "yagan_darren@hotmail.com" },
-              { icon: <IconPhone />, label: "Téléphone", val: "04 83 03 32 02" },
-              { icon: <IconMapPin />, label: "Zone couverte", val: "Belgique" },
-            ].map(item => (
-              <div key={item.label} className="flex items-center gap-3">
-                <div
-                  className="flex items-center justify-center rounded-xl"
-                  style={{ width: 40, height: 40, background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}
-                >
-                  {item.icon}
-                </div>
-                <div>
-                  <div className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>{item.label}</div>
-                  <div className="text-sm font-bold text-white">{item.val}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button
-            onClick={() => setShowPrestaireModal(true)}
-            className="flex items-center gap-2 text-white text-sm font-extrabold px-6 rounded-full cursor-pointer transition-all whitespace-nowrap"
-            style={{ height: 48, background: "var(--grad)", boxShadow: "0 4px 14px rgba(217,63,181,0.3)", border: "none" }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 24px rgba(217,63,181,0.45)";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 14px rgba(217,63,181,0.3)";
-            }}
-          >
-            <IconStar /> Devenir prestataire
-          </button>
-        </div>
-      </section>
 
       {/* ── Footer ── */}
       <footer style={{ background: "var(--dark)", padding: "24px clamp(16px,4vw,48px)" }}>
