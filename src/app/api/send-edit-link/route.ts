@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
 
   const resend = new Resend(process.env.RESEND_API_KEY!);
   const { error } = await resend.emails.send({
-    from: "Connect Event <onboarding@resend.dev>",
+    from: "Connect Event <contact@connect-event.be>",
     to: email,
     bcc: process.env.CONTACT_EMAIL ?? "armand.hespel@hotmail.com",
     subject: "Mettez à jour votre profil Connect Event",
