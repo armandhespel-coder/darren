@@ -474,7 +474,7 @@ export default function EditClient({ prestataire, tokenId }: { prestataire: Pres
     <div className="ce-root">
       <header className="ce-portal-top">
         <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-          <img src="/logo.png" alt="Connect Event" style={{ height: 52, width: 'auto', objectFit: 'contain' }} />
+          <img src="/logo.png" alt="Connect Event" style={{ height: 104, width: 'auto', objectFit: 'contain' }} />
         </a>
         <div className="ce-portal-top-center">
           <span className="ce-portal-pill"><Ico.User s={12} /> Espace de {state.nom}</span>

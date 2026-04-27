@@ -103,7 +103,7 @@ export default function DemandesPage() {
           borderBottom: "1px solid var(--border)",
           height: 64,
         }}>
-        <a href="/pro/dashboard"><img src="/logo.png" alt="Connect Event" className="h-12 w-auto object-contain" /></a>
+        <a href="/pro/dashboard"><img src="/logo.png" alt="Connect Event" className="h-24 w-auto object-contain" /></a>
         <h1 className="font-black text-lg" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
           Mes demandes
         </h1>

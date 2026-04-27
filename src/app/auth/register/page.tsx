@@ -119,7 +119,7 @@ export default function RegisterPage() {
     >
       <div className="w-full max-w-sm">
         <div className="flex items-center justify-center mb-8">
-          <img src="/logo.png" alt="Connect Event" className="h-20 md:h-32 w-auto object-contain" />
+          <img src="/logo.png" alt="Connect Event" className="h-40 md:h-64 w-auto object-contain" />
         </div>
 
         <Suspense fallback={<div className="glass rounded-2xl p-8 text-white/40 text-sm text-center">Chargement…</div>}>

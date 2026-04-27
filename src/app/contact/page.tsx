@@ -46,9 +46,9 @@ export default function ContactPage() {
     <main style={{ minHeight: "100vh", background: "var(--bg)", fontFamily: "var(--font-nunito)" }}>
       {/* Header */}
       <header style={{ background: "white", borderBottom: "1px solid var(--border)", padding: "0 clamp(16px,4vw,48px)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 72 }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0" }}>
           <a href="/">
-            <img src="/logo.png" alt="Connect Event" style={{ height: 48, width: "auto", objectFit: "contain" }} />
+            <img src="/logo.png" alt="Connect Event" className="h-64 md:h-80 w-auto object-contain" />
           </a>
           <a href="/" style={{ color: "var(--muted)", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
             ← Retour à l&apos;accueil

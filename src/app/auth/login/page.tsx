@@ -38,7 +38,7 @@ function LoginForm() {
       {isPro && (
         <div className="mb-4 px-4 py-3 rounded-xl text-xs font-semibold" style={{ background: "rgba(74,108,247,0.12)", border: "1px solid rgba(74,108,247,0.25)", color: "rgba(180,190,255,0.9)" }}>
           Pas encore de compte prestataire ?{" "}
-          <a href="/auth/register?role=pro" className="underline text-purple-300">Créez-en un ici</a>
+          <a href="/pro/onboarding" className="underline text-purple-300">Envoyer une demande</a>
         </div>
       )}
 
@@ -107,7 +107,7 @@ export default function LoginPage() {
     >
       <div className="w-full max-w-sm">
         <div className="flex items-center justify-center mb-8">
-          <img src="/logo.png" alt="Connect Event" className="h-20 md:h-32 w-auto object-contain" />
+          <img src="/logo.png" alt="Connect Event" className="h-40 md:h-64 w-auto object-contain" />
         </div>
 
         <Suspense fallback={<div className="glass rounded-2xl p-8 text-white/40 text-sm text-center">Chargement…</div>}>

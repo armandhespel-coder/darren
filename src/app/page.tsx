@@ -226,13 +226,12 @@ export default function HomePage() {
           backdropFilter: "blur(20px)",
           borderBottom: "1px solid var(--border)",
           boxShadow: "0 2px 20px rgba(74,108,247,0.08)",
-          padding: "0 clamp(12px, 4vw, 48px)",
-          height: 80,
+          padding: "12px clamp(12px, 4vw, 48px)",
         }}
       >
         {/* Logo — toujours à gauche */}
         <a href="/" className="flex items-center gap-2 flex-shrink-0">
-          <img src="/logo.png" alt="Connect Event" className="h-32 md:h-40 w-auto object-contain" />
+          <img src="/logo.png" alt="Connect Event" className="h-64 md:h-80 w-auto object-contain" />
         </a>
 
         {/* Liens desktop */}

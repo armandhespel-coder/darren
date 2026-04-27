@@ -62,6 +62,23 @@ export default function OnboardingPage() {
     });
     setSaving(false);
     if (error) { setError(error.message); return; }
+    const supabase2 = createClient();
+    const { data: { user } } = await supabase2.auth.getUser();
+    fetch("/api/demande-prestataire", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nom: form.nom.trim(),
+        company: form.company.trim() || null,
+        categorie: form.categorie,
+        continent: form.continent,
+        description: form.description.trim() || null,
+        tags: form.tags,
+        prix: Number(form.prix) || 0,
+        price_note: form.price_note.trim() || null,
+        email: user?.email ?? null,
+      }),
+    });
     router.push("/pro/dashboard");
   };
 
@@ -78,7 +95,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-lg">
         {/* Logo */}
         <div className="flex items-center justify-center mb-8">
-          <img src="/logo.png" alt="Connect Event" className="h-12 w-auto object-contain" />
+          <img src="/logo.png" alt="Connect Event" className="h-24 w-auto object-contain" />
         </div>
 
         {/* Progress */}
