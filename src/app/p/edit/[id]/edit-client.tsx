@@ -423,13 +423,31 @@ function ProAuthCard({ tokenId, prestataireId }: { tokenId: string; prestataireI
   );
 }
 
-export default function EditClient({ prestataire, tokenId }: { prestataire: Prestataire; tokenId?: string }) {
+export default function EditClient({ prestataire, tokenId, claimable }: { prestataire: Prestataire; tokenId?: string; claimable?: boolean }) {
   const [tab, setTab] = useState('photos');
   const [state, setState] = useState<PrestaState>(() => fromDB(prestataire));
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [siteTags, setSiteTags] = useState<string[]>(DEFAULT_TAGS);
+  const [claimStatus, setClaimStatus] = useState<'loading' | 'needsAuth' | 'claiming' | 'done'>('done');
+
+  useEffect(() => {
+    if (!claimable) return;
+    setClaimStatus('loading');
+    import('@/lib/supabase/client').then(({ createClient }) => {
+      createClient().auth.getUser().then(async ({ data }) => {
+        if (!data.user) { setClaimStatus('needsAuth'); return; }
+        setClaimStatus('claiming');
+        await fetch('/api/claim-prestataire', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prestataire_id: prestataire.id }),
+        });
+        setClaimStatus('done');
+      });
+    });
+  }, [claimable, prestataire.id]);
 
   useEffect(() => {
     import('@/lib/supabase/client').then(({ createClient }) => {
@@ -438,6 +456,55 @@ export default function EditClient({ prestataire, tokenId }: { prestataire: Pres
       });
     });
   }, []);
+
+  if (claimable && claimStatus === 'loading') return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F7F8FC' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: 40, height: 40, border: '3px solid #4A6CF7', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
+        <p style={{ color: '#6B6A87', fontWeight: 600, fontSize: 14 }}>Vérification…</p>
+      </div>
+    </div>
+  );
+
+  if (claimable && claimStatus === 'needsAuth') {
+    const next = encodeURIComponent(`/p/edit/${prestataire.id}`);
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #12112A, #1E1C3A)', padding: '24px' }}>
+        <div style={{ background: 'white', borderRadius: 24, padding: '48px 40px', maxWidth: 440, width: '100%', textAlign: 'center', boxShadow: '0 30px 80px rgba(74,108,247,0.25)' }}>
+          <img src="/logo.png" alt="Connect Event" style={{ height: 80, objectFit: 'contain', marginBottom: 24 }} />
+          <h1 style={{ fontWeight: 900, fontSize: 24, color: '#1E1C3A', marginBottom: 8 }}>
+            Votre espace prestataire
+          </h1>
+          <p style={{ color: '#6B6A87', fontSize: 14, lineHeight: 1.6, marginBottom: 32 }}>
+            Créez un compte ou connectez-vous pour accéder à votre profil{prestataire.nom ? ` <strong>${prestataire.nom}</strong>` : ''} et commencer à recevoir des clients.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <a href={`/auth/register?next=${next}`}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: 14, background: 'linear-gradient(135deg,#4A6CF7,#D93FB5)', color: 'white', fontWeight: 800, fontSize: 15, textDecoration: 'none', letterSpacing: '0.02em' }}>
+              ✨ Créer mon compte
+            </a>
+            <a href={`/auth/login?next=${next}`}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: 14, background: '#F7F8FC', color: '#1E1C3A', fontWeight: 700, fontSize: 15, textDecoration: 'none', border: '1.5px solid #E0E0EF' }}>
+              🔑 J&apos;ai déjà un compte
+            </a>
+          </div>
+          <p style={{ marginTop: 20, fontSize: 12, color: '#9999B3' }}>
+            En vous inscrivant via ce lien, vous devenez automatiquement prestataire sur Connect Event.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (claimable && claimStatus === 'claiming') return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F7F8FC' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
+        <h2 style={{ fontWeight: 900, fontSize: 22, color: '#1E1C3A', marginBottom: 8 }}>Bienvenue !</h2>
+        <p style={{ color: '#6B6A87', fontSize: 14 }}>Activation de votre profil pro en cours…</p>
+      </div>
+    </div>
+  );
 
   const patch = (k: keyof PrestaState, v: unknown) => {
     setState(p => ({ ...p, [k]: v }));

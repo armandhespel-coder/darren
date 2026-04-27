@@ -47,7 +47,7 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
     return <EditClient prestataire={data as Prestataire} tokenId={id} />;
   }
 
-  // Fallback: direct prestataire_id (admin direct access)
+  // Fallback: direct prestataire_id (admin direct access or claim link)
   const { data } = await supabase
     .from("prestataires")
     .select("*")
@@ -55,5 +55,6 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
     .single();
 
   if (!data) notFound();
-  return <EditClient prestataire={data as Prestataire} />;
+  const claimable = !data.owner_id;
+  return <EditClient prestataire={data as Prestataire} claimable={claimable} />;
 }
