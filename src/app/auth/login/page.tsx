@@ -41,10 +41,8 @@ function LoginForm() {
       </p>
       {isPro && (
         <div className="mb-4 px-4 py-3 rounded-xl text-xs font-semibold" style={{ background: "rgba(74,108,247,0.12)", border: "1px solid rgba(74,108,247,0.25)", color: "rgba(180,190,255,0.9)" }}>
-          Pas encore de compte prestataire ?{" "}
-          <a href="/auth/register?role=pro" className="underline text-purple-300 font-semibold">Créer un compte</a>
-          {" "}ou{" "}
-          <button onClick={() => setShowModal(true)} className="underline text-purple-300 cursor-pointer bg-transparent border-none p-0 font-semibold">envoyer une demande</button>
+          Pas encore de compte ?{" "}
+          Utilisez le lien envoyé par l&apos;administrateur pour créer votre accès.
         </div>
       )}
 
