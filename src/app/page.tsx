@@ -91,7 +91,7 @@ export default function HomePage() {
       setUserEmail(data.user?.email ?? null);
       if (data.user) {
         const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
-        setUserIsPrestataire(profile?.role === "prestataire");
+        setUserIsPrestataire(profile?.role === "pro");
       }
     });
   }, []);

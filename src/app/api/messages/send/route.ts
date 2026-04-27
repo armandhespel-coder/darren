@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
+const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com"];
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -10,7 +12,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
   }
 
-  const { prestataire_id, receiver_id, content } = await req.json();
+  const { prestataire_id, content } = await req.json();
 
   if (!content?.trim()) {
     return NextResponse.json({ error: "Message vide." }, { status: 400 });
@@ -18,11 +20,20 @@ export async function POST(req: NextRequest) {
 
   const service = createServiceClient();
 
+  // Route all booking requests to admin
+  const { data: adminProfiles } = await service
+    .from("profiles")
+    .select("id")
+    .in("email", ADMIN_EMAILS)
+    .limit(1);
+
+  const adminId = adminProfiles?.[0]?.id ?? null;
+
   const { data: msg, error } = await service
     .from("messages")
     .insert({
       sender_id: user.id,
-      receiver_id: receiver_id,
+      receiver_id: adminId,
       prestataire_id: prestataire_id ?? null,
       content: content.trim(),
       read: false,

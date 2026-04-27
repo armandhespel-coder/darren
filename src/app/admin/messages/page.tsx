@@ -36,6 +36,7 @@ export default function AdminMessagesPage() {
   const [loading, setLoading] = useState(true);
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [adminId, setAdminId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -49,7 +50,6 @@ export default function AdminMessagesPage() {
     const { data: msgs } = await supabase.from("messages").select("*").order("created_at", { ascending: true });
     if (!msgs?.length) { setLoading(false); return; }
 
-    // Collect all partner IDs (non-admin)
     const partnerIds = [...new Set(msgs.flatMap((m: Msg) => {
       if (m.sender_id === user.id) return m.receiver_id ? [m.receiver_id] : [];
       return [m.sender_id];
@@ -67,11 +67,10 @@ export default function AdminMessagesPage() {
     const prestaMap: Record<string, string> = {};
     (prestas ?? []).forEach((p: { id: string; nom: string }) => { prestaMap[p.id] = p.nom; });
 
-    // Group messages into conversations by partner
     const convMap = new Map<string, Conversation>();
     for (const msg of msgs as Msg[]) {
       const partnerId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
-      if (!partnerId) continue;
+      if (!partnerId || partnerId === user.id) continue;
 
       if (!convMap.has(partnerId)) {
         convMap.set(partnerId, {
@@ -104,7 +103,6 @@ export default function AdminMessagesPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Scroll to bottom when conversation messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [active?.messages.length]);
@@ -147,6 +145,19 @@ export default function AdminMessagesPage() {
       setReply("");
     }
     setSending(false);
+  };
+
+  const deleteConversation = async () => {
+    if (!active || !adminId) return;
+    if (!confirm(`Supprimer toute la conversation avec ${active.partnerEmail} ?`)) return;
+    setDeleting(true);
+    const supabase = createClient();
+    const ids = active.messages.map(m => m.id);
+    await supabase.from("messages").delete().in("id", ids);
+    const updated = conversations.filter(c => c.partnerId !== active.partnerId);
+    setConversations(updated);
+    setActive(updated[0] ?? null);
+    setDeleting(false);
   };
 
   const filtered = conversations.filter(c =>
@@ -204,7 +215,7 @@ export default function AdminMessagesPage() {
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Rechercher un client…"
+                placeholder="Rechercher…"
                 className="w-full rounded-xl px-4 py-2 text-sm font-semibold outline-none"
                 style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
                 onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
@@ -289,13 +300,26 @@ export default function AdminMessagesPage() {
                   style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)", flexShrink: 0 }}>
                   {active.messages.length} message{active.messages.length !== 1 ? "s" : ""}
                 </span>
+                {/* Delete conversation */}
+                <button
+                  onClick={deleteConversation}
+                  disabled={deleting}
+                  title="Supprimer la conversation"
+                  className="flex items-center justify-center rounded-xl cursor-pointer transition-all disabled:opacity-50"
+                  style={{ width: 36, height: 36, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#dc2626", flexShrink: 0 }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.15)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(239,68,68,0.08)")}
+                >
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                  </svg>
+                </button>
               </div>
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-3" style={{ maxHeight: 360 }}>
                 {active.messages.map(m => {
                   const isAdmin = m.sender_id === adminId;
-                  // Extract phone line for display
                   const phoneLine = m.content.split("\n").find(l => l.startsWith("📞"));
                   const phone = phoneLine?.replace("📞 Téléphone : ", "").trim();
 

@@ -50,16 +50,16 @@ export default function AdminTagsPage() {
     const supabase = createClient();
     const { error } = await supabase.from("site_subcategories").insert({ name, category_name: selectedCat || null });
     if (error) flash("err", error.message);
-    else { flash("ok", `Tag « ${name} » ajouté.`); setInput(""); load(); }
+    else { flash("ok", `Sous-catégorie « ${name} » ajoutée.`); setInput(""); load(); }
     setSaving(false);
   };
 
   const deleteTag = async (id: string, name: string) => {
-    if (!confirm(`Supprimer le tag « ${name} » ?`)) return;
+    if (!confirm(`Supprimer la sous-catégorie « ${name} » ?`)) return;
     const supabase = createClient();
-    const { error } = await supabase.from("site_tags").delete().eq("id", id);
+    const { error } = await supabase.from("site_subcategories").delete().eq("id", id);
     if (error) flash("err", error.message);
-    else { flash("ok", "Tag supprimé."); load(); }
+    else { flash("ok", "Sous-catégorie supprimée."); load(); }
   };
 
   const filtered = filterCat === "all" ? tags :
@@ -105,7 +105,7 @@ export default function AdminTagsPage() {
           Sous-catégories
         </h1>
         <p className="text-sm font-semibold mb-8" style={{ color: "var(--muted)" }}>
-          Associez des tags à des catégories pour créer des sous-catégories sur le site. Un tag sans catégorie est global.
+          Associez des sous-catégories à des catégories. Une sous-catégorie sans catégorie est globale.
         </p>
 
         {msg && (
@@ -123,7 +123,7 @@ export default function AdminTagsPage() {
         <div className="rounded-2xl p-6 mb-6"
           style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
           <h2 className="font-black text-lg mb-4" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
-            Ajouter un tag
+            Ajouter une sous-catégorie
           </h2>
           <div className="flex flex-col gap-3">
             <div className="flex gap-3">
@@ -156,7 +156,7 @@ export default function AdminTagsPage() {
                 className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold outline-none cursor-pointer"
                 style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)", appearance: "none" }}
               >
-                <option value="">— Aucune (tag global)</option>
+                <option value="">— Aucune (globale)</option>
                 {categories.map(c => (
                   <option key={c.name} value={c.name}>{c.icon} {c.name}</option>
                 ))}
@@ -168,8 +168,8 @@ export default function AdminTagsPage() {
         {/* Filter pills */}
         <div className="flex gap-2 mb-4 flex-wrap">
           {[
-            { key: "all", label: `Tous (${tags.length})` },
-            { key: "global", label: `🌐 Global (${tags.filter(t => !t.category_name).length})` },
+            { key: "all", label: `Toutes (${tags.length})` },
+            { key: "global", label: `🌐 Globales (${tags.filter(t => !t.category_name).length})` },
             ...categories.map(c => ({ key: c.name, label: `${c.icon} ${c.name} (${tags.filter(t => t.category_name === c.name).length})` })),
           ].map(f => (
             <button
@@ -187,19 +187,19 @@ export default function AdminTagsPage() {
           ))}
         </div>
 
-        {/* Tag list */}
+        {/* List */}
         <div className="rounded-2xl overflow-hidden"
           style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
           <div className="px-6 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
             <span className="font-extrabold text-sm" style={{ color: "var(--dark)" }}>
-              {loading ? "Chargement…" : `${filtered.length} tag${filtered.length > 1 ? "s" : ""}`}
+              {loading ? "Chargement…" : `${filtered.length} sous-catégorie${filtered.length > 1 ? "s" : ""}`}
             </span>
           </div>
 
           {!loading && filtered.length === 0 ? (
             <div className="py-12 text-center" style={{ color: "var(--muted)" }}>
               <div className="text-3xl mb-2">🏷️</div>
-              <p className="font-bold text-sm">Aucun tag. Ajoutez-en un.</p>
+              <p className="font-bold text-sm">Aucune sous-catégorie. Ajoutez-en une.</p>
             </div>
           ) : (
             <div className="divide-y" style={{ borderColor: "var(--border)" }}>
@@ -209,7 +209,7 @@ export default function AdminTagsPage() {
                   <div key={key}>
                     <div className="px-6 py-2.5 text-[10px] font-extrabold uppercase tracking-widest"
                       style={{ background: "var(--bg)", color: "var(--blue2)", borderBottom: "1px solid var(--border)" }}>
-                      {cat ? `${cat.icon} ${cat.name}` : "🌐 Global (sans catégorie)"}
+                      {cat ? `${cat.icon} ${cat.name}` : "🌐 Globales (sans catégorie)"}
                     </div>
                     <div className="p-4 flex flex-wrap gap-2">
                       {groupTags.map(tag => (

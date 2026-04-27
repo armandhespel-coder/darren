@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import type { Prestataire } from "@/types";
+import Navbar from "@/components/Navbar";
 
 interface Props {
   prestataire: Prestataire;
@@ -69,7 +69,6 @@ function EditableCalendar({ prestataire: p }: { prestataire: Prestataire }) {
 
   return (
     <div>
-      {/* Statut global + sauvegarde */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <button
           onClick={toggleAvailable}
@@ -95,9 +94,7 @@ function EditableCalendar({ prestataire: p }: { prestataire: Prestataire }) {
         )}
       </div>
 
-      {/* Calendrier */}
       <div style={{ border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
-        {/* Navigation mois */}
         <div className="flex items-center justify-between px-4 py-3"
           style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)" }}>
           <button
@@ -119,7 +116,6 @@ function EditableCalendar({ prestataire: p }: { prestataire: Prestataire }) {
           </button>
         </div>
 
-        {/* Grille */}
         <div style={{ padding: "12px 16px 16px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 6 }}>
             {["L","M","M","J","V","S","D"].map((d, i) => (
@@ -160,7 +156,6 @@ function EditableCalendar({ prestataire: p }: { prestataire: Prestataire }) {
           </div>
         </div>
 
-        {/* Légende */}
         <div className="flex items-center gap-4 px-4 py-3 flex-wrap"
           style={{ borderTop: "1px solid var(--border)", background: "var(--bg2)" }}>
           <div className="flex items-center gap-1.5">
@@ -178,14 +173,7 @@ function EditableCalendar({ prestataire: p }: { prestataire: Prestataire }) {
 }
 
 export default function DashboardClient({ prestataire: p, userEmail }: Props) {
-  const router = useRouter();
   const [showCalendar, setShowCalendar] = useState(false);
-
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/");
-  };
 
   const { done, total, pct } = completionScore(p);
 
@@ -196,39 +184,9 @@ export default function DashboardClient({ prestataire: p, userEmail }: Props) {
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
-      {/* Header */}
-      <header className="sticky top-0 z-40 flex items-center justify-between px-6"
-        style={{
-          background: "rgba(255,255,255,0.97)",
-          backdropFilter: "blur(20px)",
-          borderBottom: "1px solid var(--border)",
-          boxShadow: "0 2px 20px rgba(74,108,247,0.08)",
-          height: 68,
-        }}>
-        {/* Logo toujours à gauche */}
-        <div className="flex items-center gap-3">
-          <a href="/"><img src="/logo.png" alt="Connect Event" className="h-28 w-auto object-contain" /></a>
-          <span className="text-xs font-extrabold px-3 py-1 rounded-full"
-            style={{ background: "rgba(74,108,247,0.1)", color: "var(--blue2)" }}>
-            Espace Pro
-          </span>
-        </div>
-        {/* Hamburger toujours à droite */}
-        <div className="flex items-center gap-3">
-          <a href={`/p/${p.id}`} target="_blank"
-            className="text-xs font-bold px-4 py-2 rounded-full"
-            style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
-            Voir ma fiche →
-          </a>
-          <button onClick={handleLogout}
-            className="text-xs font-extrabold px-4 py-2 rounded-full text-white cursor-pointer"
-            style={{ background: "linear-gradient(135deg,#ef4444,#dc2626)" }}>
-            Déconnexion
-          </button>
-        </div>
-      </header>
+      <Navbar />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 pt-24">
         {/* Welcome */}
         <div className="mb-8">
           <h1 className="font-black text-3xl mb-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
@@ -326,7 +284,7 @@ export default function DashboardClient({ prestataire: p, userEmail }: Props) {
               </div>
             </div>
 
-            {/* ── Disponibilités — calendrier inline ── */}
+            {/* Disponibilités */}
             <div className="rounded-2xl p-6"
               style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
               <div className="flex items-center justify-between mb-4">

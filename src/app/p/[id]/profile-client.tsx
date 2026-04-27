@@ -425,6 +425,17 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                 )}
               </div>
 
+              {/* Téléphone — premium uniquement */}
+              {p.is_premium && p.telephone && (
+                <a
+                  href={`tel:${p.telephone}`}
+                  className="flex items-center justify-center gap-2 w-full rounded-xl font-extrabold text-white text-sm mb-3"
+                  style={{ height: 46, background: "var(--grad)", boxShadow: "0 6px 18px rgba(217,63,181,0.3)", textDecoration: "none", letterSpacing: "0.04em" }}
+                >
+                  📞 Appeler — {p.telephone}
+                </a>
+              )}
+
               {/* Rating — toujours visible si note > 0 */}
               {(avgNote > 0 || p.note > 0) && (
                 <div className="flex items-center gap-2 py-3 px-4 rounded-xl mb-2"
