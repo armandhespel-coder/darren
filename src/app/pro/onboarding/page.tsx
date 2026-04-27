@@ -62,6 +62,8 @@ export default function OnboardingPage() {
     });
     setSaving(false);
     if (error) { setError(error.message); return; }
+    // Upgrade role to 'pro'
+    await supabase.from("profiles").update({ role: "pro" }).eq("id", userId);
     const supabase2 = createClient();
     const { data: { user } } = await supabase2.auth.getUser();
     fetch("/api/demande-prestataire", {
