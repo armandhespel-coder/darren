@@ -21,7 +21,7 @@ export default async function AvisPage({ params }: { params: Promise<{ token: st
     return <InvalidPage message="Ce lien a expiré. Contactez l'administrateur." icon="⏰" />;
   }
 
-  const presta = data.prestataires as { id: string; nom: string; categorie: string } | null;
+  const presta = data.prestataires as unknown as { id: string; nom: string; categorie: string } | null;
   if (!presta) {
     return <InvalidPage message="Prestataire introuvable." />;
   }
