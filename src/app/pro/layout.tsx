@@ -9,15 +9,5 @@ export default async function ProLayout({ children }: { children: React.ReactNod
     redirect("/auth/login?next=/pro/dashboard");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || profile.role !== "prestataire") {
-    redirect("/auth/login?next=/pro/dashboard");
-  }
-
   return <>{children}</>;
 }
