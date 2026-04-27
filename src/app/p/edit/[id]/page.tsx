@@ -55,6 +55,6 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
     .single();
 
   if (!data) notFound();
-  const claimable = !data.owner_id || data.owner_id === "00000000-0000-0000-0000-000000000000";
+  const claimable = !data.owner_id;
   return <EditClient prestataire={data as Prestataire} claimable={claimable} />;
 }
