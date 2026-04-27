@@ -40,7 +40,6 @@ function IconPhone({ size = 15 }: { size?: number }) {
   );
 }
 
-
 function IconLock({ size = 12 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -76,6 +75,7 @@ export default function HomePage() {
   const [validTags, setValidTags] = useState<Set<string>>(new Set());
   const [dbTags, setDbTags] = useState<Array<{ name: string; category_name: string | null }>>([]);
   const [userIsPrestataire, setUserIsPrestataire] = useState(false);
+  const [sortBy, setSortBy] = useState<"" | "prix_asc" | "prix_desc" | "note_desc">("");
 
   const router = useRouter();
   const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com", "studiohesperides@gmail.com"];
@@ -158,13 +158,10 @@ export default function HomePage() {
     setFilters(newFilters);
   };
 
-  // Tags disponibles pour la catégorie sélectionnée (sous-catégories)
   const availableTags = useMemo(() => {
     if (filters.categorie === "Tous") return [];
-    // Priorité : tags admin liés à cette catégorie
     const categoryTags = dbTags.filter(t => t.category_name === filters.categorie).map(t => t.name);
     if (categoryTags.length > 0) return categoryTags.sort();
-    // Fallback : tags issus des prestataires de cette catégorie
     const tags = new Set<string>();
     prestataires
       .filter(p => p.categorie === filters.categorie)
@@ -173,7 +170,7 @@ export default function HomePage() {
   }, [dbTags, prestataires, filters.categorie, validTags]);
 
   const filtered = useMemo(() => {
-    return prestataires.filter((p) => {
+    let result = prestataires.filter((p) => {
       if (showFavoritesOnly && !favorites.has(p.id)) return false;
       if (filters.search) {
         const q = filters.search.toLowerCase();
@@ -185,7 +182,11 @@ export default function HomePage() {
       if (filters.budgetMax < MAX_BUDGET && p.prix > filters.budgetMax) return false;
       return true;
     });
-  }, [prestataires, filters, selectedTag, showFavoritesOnly, favorites]);
+    if (sortBy === "prix_asc") result = [...result].sort((a, b) => a.prix - b.prix);
+    else if (sortBy === "prix_desc") result = [...result].sort((a, b) => b.prix - a.prix);
+    else if (sortBy === "note_desc") result = [...result].sort((a, b) => b.note - a.note);
+    return result;
+  }, [prestataires, filters, selectedTag, showFavoritesOnly, favorites, sortBy]);
 
   const activeCatIcon = useMemo(() => {
     if (filters.categorie === "Tous") return "✨";
@@ -220,7 +221,7 @@ export default function HomePage() {
           height: 80,
         }}
       >
-        {/* Logo — toujours à gauche */}
+        {/* Logo */}
         <a href="/" className="flex items-center gap-2 flex-shrink-0">
           <img src="/logo.png" alt="Connect Event" className="h-32 md:h-40 w-auto object-contain" />
         </a>
@@ -255,7 +256,7 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Droite : favoris + devenir prestataire + hamburger */}
+        {/* Droite : favoris + espace pro + devenir prestataire + hamburger */}
         <div className="flex items-center gap-2">
           {/* Favoris */}
           <button
@@ -275,6 +276,31 @@ export default function HomePage() {
                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
             {favorites.size > 0 && <span className="font-extrabold">{favorites.size}</span>}
+          </button>
+
+          {/* Espace Pro — desktop uniquement */}
+          <button
+            onClick={() => {
+              if (userIsPrestataire) router.push("/pro/dashboard");
+              else setShowPrestaireModal(true);
+            }}
+            className="hidden sm:flex items-center gap-1.5 text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer"
+            style={{
+              height: 40,
+              background: "transparent",
+              border: "1.5px solid var(--border)",
+              color: "var(--text)",
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--blue2)";
+              (e.currentTarget as HTMLButtonElement).style.color = "var(--blue2)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
+              (e.currentTarget as HTMLButtonElement).style.color = "var(--text)";
+            }}
+          >
+            🏠 Espace Pro
           </button>
 
           {/* Devenir prestataire — desktop uniquement */}
@@ -406,7 +432,6 @@ export default function HomePage() {
                     >
                       📝 Créer un compte
                     </a>
-                    {/* Devenir prestataire — mobile uniquement */}
                     <button
                       onClick={() => { setShowPrestaireModal(true); setShowMenu(false); }}
                       className="flex items-center gap-3 px-4 py-3 text-sm font-extrabold transition-all w-full text-left cursor-pointer sm:hidden"
@@ -454,7 +479,7 @@ export default function HomePage() {
             DJ, décoratrices, traiteurs, photographes, feux d&apos;artifice et bien plus encore — trouvez les meilleurs experts en Belgique.
           </p>
 
-          {/* CTA buttons — bien visibles */}
+          {/* CTA buttons */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10 anim-up" style={{ animationDelay: "0.15s" }}>
             <button
               onClick={() => setShowPrestaireModal(true)}
@@ -510,7 +535,7 @@ export default function HomePage() {
                   border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                <div className="font-black text-sm sm:text-3xl whitespace-nowrap" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                <div className="font-black text-sm sm:text-3xl" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", wordBreak: "break-word" }}>
                   {val}
                 </div>
                 <div className="text-[11px] uppercase tracking-widest mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{label}</div>
@@ -553,9 +578,30 @@ export default function HomePage() {
             </h2>
             <p className="text-xs font-semibold mt-1" style={{ color: "var(--muted)" }}>Découvrez nos experts disponibles</p>
           </div>
-          <span className="text-sm font-semibold px-4 py-1.5 rounded-full" style={{ background: "var(--bg2)", color: "var(--muted)" }}>
-            {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
-          </span>
+
+          {/* Résultats + tri */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-semibold px-4 py-1.5 rounded-full" style={{ background: "var(--bg2)", color: "var(--muted)" }}>
+              {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
+            </span>
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as typeof sortBy)}
+              className="text-xs font-bold rounded-full px-3 cursor-pointer outline-none"
+              style={{
+                height: 34,
+                background: sortBy ? "rgba(74,108,247,0.08)" : "var(--bg2)",
+                color: sortBy ? "var(--blue2)" : "var(--muted)",
+                border: sortBy ? "1.5px solid rgba(74,108,247,0.25)" : "1.5px solid transparent",
+                appearance: "none",
+              }}
+            >
+              <option value="">Trier par…</option>
+              <option value="prix_asc">Prix croissant</option>
+              <option value="prix_desc">Prix décroissant</option>
+              <option value="note_desc">Meilleure note</option>
+            </select>
+          </div>
         </div>
 
         {loading ? (
@@ -579,7 +625,7 @@ export default function HomePage() {
               {showFavoritesOnly ? "Cliquez sur ♥ sur les cartes pour ajouter vos favoris." : "Essayez de modifier vos filtres."}
             </p>
             <button
-              onClick={() => { setFilters(DEFAULT_FILTERS); setSelectedTag(""); setShowFavoritesOnly(false); }}
+              onClick={() => { setFilters(DEFAULT_FILTERS); setSelectedTag(""); setShowFavoritesOnly(false); setSortBy(""); }}
               className="mt-4 text-xs font-bold px-5 py-2 rounded-full cursor-pointer transition-all"
               style={{ background: "var(--bg2)", color: "var(--muted)" }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text)"; }}
