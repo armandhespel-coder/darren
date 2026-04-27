@@ -9,7 +9,7 @@ export interface Profile {
 
 export interface Prestataire {
   id: string;
-  owner_id: string;
+  owner_id: string | null;
   nom: string;
   categorie: string;
   continent?: string;

@@ -209,6 +209,7 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [stats, setStats] = useState({ premium: 0, users: 0, messages: 0 });
+  const [createdLink, setCreatedLink] = useState<string | null>(null);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [availableSpecialites, setAvailableSpecialites] = useState<string[]>([]);
   const [userProfiles, setUserProfiles] = useState<Array<{ created_at: string }>>([]);
@@ -289,15 +290,17 @@ export default function AdminPage() {
       if (error) setMsg({ type: "err", text: error.message });
       else { setMsg({ type: "ok", text: "Prestataire mis à jour !" }); resetForm(); load(); }
     } else {
-      const { data: ud } = await supabase.auth.getUser();
+      const createdId = newPrestaIdRef.current;
       const { error } = await supabase.from("prestataires").insert({
         ...payload,
-        id: newPrestaIdRef.current,
-        owner_id: ud.user?.id,
+        id: createdId,
+        owner_id: null,
       });
       if (error) setMsg({ type: "err", text: error.message });
       else {
-        setMsg({ type: "ok", text: "Prestataire ajouté !" });
+        const link = `${window.location.origin}/p/edit/${createdId}`;
+        setCreatedLink(link);
+        setMsg({ type: "ok", text: "Prestataire créé ! Copiez le lien ci-dessous et envoyez-le au prestataire." });
         newPrestaIdRef.current = crypto.randomUUID();
         resetForm();
         load();
@@ -531,6 +534,40 @@ export default function AdminPage() {
               color: msg.type === "ok" ? "#16a34a" : "#dc2626",
             }}>
             {msg.type === "ok" ? "✓" : "✕"} {msg.text}
+          </div>
+        )}
+
+        {/* Lien à envoyer au prestataire */}
+        {createdLink && (
+          <div className="mb-6 rounded-2xl p-5"
+            style={{ background: "rgba(74,108,247,0.05)", border: "2px solid rgba(74,108,247,0.25)" }}>
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <p className="font-extrabold text-sm mb-1" style={{ color: "var(--blue2)" }}>
+                  🔗 Lien à envoyer au prestataire
+                </p>
+                <p className="text-xs font-semibold" style={{ color: "var(--muted)" }}>
+                  En cliquant sur ce lien, ils s&apos;inscrivent et deviennent automatiquement pro.
+                </p>
+              </div>
+              <button
+                onClick={() => setCreatedLink(null)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", fontSize: 18, lineHeight: 1 }}
+              >✕</button>
+            </div>
+            <div className="flex items-center gap-2 mt-3">
+              <code className="flex-1 text-xs font-semibold px-3 py-2 rounded-xl break-all"
+                style={{ background: "white", border: "1.5px solid var(--border)", color: "var(--dark)" }}>
+                {createdLink}
+              </code>
+              <button
+                onClick={() => { navigator.clipboard.writeText(createdLink); }}
+                className="text-xs font-extrabold px-4 py-2 rounded-xl cursor-pointer text-white flex-shrink-0"
+                style={{ background: "var(--grad2)" }}
+              >
+                📋 Copier
+              </button>
+            </div>
           </div>
         )}
 
@@ -771,7 +808,7 @@ export default function AdminPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr style={{ background: "var(--bg)", borderBottom: "1px solid var(--border)" }}>
-                      {["Nom", "Catégorie", "Prix", "Premium", "Dispo", "Actions"].map(h => (
+                      {["Nom", "Catégorie", "Prix", "Premium", "Dispo", "Lien pro", "Actions"].map(h => (
                         <th key={h} className="text-left px-5 py-3 text-[10px] font-extrabold uppercase tracking-widest"
                           style={{ color: "var(--muted)" }}>
                           {h}
@@ -826,6 +863,25 @@ export default function AdminPage() {
                             }}>
                             {p.is_available ? "Dispo" : "Limité"}
                           </span>
+                        </td>
+                        <td className="px-5 py-3">
+                          {p.owner_id ? (
+                            <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-full"
+                              style={{ background: "rgba(22,163,74,0.1)", color: "#16a34a" }}>
+                              ✓ Réclamé
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                const link = `${window.location.origin}/p/edit/${p.id}`;
+                                navigator.clipboard.writeText(link);
+                                setCreatedLink(link);
+                              }}
+                              className="text-[11px] font-extrabold px-3 py-1.5 rounded-lg cursor-pointer transition-all"
+                              style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.2)" }}>
+                              🔗 Copier lien
+                            </button>
+                          )}
                         </td>
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2">
