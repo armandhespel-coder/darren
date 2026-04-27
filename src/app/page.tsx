@@ -220,7 +220,7 @@ export default function HomePage() {
 
       {/* ── Navbar ── */}
       <nav
-        className="sticky top-0 z-50 flex items-center justify-between"
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between"
         style={{
           background: "rgba(255,255,255,0.97)",
           backdropFilter: "blur(20px)",
@@ -438,7 +438,7 @@ export default function HomePage() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden text-center" style={{ background: "var(--dark2)", padding: "clamp(40px,8vw,80px) clamp(16px,4vw,48px) clamp(60px,10vw,100px)" }}>
+      <section className="relative overflow-hidden text-center" style={{ background: "var(--dark2)", padding: "clamp(40px,8vw,80px) clamp(16px,4vw,48px) clamp(60px,10vw,100px)", paddingTop: "calc(80px + clamp(40px,8vw,80px))" }}>
         <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #12112A 0%, #1E1C3A 50%, #2A1042 100%)" }} />
         <div className="absolute rounded-full pointer-events-none" style={{ width:500, height:500, background:"#4A6CF7", top:-200, left:-100, filter:"blur(80px)", opacity:0.35 }} />
         <div className="absolute rounded-full pointer-events-none" style={{ width:400, height:400, background:"#D93FB5", bottom:-200, right:-100, filter:"blur(80px)", opacity:0.35 }} />
@@ -515,7 +515,7 @@ export default function HomePage() {
                   border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                <div className="font-black text-2xl sm:text-3xl" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                <div className="font-black text-lg sm:text-3xl" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", wordBreak: "break-word" }}>
                   {val}
                 </div>
                 <div className="text-[11px] uppercase tracking-widest mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{label}</div>
