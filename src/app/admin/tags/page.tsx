@@ -28,7 +28,7 @@ export default function AdminTagsPage() {
   const load = useCallback(async () => {
     const supabase = createClient();
     const [{ data: tagsData }, { data: catsData }] = await Promise.all([
-      supabase.from("site_tags").select("*").order("category_name").order("name"),
+      supabase.from("site_subcategories").select("*").order("category_name").order("name"),
       supabase.from("site_categories").select("name, icon").order("position"),
     ]);
     setTags((tagsData as Tag[]) ?? []);
@@ -48,7 +48,7 @@ export default function AdminTagsPage() {
     if (!name) return;
     setSaving(true);
     const supabase = createClient();
-    const { error } = await supabase.from("site_tags").insert({ name, category_name: selectedCat || null });
+    const { error } = await supabase.from("site_subcategories").insert({ name, category_name: selectedCat || null });
     if (error) flash("err", error.message);
     else { flash("ok", `Tag « ${name} » ajouté.`); setInput(""); load(); }
     setSaving(false);

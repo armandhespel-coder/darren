@@ -433,7 +433,7 @@ export default function EditClient({ prestataire, tokenId }: { prestataire: Pres
 
   useEffect(() => {
     import('@/lib/supabase/client').then(({ createClient }) => {
-      createClient().from('site_tags').select('name').order('name').then(({ data }) => {
+      createClient().from('site_subcategories').select('name').order('name').then(({ data }) => {
         if (data?.length) setSiteTags(data.map((t: { name: string }) => t.name));
       });
     });

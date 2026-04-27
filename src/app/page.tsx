@@ -78,7 +78,7 @@ export default function HomePage() {
   const [sortBy, setSortBy] = useState<"" | "prix_asc" | "prix_desc" | "note_desc">("");
 
   const router = useRouter();
-  const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com", "studiohesperides@gmail.com"];
+  const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com"];
 
   useEffect(() => {
     const saved = localStorage.getItem("ce_favorites");
@@ -101,7 +101,7 @@ export default function HomePage() {
     supabase.from("site_categories").select("name, icon").order("position").then(({ data }) => {
       if (data?.length) setDbCategories(data as Array<{ name: string; icon: string }>);
     });
-    supabase.from("site_tags").select("name, category_name").then(({ data }) => {
+    supabase.from("site_subcategories").select("name, category_name").then(({ data }) => {
       if (data?.length) {
         const typed = data as Array<{ name: string; category_name: string | null }>;
         setDbTags(typed);
@@ -535,7 +535,7 @@ export default function HomePage() {
                   border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                <div className="font-black" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", whiteSpace: "nowrap", fontSize: "clamp(0.6rem, 2.6vw, 1.875rem)" }}>
+                <div className="font-black" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", fontSize: "clamp(0.75rem, 2.6vw, 1.6rem)" }}>
                   {val}
                 </div>
                 <div className="text-[11px] uppercase tracking-widest mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{label}</div>

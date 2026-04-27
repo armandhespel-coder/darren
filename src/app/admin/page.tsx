@@ -5,8 +5,6 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Prestataire } from "@/types";
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
-
 const CONTINENTS = ["Europe", "Afrique", "Amérique", "Asie", "Océanie"];
 const FALLBACK_CATS = [
   "DJ", "Décoratrice", "Matériel", "Voiture", "Traiteur",
@@ -18,7 +16,9 @@ interface FormData {
   prix: string; price_note: string;
   hide_company: boolean;
   images: string[];
-  tags: string[]; description: string;
+  tags: string[];
+  specialites: string[];
+  description: string;
   is_available: boolean; is_premium: boolean; telephone: string;
 }
 
@@ -28,12 +28,12 @@ function emptyForm(cats: string[]): FormData {
     prix: "", price_note: "",
     hide_company: false,
     images: [],
-    tags: [], description: "",
+    tags: [],
+    specialites: [],
+    description: "",
     is_available: true, is_premium: false, telephone: "",
   };
 }
-
-// ─── Helpers UI ───────────────────────────────────────────────────────────────
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
@@ -80,8 +80,6 @@ function Select({ value, onChange, children, ...rest }: SelectProps) {
     </select>
   );
 }
-
-// ─── AdminPhotoUpload ─────────────────────────────────────────────────────────
 
 function AdminPhotoUpload({ images, onChange, prestataireId }: {
   images: string[]; onChange: (imgs: string[]) => void; prestataireId: string;
@@ -145,11 +143,7 @@ function AdminPhotoUpload({ images, onChange, prestataireId }: {
         disabled={uploading || images.length >= 8}
         onClick={() => fileRef.current?.click()}
         className="w-full py-2.5 rounded-xl text-sm font-bold cursor-pointer transition-all disabled:opacity-50"
-        style={{
-          background: "var(--bg)",
-          border: "1.5px dashed var(--border)",
-          color: "var(--muted)",
-        }}
+        style={{ background: "var(--bg)", border: "1.5px dashed var(--border)", color: "var(--muted)" }}
       >
         {uploading ? "Upload en cours…" : `+ Ajouter une photo (${images.length}/8)`}
       </button>
@@ -157,8 +151,6 @@ function AdminPhotoUpload({ images, onChange, prestataireId }: {
     </div>
   );
 }
-
-// ─── UserGrowthChart ──────────────────────────────────────────────────────────
 
 function UserGrowthChart({ profiles }: { profiles: Array<{ created_at: string }> }) {
   const now = new Date();
@@ -168,10 +160,7 @@ function UserGrowthChart({ profiles }: { profiles: Array<{ created_at: string }>
     d.setDate(d.getDate() - (DAYS - 1 - i));
     const dateStr = d.toISOString().slice(0, 10);
     const count = profiles.filter(p => p.created_at.slice(0, 10) === dateStr).length;
-    return {
-      count,
-      label: d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }),
-    };
+    return { count, label: d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) };
   });
   const max = Math.max(...counts.map(c => c.count), 1);
   const H = 60;
@@ -185,12 +174,8 @@ function UserGrowthChart({ profiles }: { profiles: Array<{ created_at: string }>
           const x = i * 26;
           return (
             <g key={i}>
-              <rect
-                x={x + 4} y={H - barH} width={18} height={barH}
-                rx={4}
-                fill={c.count > 0 ? "var(--blue2)" : "var(--border)"}
-                opacity={c.count > 0 ? 0.85 : 0.4}
-              />
+              <rect x={x + 4} y={H - barH} width={18} height={barH} rx={4}
+                fill={c.count > 0 ? "var(--blue2)" : "var(--border)"} opacity={c.count > 0 ? 0.85 : 0.4} />
               {c.count > 0 && (
                 <text x={x + 13} y={H - barH - 3} textAnchor="middle" fontSize={7} fill="var(--blue2)" fontWeight={700}>
                   {c.count}
@@ -207,8 +192,6 @@ function UserGrowthChart({ profiles }: { profiles: Array<{ created_at: string }>
     </div>
   );
 }
-
-// ─── Page Admin ───────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const router = useRouter();
@@ -227,18 +210,29 @@ export default function AdminPage() {
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [stats, setStats] = useState({ premium: 0, users: 0, messages: 0 });
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [availableSpecialites, setAvailableSpecialites] = useState<string[]>([]);
   const [userProfiles, setUserProfiles] = useState<Array<{ created_at: string }>>([]);
 
   const up = (k: keyof FormData, v: string | boolean | string[]) => setForm(f => ({ ...f, [k]: v }));
 
   const load = useCallback(async () => {
-    const [{ data }, premiumRes, usersRes, msgsRes, { data: catsData }, { data: profilesData }, { data: tagsData }] = await Promise.all([
+    const [
+      { data },
+      premiumRes,
+      usersRes,
+      msgsRes,
+      { data: catsData },
+      { data: profilesData },
+      { data: tagsData },
+      { data: specialitesData },
+    ] = await Promise.all([
       supabase.from("prestataires").select("*").order("created_at", { ascending: false }),
       supabase.from("prestataires").select("*", { count: "exact", head: true }).eq("is_premium", true),
       supabase.from("profiles").select("*", { count: "exact", head: true }),
-      supabase.from("messages").select("*", { count: "exact", head: true }),
+      supabase.from("messages").select("*", { count: "exact", head: true }).eq("read", false),
       supabase.from("site_categories").select("name").order("position"),
       supabase.from("profiles").select("created_at").order("created_at", { ascending: false }).limit(200),
+      supabase.from("site_subcategories").select("name").order("name"),
       supabase.from("site_tags").select("name").order("name"),
     ]);
     setPrestataires((data as Prestataire[]) ?? []);
@@ -248,9 +242,8 @@ export default function AdminPage() {
       const cats = (catsData as Array<{ name: string }>).map(c => c.name);
       setCategories(cats);
     }
-    if (tagsData?.length) {
-      setAvailableTags((tagsData as Array<{ name: string }>).map(t => t.name));
-    }
+    if (tagsData?.length) setAvailableTags((tagsData as Array<{ name: string }>).map(t => t.name));
+    if (specialitesData?.length) setAvailableSpecialites((specialitesData as Array<{ name: string }>).map(t => t.name));
     setLoading(false);
   }, [supabase]);
 
@@ -284,6 +277,7 @@ export default function AdminPage() {
       price_note: form.price_note.trim() || null,
       images: form.images,
       tags: form.tags,
+      specialites: form.specialites,
       description: form.description.trim() || null,
       is_available: form.is_available,
       is_premium: form.is_premium,
@@ -320,7 +314,9 @@ export default function AdminPage() {
       prix: String(p.prix), price_note: p.price_note ?? "",
       hide_company: p.hide_company ?? false,
       images: p.images ?? [],
-      tags: p.tags ?? [], description: p.description ?? "",
+      tags: p.tags ?? [],
+      specialites: p.specialites ?? [],
+      description: p.description ?? "",
       is_available: p.is_available, is_premium: p.is_premium,
       telephone: p.telephone ?? "",
     });
@@ -384,7 +380,7 @@ export default function AdminPage() {
           <a href="/admin/tags"
             className="text-xs font-bold px-4 py-2 rounded-full transition-all"
             style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
-            🏷️ Tags
+            🏷️ Sous-cat.
           </a>
           <a href="/admin/categories"
             className="text-xs font-bold px-4 py-2 rounded-full transition-all"
@@ -445,7 +441,7 @@ export default function AdminPage() {
             <div className="absolute right-0 rounded-2xl overflow-hidden z-50"
               style={{ top: "calc(100% + 8px)", background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 40px rgba(74,108,247,0.18)", minWidth: 200 }}>
               {[
-                { href: "/admin/tags", label: "🏷️ Tags" },
+                { href: "/admin/tags", label: "🏷️ Sous-catégories" },
                 { href: "/admin/categories", label: "📂 Catégories" },
                 { href: "/admin/utilisateurs", label: "👥 Utilisateurs" },
                 { href: "/admin/messages", label: "💬 Messages" },
@@ -497,7 +493,7 @@ export default function AdminPage() {
             { label: "Prestataires", value: prestataires.length, icon: "🎵", color: "var(--blue2)", bg: "rgba(74,108,247,0.08)" },
             { label: "Premium", value: stats.premium, icon: "⭐", color: "#7c3aed", bg: "rgba(124,58,237,0.08)" },
             { label: "Utilisateurs", value: stats.users, icon: "👥", color: "#16a34a", bg: "rgba(22,163,74,0.08)" },
-            { label: "Messages", value: stats.messages, icon: "💬", color: "#d97706", bg: "rgba(217,119,6,0.08)" },
+            { label: "Non lus", value: stats.messages, icon: "📨", color: "#d97706", bg: "rgba(217,119,6,0.08)" },
           ].map(s => (
             <div key={s.label} className="rounded-2xl p-5"
               style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
@@ -637,11 +633,12 @@ export default function AdminPage() {
                 />
               </div>
 
+              {/* Sous-catégories */}
               <div>
-                <Label>Tags</Label>
+                <Label>Sous-catégories</Label>
                 {availableTags.length === 0 ? (
                   <p className="text-xs font-semibold" style={{ color: "var(--muted)" }}>
-                    Aucun tag défini — ajoutez-en via <a href="/admin/tags" style={{ color: "var(--blue2)" }}>Admin › Tags</a>.
+                    Aucune sous-catégorie — <a href="/admin/tags" style={{ color: "var(--blue2)" }}>Admin › Sous-cat.</a>
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2 mt-1">
@@ -657,6 +654,37 @@ export default function AdminPage() {
                             background: isOn ? "rgba(74,108,247,0.12)" : "var(--bg)",
                             color: isOn ? "var(--blue2)" : "var(--muted)",
                             border: isOn ? "1.5px solid rgba(74,108,247,0.35)" : "1.5px solid var(--border)",
+                          }}
+                        >
+                          {isOn ? "✓ " : ""}{tag}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Spécialités (tags libres) */}
+              <div>
+                <Label>Spécialités</Label>
+                {availableSpecialites.length === 0 ? (
+                  <p className="text-xs font-semibold" style={{ color: "var(--muted)" }}>
+                    Aucune spécialité — ajoutez-en via <a href="/admin/tags" style={{ color: "var(--blue2)" }}>Admin › Tags libres</a>.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {availableSpecialites.map(tag => {
+                      const isOn = form.specialites.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => up("specialites", isOn ? form.specialites.filter(t => t !== tag) : [...form.specialites, tag])}
+                          className="text-xs font-bold px-3 py-1.5 rounded-full cursor-pointer transition-all"
+                          style={{
+                            background: isOn ? "rgba(217,63,181,0.1)" : "var(--bg)",
+                            color: isOn ? "var(--pink)" : "var(--muted)",
+                            border: isOn ? "1.5px solid rgba(217,63,181,0.3)" : "1.5px solid var(--border)",
                           }}
                         >
                           {isOn ? "✓ " : ""}{tag}

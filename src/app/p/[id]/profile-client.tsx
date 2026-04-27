@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Prestataire, Review } from "@/types";
+import Navbar from "@/components/Navbar";
 
 const STARS = (note: number) =>
   Array.from({ length: 5 }, (_, i) => (
@@ -82,7 +83,6 @@ function DispoCalendar({ prestataire: p }: { prestataire: Prestataire }) {
         Disponibilités
       </h2>
 
-      {/* Statut global */}
       <div className="flex items-center gap-3 p-3 rounded-xl mb-4"
         style={{
           background: p.is_available ? "rgba(74,222,128,0.07)" : "rgba(251,146,60,0.07)",
@@ -95,9 +95,7 @@ function DispoCalendar({ prestataire: p }: { prestataire: Prestataire }) {
         </span>
       </div>
 
-      {/* Calendrier lecture seule */}
       <div style={{ border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
-        {/* Navigation */}
         <div className="flex items-center justify-between px-4 py-3"
           style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)" }}>
           <button
@@ -119,7 +117,6 @@ function DispoCalendar({ prestataire: p }: { prestataire: Prestataire }) {
           </button>
         </div>
 
-        {/* Grille */}
         <div style={{ padding: "12px 16px 16px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 6 }}>
             {["L","M","M","J","V","S","D"].map((d, i) => (
@@ -154,7 +151,6 @@ function DispoCalendar({ prestataire: p }: { prestataire: Prestataire }) {
           </div>
         </div>
 
-        {/* Légende */}
         <div className="flex items-center gap-4 px-4 py-3"
           style={{ borderTop: "1px solid var(--border)", background: "var(--bg2)" }}>
           <div className="flex items-center gap-1.5">
@@ -183,7 +179,6 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
   const [sent, setSent] = useState(false);
   const [msgError, setMsgError] = useState("");
 
-  // Reviews state
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [reviewNote, setReviewNote] = useState(0);
@@ -191,7 +186,6 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewSent, setReviewSent] = useState(false);
   const [reviewError, setReviewError] = useState("");
-  // Avis uniquement accessibles via lien partagé ?avis=1
   const [canReview, setCanReview] = useState(false);
 
   useEffect(() => {
@@ -227,11 +221,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
     const res = await fetch("/api/messages/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        prestataire_id: p.id,
-        receiver_id: p.owner_id,
-        content,
-      }),
+      body: JSON.stringify({ prestataire_id: p.id, receiver_id: p.owner_id, content }),
     });
     setSending(false);
     if (!res.ok) {
@@ -239,11 +229,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
       setMsgError(d.error ?? "Erreur lors de l'envoi.");
     } else {
       setSent(true);
-      setBookingMsg("");
-      setBookingDate("");
-      setBookingGuests("");
-      setBookingLocation("");
-      setBookingPhone("");
+      setBookingMsg(""); setBookingDate(""); setBookingGuests(""); setBookingLocation(""); setBookingPhone("");
     }
   };
 
@@ -275,42 +261,46 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
-      {/* Header */}
-      <header
-        className="sticky top-0 z-40 flex items-center justify-between px-6"
-        style={{
-          background: "rgba(255,255,255,0.97)",
-          backdropFilter: "blur(20px)",
-          borderBottom: "1px solid var(--border)",
-          boxShadow: "0 2px 20px rgba(74,108,247,0.06)",
-          height: 64,
-        }}
-      >
-        <a href="/" className="flex items-center gap-2">
-          <img src="/logo.png" alt="Connect Event" className="h-12 w-auto object-contain" />
-        </a>
-        <div className="flex items-center gap-3">
-          <a href="/"
-            className="text-xs font-bold px-4 py-2 rounded-full transition-all"
-            style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
-            ← Retour
-          </a>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="max-w-5xl mx-auto px-4 py-8">
-        {/* Hero */}
+        {/* Hero grid */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
 
           {/* Left: Images */}
           <div>
+            {/* Main image with nav arrows */}
             <div className="rounded-2xl overflow-hidden aspect-video relative"
               style={{ background: "var(--dark2)" }}>
-              <img
-                src={images[activeImg]}
-                alt={p.nom}
-                className="w-full h-full object-cover"
-              />
+              <img src={images[activeImg]} alt={p.nom} className="w-full h-full object-cover" />
+
+              {/* Arrows */}
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setActiveImg(i => (i - 1 + images.length) % images.length)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-xl cursor-pointer transition-all"
+                    style={{ width: 36, height: 36, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.15)", color: "white" }}
+                    aria-label="Photo précédente"
+                  >
+                    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setActiveImg(i => (i + 1) % images.length)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-xl cursor-pointer transition-all"
+                    style={{ width: 36, height: 36, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.15)", color: "white" }}
+                    aria-label="Photo suivante"
+                  >
+                    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </button>
+                </>
+              )}
+
+              {/* Badges */}
               {p.is_available && (
                 <span className="absolute top-4 left-4 text-xs font-extrabold px-3 py-1.5 rounded-full text-white"
                   style={{ background: "rgba(34,197,94,0.85)", backdropFilter: "blur(6px)" }}>
@@ -323,8 +313,17 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                   {p.badge}
                 </span>
               )}
+
+              {/* Image counter */}
+              {images.length > 1 && (
+                <span className="absolute bottom-4 right-4 text-xs font-bold px-2.5 py-1 rounded-full text-white"
+                  style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
+                  {activeImg + 1} / {images.length}
+                </span>
+              )}
             </div>
 
+            {/* Thumbnails */}
             {images.length > 1 && (
               <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
                 {images.map((img, i) => (
@@ -370,15 +369,15 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
               </div>
             )}
 
-            {/* Tags */}
-            {p.tags?.length > 0 && (
+            {/* Spécialités (free-form tags) */}
+            {(p.specialites?.length ?? 0) > 0 && (
               <div className="mt-4 rounded-2xl p-6"
                 style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
                 <h2 className="font-black text-lg mb-3" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
                   Spécialités
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                  {p.tags.map((tag) => (
+                  {p.specialites!.map((tag) => (
                     <span key={tag}
                       className="text-xs font-bold px-3 py-1.5 rounded-full"
                       style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.15)" }}>
@@ -414,18 +413,6 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                 <p className="text-sm font-semibold mb-3" style={{ color: "var(--muted)" }}>{p.company}</p>
               )}
 
-              {(avgNote > 0 || p.note > 0) && (
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex">{STARS(avgNote || p.note)}</div>
-                  <span className="text-sm font-extrabold" style={{ color: "var(--dark)" }}>
-                    {(avgNote || p.note).toFixed(1)}
-                  </span>
-                  <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>
-                    ({reviews.length || p.reviews || 0} avis)
-                  </span>
-                </div>
-              )}
-
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-3xl font-black" style={{
                   background: "var(--grad)", WebkitBackgroundClip: "text",
@@ -438,6 +425,19 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                 )}
               </div>
 
+              {/* Rating — toujours visible si note > 0 */}
+              {(avgNote > 0 || p.note > 0) && (
+                <div className="flex items-center gap-2 py-3 px-4 rounded-xl mb-2"
+                  style={{ background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.18)" }}>
+                  <div className="flex">{STARS(avgNote || p.note)}</div>
+                  <span className="text-sm font-extrabold" style={{ color: "#b45309" }}>
+                    {(avgNote || p.note).toFixed(1)}
+                  </span>
+                  <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>
+                    ({reviews.length || p.reviews || 0} avis)
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Contact form */}
@@ -458,9 +458,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                     </svg>
                   </div>
                   <p className="text-sm font-bold" style={{ color: "var(--dark)" }}>Message envoyé !</p>
-                  <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-                    On vous répondra rapidement.
-                  </p>
+                  <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>On vous répondra rapidement.</p>
                   <button onClick={() => setSent(false)}
                     className="text-xs mt-3 font-semibold underline" style={{ color: "var(--blue2)" }}>
                     Envoyer un autre message
@@ -482,11 +480,8 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Téléphone *</label>
                     <input
-                      type="tel"
-                      value={bookingPhone}
-                      onChange={(e) => setBookingPhone(e.target.value)}
-                      required
-                      placeholder="ex: +32 470 12 34 56"
+                      type="tel" value={bookingPhone} onChange={(e) => setBookingPhone(e.target.value)}
+                      required placeholder="ex: +32 470 12 34 56"
                       className="w-full rounded-xl px-3 py-2 text-sm outline-none"
                       style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
                       onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
@@ -497,31 +492,18 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Date de l&apos;événement</label>
                       <input
-                        type="date"
-                        value={bookingDate}
-                        onChange={(e) => setBookingDate(e.target.value)}
+                        type="date" value={bookingDate} onChange={(e) => setBookingDate(e.target.value)}
                         className="rounded-xl px-3 py-2 text-sm outline-none"
-                        style={{
-                          background: "var(--bg)",
-                          border: `1.5px solid ${dateUnavailable ? "#ef4444" : "var(--border)"}`,
-                          color: "var(--text)",
-                        }}
+                        style={{ background: "var(--bg)", border: `1.5px solid ${dateUnavailable ? "#ef4444" : "var(--border)"}`, color: "var(--text)" }}
                         onFocus={(e) => (e.target.style.borderColor = dateUnavailable ? "#ef4444" : "var(--blue2)")}
                         onBlur={(e) => (e.target.style.borderColor = dateUnavailable ? "#ef4444" : "var(--border)")}
                       />
-                      {dateUnavailable && (
-                        <p className="text-[11px] font-semibold" style={{ color: "#ef4444" }}>
-                          Cette date n&apos;est pas disponible.
-                        </p>
-                      )}
+                      {dateUnavailable && <p className="text-[11px] font-semibold" style={{ color: "#ef4444" }}>Cette date n&apos;est pas disponible.</p>}
                     </div>
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Nb de personnes</label>
                       <input
-                        type="number"
-                        min={1}
-                        value={bookingGuests}
-                        onChange={(e) => setBookingGuests(e.target.value)}
+                        type="number" min={1} value={bookingGuests} onChange={(e) => setBookingGuests(e.target.value)}
                         placeholder="ex: 150"
                         className="rounded-xl px-3 py-2 text-sm outline-none"
                         style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
@@ -533,9 +515,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Lieu de l&apos;événement</label>
                     <input
-                      type="text"
-                      value={bookingLocation}
-                      onChange={(e) => setBookingLocation(e.target.value)}
+                      type="text" value={bookingLocation} onChange={(e) => setBookingLocation(e.target.value)}
                       placeholder="ex: Bruxelles, salle des fêtes..."
                       className="w-full rounded-xl px-3 py-2 text-sm outline-none"
                       style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
@@ -546,20 +526,15 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Votre message *</label>
                     <textarea
-                      rows={3}
-                      value={bookingMsg}
-                      onChange={(e) => setBookingMsg(e.target.value)}
-                      required
-                      placeholder={`Bonjour, je recherche un ${p.categorie?.toLowerCase() ?? "prestataire"} pour...`}
+                      rows={3} value={bookingMsg} onChange={(e) => setBookingMsg(e.target.value)}
+                      required placeholder={`Bonjour, je recherche un ${p.categorie?.toLowerCase() ?? "prestataire"} pour...`}
                       className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none transition-all"
                       style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
                       onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
                       onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
                     />
                   </div>
-                  {msgError && (
-                    <p className="text-red-500 text-xs font-semibold">{msgError}</p>
-                  )}
+                  {msgError && <p className="text-red-500 text-xs font-semibold">{msgError}</p>}
                   <button type="submit" disabled={sending || !bookingMsg.trim() || !bookingPhone.trim() || dateUnavailable}
                     className="w-full py-3 rounded-xl font-extrabold text-sm text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
                     style={{ background: "var(--grad)", boxShadow: "0 4px 16px rgba(217,63,181,0.25)" }}>
@@ -573,7 +548,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
 
         {/* ── Reviews section (full width) ── */}
         <div className="mt-8" id="avis">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
             <h2 className="font-black text-2xl" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
               Avis clients{" "}
               {reviews.length > 0 && (
@@ -582,16 +557,16 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                 </span>
               )}
             </h2>
-            {avgNote > 0 && (
+            {(avgNote > 0 || p.note > 0) && (
               <div className="flex items-center gap-2">
-                <div className="flex">{STARS(avgNote)}</div>
-                <span className="font-extrabold text-lg" style={{ color: "var(--dark)" }}>{avgNote.toFixed(1)}</span>
+                <div className="flex">{STARS(avgNote || p.note)}</div>
+                <span className="font-extrabold text-lg" style={{ color: "var(--dark)" }}>{(avgNote || p.note).toFixed(1)}</span>
                 <span className="text-sm" style={{ color: "var(--muted)" }}>/ 5</span>
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
+          <div className={`grid gap-6 items-start ${canReview ? "grid-cols-1 lg:grid-cols-[1fr_360px]" : "grid-cols-1"}`}>
             {/* Reviews list */}
             <div className="flex flex-col gap-4">
               {loadingReviews ? (
@@ -604,7 +579,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                   style={{ background: "white", border: "2px dashed var(--border)" }}>
                   <div className="text-3xl mb-3">⭐</div>
                   <p className="font-bold text-sm" style={{ color: "var(--dark)" }}>Aucun avis pour l&apos;instant</p>
-                  <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Soyez le premier à laisser un avis !</p>
+                  <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Les avis sont collectés directement par le prestataire.</p>
                 </div>
               ) : (
                 reviews.map(r => (
@@ -614,9 +589,12 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                           style={{ background: "var(--grad2)" }}>
-                          A
+                          {(r as Review & { author_name?: string }).author_name?.[0]?.toUpperCase() ?? "A"}
                         </div>
                         <div>
+                          <div className="text-xs font-bold" style={{ color: "var(--dark)" }}>
+                            {(r as Review & { author_name?: string }).author_name ?? "Client vérifié"}
+                          </div>
                           <div className="flex gap-0.5">{STARS(r.note)}</div>
                         </div>
                       </div>
@@ -632,8 +610,8 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
               )}
             </div>
 
-            {/* Add review form — visible uniquement via lien partagé ?avis=1 */}
-            {canReview ? (
+            {/* Add review form — uniquement via lien token ?avis=1 */}
+            {canReview && (
               <div className="rounded-2xl p-6"
                 style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
                 <h3 className="font-black text-lg mb-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
@@ -651,9 +629,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                   </div>
                 ) : !userId ? (
                   <div className="text-center py-4">
-                    <p className="text-sm mb-3" style={{ color: "var(--muted)" }}>
-                      Connectez-vous pour laisser un avis.
-                    </p>
+                    <p className="text-sm mb-3" style={{ color: "var(--muted)" }}>Connectez-vous pour laisser un avis.</p>
                     <a href={`/auth/login?next=/p/${p.id}?avis=1#avis`}
                       className="inline-block text-sm font-extrabold px-5 py-2.5 rounded-xl text-white"
                       style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}>
@@ -663,9 +639,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                 ) : (
                   <form onSubmit={handleSubmitReview} className="flex flex-col gap-4">
                     <div>
-                      <label className="block text-xs font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>
-                        Note *
-                      </label>
+                      <label className="block text-xs font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>Note *</label>
                       <StarInput value={reviewNote} onChange={setReviewNote} />
                       {reviewNote > 0 && (
                         <span className="text-xs mt-1 block" style={{ color: "var(--muted)" }}>
@@ -678,9 +652,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                         Commentaire <span style={{ color: "var(--muted)", textTransform: "none", letterSpacing: 0 }}>(optionnel)</span>
                       </label>
                       <textarea
-                        rows={4}
-                        value={reviewComment}
-                        onChange={(e) => setReviewComment(e.target.value)}
+                        rows={4} value={reviewComment} onChange={(e) => setReviewComment(e.target.value)}
                         placeholder="Décrivez votre expérience..."
                         className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none transition-all"
                         style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
@@ -688,21 +660,16 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                         onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
                       />
                     </div>
-                    {reviewError && (
-                      <p className="text-red-500 text-xs font-semibold">{reviewError}</p>
-                    )}
-                    <button
-                      type="submit"
-                      disabled={submittingReview || reviewNote === 0}
+                    {reviewError && <p className="text-red-500 text-xs font-semibold">{reviewError}</p>}
+                    <button type="submit" disabled={submittingReview || reviewNote === 0}
                       className="w-full py-3 rounded-xl font-extrabold text-sm text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
-                      style={{ background: "var(--grad)", boxShadow: "0 4px 16px rgba(217,63,181,0.25)" }}
-                    >
+                      style={{ background: "var(--grad)", boxShadow: "0 4px 16px rgba(217,63,181,0.25)" }}>
                       {submittingReview ? "Envoi..." : "Publier mon avis"}
                     </button>
                   </form>
                 )}
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       </div>

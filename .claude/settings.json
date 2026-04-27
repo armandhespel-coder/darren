@@ -4,7 +4,10 @@
       "Bash(curl -s -X POST http://localhost:3000/api/send-edit-link -H 'Content-Type: application/json' -d '{\"prestataire_id\":\"test\",\"nom\":\"Test\",\"email\":\"armand.hespel@hotmail.com\",\"expiry\":\"7\",\"reusable\":false,\"sendEmail\":true}')",
       "Bash(npx supabase migration repair --status applied *)",
       "Bash(npx supabase migration list)",
-      "Bash(npx supabase db push --linked)"
+      "Bash(npx supabase db push --linked)",
+      "Bash(cat .env.local)",
+      "Bash(cat .env)",
+      "Bash(sed -n '430,445p' src/app/p/edit/[id]/edit-client.tsx)"
     ],
     "additionalDirectories": [
       "c:\\Users\\arman\\Documents\\GitHub\\darren\\public"

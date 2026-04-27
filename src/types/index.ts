@@ -17,13 +17,13 @@ export interface Prestataire {
   note: number;
   images: string[];
   tags: string[];
+  specialites?: string[];
   description: string | null;
   telephone: string | null;
   is_premium: boolean;
   is_available: boolean;
   created_at: string;
   email?: string | null;
-  // Champs étendus (mock / admin uniquement, absents de la DB)
   company?: string;
   reviews?: number;
   price_note?: string;

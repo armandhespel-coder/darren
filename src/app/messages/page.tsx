@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import Navbar from "@/components/Navbar";
 
 interface MessageRow {
   id: string;
@@ -149,23 +150,7 @@ export default function MessagesPage() {
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
-      {/* Header */}
-      <header className="sticky top-0 z-40 flex items-center justify-between px-6"
-        style={{
-          background: "rgba(255,255,255,0.97)",
-          backdropFilter: "blur(20px)",
-          borderBottom: "1px solid var(--border)",
-          height: 64,
-        }}>
-        <a href="/"><img src="/logo.png" alt="Connect Event" className="h-12 w-auto object-contain" /></a>
-        <h1 className="font-black text-lg" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
-          Mes messages
-        </h1>
-        <a href="/" className="text-xs font-bold px-4 py-2 rounded-full"
-          style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
-          ← Retour
-        </a>
-      </header>
+      <Navbar />
 
       {threads.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24">
