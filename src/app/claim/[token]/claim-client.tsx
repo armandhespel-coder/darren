@@ -15,6 +15,7 @@ export default function ClaimClient({ token, prestaName }: Props) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
 
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '12px 16px', borderRadius: 12,
@@ -25,59 +26,65 @@ export default function ClaimClient({ token, prestaName }: Props) {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true); setError('');
-
-    // Créer le compte côté serveur (email confirmé sans email de vérification)
-    const res = await fetch('/api/claim/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, token }),
-    });
-    const json = await res.json();
-    if (!res.ok) { setError(json.error ?? 'Erreur inscription.'); setLoading(false); return; }
-
-    // Se connecter immédiatement
     const supabase = createClient();
-    const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
-    if (loginErr) { setError(loginErr.message); setLoading(false); return; }
-
-    window.location.href = '/';
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(`/claim/${token}`)}`;
+    const { error: err } = await supabase.auth.signUp({
+      email, password,
+      options: { data: { role: 'client' }, emailRedirectTo: redirectTo },
+    });
+    if (err) { setError(err.message); setLoading(false); return; }
+    setEmailSent(true); setLoading(false);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true); setError('');
-
     const supabase = createClient();
-    const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
-    if (loginErr) { setError(loginErr.message); setLoading(false); return; }
-
-    // Claim si pas encore fait
+    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+    if (err) { setError(err.message); setLoading(false); return; }
     await fetch('/api/link-prestataire', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),
     });
-
     window.location.href = '/';
   };
+
+  const resend = async () => {
+    const supabase = createClient();
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(`/claim/${token}`)}`;
+    await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: redirectTo } });
+  };
+
+  if (emailSent) return (
+    <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #12112A, #1E1C3A)', padding: 24 }}>
+      <div style={{ background: 'white', borderRadius: 24, padding: '48px 40px', maxWidth: 440, width: '100%', textAlign: 'center', boxShadow: '0 30px 80px rgba(74,108,247,0.25)' }}>
+        <div style={{ fontSize: 56, marginBottom: 20 }}>📧</div>
+        <h2 style={{ fontWeight: 900, fontSize: 22, color: '#1E1C3A', marginBottom: 12 }}>Vérifiez vos emails</h2>
+        <p style={{ color: '#6B6A87', fontSize: 14, lineHeight: 1.7, marginBottom: 8 }}>
+          Un lien de confirmation a été envoyé à<br /><strong>{email}</strong>
+        </p>
+        <p style={{ color: '#6B6A87', fontSize: 13, lineHeight: 1.6, marginBottom: 28 }}>
+          Cliquez sur ce lien pour confirmer votre adresse et accéder automatiquement à votre espace prestataire.<br />
+          <em>Pensez à vérifier vos spams.</em>
+        </p>
+        <button type="button" onClick={resend}
+          style={{ fontSize: 13, color: '#4A6CF7', background: 'none', border: '1.5px solid rgba(74,108,247,0.3)', borderRadius: 10, padding: '8px 20px', cursor: 'pointer', fontWeight: 700 }}>
+          Renvoyer l&apos;email
+        </button>
+      </div>
+    </main>
+  );
 
   return (
     <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #12112A, #1E1C3A)', padding: 24 }}>
       <div style={{ background: 'white', borderRadius: 24, padding: '48px 40px', maxWidth: 440, width: '100%', boxShadow: '0 30px 80px rgba(74,108,247,0.25)' }}>
-
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <img src="/logo.png" alt="Connect Event" style={{ height: 72, objectFit: 'contain', marginBottom: 20 }} />
-          <h1 style={{ fontWeight: 900, fontSize: 22, color: '#1E1C3A', marginBottom: 8 }}>
-            Votre espace prestataire
-          </h1>
-          {prestaName && (
-            <p style={{ color: '#6B6A87', fontSize: 14 }}>
-              Fiche <strong>{prestaName}</strong>
-            </p>
-          )}
+          <h1 style={{ fontWeight: 900, fontSize: 22, color: '#1E1C3A', marginBottom: 8 }}>Votre espace prestataire</h1>
+          {prestaName && <p style={{ color: '#6B6A87', fontSize: 14 }}>Fiche <strong>{prestaName}</strong></p>}
         </div>
 
-        {/* Toggle */}
         <div style={{ display: 'flex', gap: 6, marginBottom: 24, background: '#F7F8FC', borderRadius: 12, padding: 4 }}>
           {([['signup', 'Créer un compte'], ['login', 'Se connecter']] as const).map(([m, lbl]) => (
             <button key={m} type="button" onClick={() => { setMode(m); setError(''); }} style={{
@@ -85,28 +92,19 @@ export default function ClaimClient({ token, prestaName }: Props) {
               background: mode === m ? 'white' : 'transparent',
               color: mode === m ? '#1E1C3A' : '#9594AE',
               boxShadow: mode === m ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
-            }}>
-              {lbl}
-            </button>
+            }}>{lbl}</button>
           ))}
         </div>
 
         <form onSubmit={mode === 'signup' ? handleSignup : handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="Votre email" style={inputStyle} />
           <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} placeholder="Mot de passe (min. 6 caractères)" style={inputStyle} />
-
           {mode === 'login' && (
             <a href="/auth/forgot-password" style={{ fontSize: 12, color: '#6B6A87', textAlign: 'right', textDecoration: 'none' }}>
               Mot de passe oublié ?
             </a>
           )}
-
-          {error && (
-            <p style={{ fontSize: 12, color: '#e53e3e', margin: 0, padding: '8px 12px', background: 'rgba(229,62,62,0.06)', borderRadius: 8 }}>
-              {error}
-            </p>
-          )}
-
+          {error && <p style={{ fontSize: 12, color: '#e53e3e', margin: 0, padding: '8px 12px', background: 'rgba(229,62,62,0.06)', borderRadius: 8 }}>{error}</p>}
           <button type="submit" disabled={loading} style={{
             width: '100%', padding: '14px', borderRadius: 14, border: 'none', marginTop: 4,
             background: 'linear-gradient(135deg, #4A6CF7, #D93FB5)',
@@ -118,8 +116,8 @@ export default function ClaimClient({ token, prestaName }: Props) {
         </form>
 
         {mode === 'signup' && (
-          <p style={{ textAlign: 'center', marginTop: 20, fontSize: 12, color: '#9999B3' }}>
-            Compte activé immédiatement — aucun email de confirmation requis.
+          <p style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: '#9999B3' }}>
+            Un email de confirmation vous sera envoyé.
           </p>
         )}
       </div>
