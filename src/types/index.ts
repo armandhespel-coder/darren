@@ -31,6 +31,7 @@ export interface Prestataire {
   busy_dates?: string[];
   hide_company?: boolean;
   video_url?: string | null;
+  is_visible?: boolean;
 }
 
 export interface Review {

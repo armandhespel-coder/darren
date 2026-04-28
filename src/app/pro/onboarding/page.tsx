@@ -4,9 +4,6 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
-const CATEGORIES = ["DJ", "Décoratrice", "Matériel", "Voiture", "Traiteur", "Photo & Caméra", "Feux d'artifice", "Location de salle", "Gâteau"];
-const DEFAULT_TAGS = ["Mariage", "Anniversaire", "Corporate", "Vinyl", "House", "Techno", "Latino", "Hip-Hop", "Soirée étudiante", "Cocktail", "Brunch", "Retro"];
-
 export default function OnboardingPage() {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
@@ -14,9 +11,12 @@ export default function OnboardingPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  const [dbCategories, setDbCategories] = useState<string[]>([]);
+  const [dbSubcats, setDbSubcats] = useState<Array<{ name: string; category_name: string | null }>>([]);
+
   const [form, setForm] = useState({
-    nom: "", company: "", categorie: "DJ",
-    description: "", prix: "", price_note: "", tags: [] as string[],
+    nom: "", company: "", categorie: "",
+    description: "", prix: "", price_note: "", subcategorie: "",
   });
 
   useEffect(() => {
@@ -31,11 +31,23 @@ export default function OnboardingPage() {
     });
   }, [router]);
 
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.from("site_categories").select("name").order("position").then(({ data }) => {
+      if (data?.length) {
+        const names = (data as Array<{ name: string }>).map(c => c.name);
+        setDbCategories(names);
+        setForm(f => ({ ...f, categorie: f.categorie || names[0] }));
+      }
+    });
+    supabase.from("site_subcategories").select("name, category_name").then(({ data }) => {
+      if (data?.length) setDbSubcats(data as Array<{ name: string; category_name: string | null }>);
+    });
+  }, []);
+
+  const availableSubcats = dbSubcats.filter(s => s.category_name === form.categorie).map(s => s.name);
+
   const up = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
-  const toggleTag = (t: string) => setForm((f) => ({
-    ...f,
-    tags: f.tags.includes(t) ? f.tags.filter((x) => x !== t) : [...f.tags, t],
-  }));
 
   const handleSubmit = async () => {
     if (!userId) return;
@@ -43,6 +55,7 @@ export default function OnboardingPage() {
     setSaving(true);
     setError("");
     const supabase = createClient();
+    const tags = form.subcategorie ? [form.subcategorie] : [];
     const { error } = await supabase.from("prestataires").insert({
       owner_id: userId,
       nom: form.nom.trim(),
@@ -52,7 +65,7 @@ export default function OnboardingPage() {
       description: form.description.trim() || null,
       prix: Number(form.prix) || 0,
       price_note: form.price_note.trim() || null,
-      tags: form.tags,
+      tags,
       images: [],
       note: 0,
       is_available: true,
@@ -129,8 +142,8 @@ export default function OnboardingPage() {
                     Catégorie
                   </label>
                   <select className={inputCls} style={{ ...inputStyle, appearance: "none" }} value={form.categorie}
-                    onChange={(e) => up("categorie", e.target.value)} onFocus={focusIn} onBlur={focusOut}>
-                    {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+                    onChange={(e) => { up("categorie", e.target.value); up("subcategorie", ""); }} onFocus={focusIn} onBlur={focusOut}>
+                    {dbCategories.map((c) => <option key={c}>{c}</option>)}
                   </select>
                 </div>
                 {error && <p className="text-red-500 text-xs font-semibold">{error}</p>}
@@ -149,7 +162,7 @@ export default function OnboardingPage() {
                 Votre présentation
               </h1>
               <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>
-                Décrivez-vous et sélectionnez vos spécialités.
+                Décrivez-vous et choisissez votre spécialité.
               </p>
               <div className="flex flex-col gap-4">
                 <div>
@@ -162,24 +175,26 @@ export default function OnboardingPage() {
                     onBlur={focusOut as React.FocusEventHandler<HTMLTextAreaElement>}
                     placeholder="Parlez de votre style, vos références, votre zone d'intervention…" />
                 </div>
-                <div>
-                  <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
-                    Tags (sélectionnez vos spécialités)
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {DEFAULT_TAGS.map((t) => (
-                      <button key={t} type="button" onClick={() => toggleTag(t)}
-                        className="text-xs font-bold px-3 py-1.5 rounded-full transition-all cursor-pointer"
-                        style={{
-                          background: form.tags.includes(t) ? "rgba(74,108,247,0.12)" : "var(--bg)",
-                          color: form.tags.includes(t) ? "var(--blue2)" : "var(--muted)",
-                          border: `1.5px solid ${form.tags.includes(t) ? "rgba(74,108,247,0.3)" : "var(--border)"}`,
-                        }}>
-                        {form.tags.includes(t) ? "✓ " : ""}{t}
-                      </button>
-                    ))}
+                {availableSubcats.length > 0 && (
+                  <div>
+                    <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--pink)" }}>
+                      Sous-catégorie
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {availableSubcats.map((s) => (
+                        <button key={s} type="button" onClick={() => up("subcategorie", form.subcategorie === s ? "" : s)}
+                          className="text-xs font-bold px-3 py-1.5 rounded-full transition-all cursor-pointer"
+                          style={{
+                            background: form.subcategorie === s ? "rgba(217,63,181,0.12)" : "var(--bg)",
+                            color: form.subcategorie === s ? "var(--pink)" : "var(--muted)",
+                            border: `1.5px solid ${form.subcategorie === s ? "rgba(217,63,181,0.3)" : "var(--border)"}`,
+                          }}>
+                          {form.subcategorie === s ? "✓ " : ""}{s}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
                 <div className="flex gap-3 pt-2">
                   <button onClick={() => setStep(1)}
                     className="px-5 py-3 rounded-xl font-bold text-sm cursor-pointer"

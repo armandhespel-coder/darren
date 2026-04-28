@@ -40,118 +40,153 @@ export default function AvisClient({ token, prestataire }: Props) {
 
   if (done) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, #12112A 0%, #1E1C3A 60%, #2A1042 100%)" }}>
         <div className="text-center max-w-md mx-auto px-6">
+          <img src="/logo.png" alt="Connect Event" className="h-20 w-auto object-contain mx-auto mb-8" />
           <div className="text-6xl mb-4">🎉</div>
-          <h1 className="font-black text-2xl mb-2" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
+          <h1 className="font-black text-2xl mb-3 text-white" style={{ fontFamily: "var(--font-raleway)" }}>
             Merci pour votre avis !
           </h1>
-          <p className="text-sm font-semibold" style={{ color: "var(--muted)" }}>
-            Votre avis sur <strong>{prestataire.nom}</strong> a bien été enregistré.
+          <p className="text-sm font-semibold mb-6" style={{ color: "rgba(255,255,255,0.6)" }}>
+            Votre avis sur <strong style={{ color: "white" }}>{prestataire.nom}</strong> a bien été enregistré.
           </p>
-          <a href="/" className="inline-block mt-6 text-xs font-bold px-5 py-2.5 rounded-full text-white" style={{ background: "var(--grad)" }}>
-            Retour au site
+          <a href="/" className="inline-block text-xs font-bold px-6 py-3 rounded-full text-white" style={{ background: "var(--grad)", boxShadow: "0 8px 24px rgba(217,63,181,0.4)" }}>
+            Retour au site →
           </a>
         </div>
       </div>
     );
   }
 
+  const displayNote = hovered || note;
+
   return (
-    <div className="min-h-screen flex items-center justify-center py-16 px-4" style={{ background: "var(--bg)" }}>
-      <div className="w-full max-w-lg">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="text-4xl mb-3">⭐</div>
-          <h1 className="font-black text-2xl mb-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
-            Laisser un avis
-          </h1>
-          <p className="text-sm font-semibold" style={{ color: "var(--muted)" }}>
-            Vous évaluez <strong style={{ color: "var(--text)" }}>{prestataire.nom}</strong> · {prestataire.categorie}
+    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(135deg, #12112A 0%, #1E1C3A 60%, #2A1042 100%)" }}>
+      {/* Orbs */}
+      <div className="fixed rounded-full pointer-events-none" style={{ width: 400, height: 400, background: "#4A6CF7", top: -150, left: -100, filter: "blur(100px)", opacity: 0.2 }} />
+      <div className="fixed rounded-full pointer-events-none" style={{ width: 350, height: 350, background: "#D93FB5", bottom: -120, right: -80, filter: "blur(100px)", opacity: 0.2 }} />
+
+      {/* Logo */}
+      <header className="relative z-10 flex justify-center pt-8 pb-4">
+        <img src="/logo.png" alt="Connect Event" className="h-16 w-auto object-contain" />
+      </header>
+
+      <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md">
+          {/* Card */}
+          <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(255,255,255,0.97)", boxShadow: "0 32px 80px rgba(0,0,0,0.4)" }}>
+            {/* Header card */}
+            <div className="px-8 pt-8 pb-6 text-center" style={{ borderBottom: "1px solid var(--border)" }}>
+              <p className="text-[10px] font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>
+                Évaluation prestataire
+              </p>
+              <h1 className="font-black text-2xl mb-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
+                {prestataire.nom}
+              </h1>
+              <span className="inline-block text-[11px] font-extrabold px-3 py-1 rounded-full" style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)" }}>
+                {prestataire.categorie}
+              </span>
+            </div>
+
+            <div className="px-8 py-6">
+              {/* Stars */}
+              <div className="mb-6">
+                <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-4 text-center" style={{ color: "var(--muted)" }}>
+                  Votre note *
+                </label>
+                <div className="flex gap-2 justify-center mb-2">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setNote(star)}
+                      onMouseEnter={() => setHovered(star)}
+                      onMouseLeave={() => setHovered(0)}
+                      className="cursor-pointer transition-all"
+                      style={{
+                        background: "none", border: "none", padding: "4px",
+                        transform: displayNote >= star ? "scale(1.25)" : "scale(1)",
+                        filter: displayNote >= star ? "drop-shadow(0 0 6px rgba(245,132,42,0.6))" : "none",
+                        transition: "transform 0.15s, filter 0.15s",
+                      }}
+                      aria-label={`${star} étoile${star > 1 ? "s" : ""}`}
+                    >
+                      <svg width={36} height={36} viewBox="0 0 24 24"
+                        fill={displayNote >= star ? "#F5842A" : "none"}
+                        stroke={displayNote >= star ? "#F5842A" : "#CBD5E1"}
+                        strokeWidth={1.5} aria-hidden="true">
+                        <path d="M12 2l2.09 6.26L20 9.27l-5 4.87L16.18 22 12 18.77 7.82 22 9 14.14 4 9.27l5.91-.91L12 2z"/>
+                      </svg>
+                    </button>
+                  ))}
+                </div>
+                <div className="text-center" style={{ minHeight: 20 }}>
+                  {displayNote > 0 && (
+                    <span className="text-sm font-extrabold" style={{ color: "#F5842A" }}>
+                      {["", "Mauvais 😕", "Décevant 😐", "Correct 🙂", "Bien 😊", "Excellent ! 🤩"][displayNote]}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Nom */}
+              <div className="mb-4">
+                <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
+                  Votre prénom / nom *
+                </label>
+                <input
+                  type="text"
+                  value={authorName}
+                  onChange={e => setAuthorName(e.target.value)}
+                  placeholder="Ex : Marie D."
+                  className="w-full rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all"
+                  style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                  onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
+                  onBlur={e => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+
+              {/* Commentaire */}
+              <div className="mb-6">
+                <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
+                  Votre commentaire
+                </label>
+                <textarea
+                  value={commentaire}
+                  onChange={e => setCommentaire(e.target.value)}
+                  placeholder="Décrivez votre expérience…"
+                  rows={3}
+                  className="w-full rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all resize-none"
+                  style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                  onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
+                  onBlur={e => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+
+              {error && (
+                <div className="mb-4 px-4 py-3 rounded-xl text-sm font-bold" style={{ background: "rgba(239,68,68,0.08)", border: "1.5px solid rgba(239,68,68,0.2)", color: "#dc2626" }}>
+                  ✕ {error}
+                </div>
+              )}
+
+              <button
+                onClick={submit}
+                disabled={saving || !note || !authorName.trim()}
+                className="w-full font-extrabold py-4 rounded-xl transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-white"
+                style={{ background: "var(--grad)", boxShadow: "0 8px 24px rgba(217,63,181,0.35)", fontSize: "0.95rem", letterSpacing: "0.02em" }}
+                onMouseEnter={e => { if (!saving && note && authorName.trim()) (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = ""; }}
+              >
+                {saving ? "Envoi en cours…" : "⭐ Envoyer mon avis"}
+              </button>
+            </div>
+          </div>
+
+          <p className="text-center text-xs mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>
+            Connect Event — Votre avis aide la communauté
           </p>
         </div>
-
-        <div className="rounded-2xl p-6 sm:p-8" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 20px 60px rgba(74,108,247,0.12)" }}>
-          {/* Note étoiles */}
-          <div className="mb-6">
-            <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-3" style={{ color: "var(--blue2)" }}>
-              Votre note *
-            </label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map(star => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setNote(star)}
-                  onMouseEnter={() => setHovered(star)}
-                  onMouseLeave={() => setHovered(0)}
-                  className="cursor-pointer transition-transform"
-                  style={{ background: "none", border: "none", padding: 0, transform: (hovered || note) >= star ? "scale(1.2)" : "scale(1)" }}
-                  aria-label={`${star} étoile${star > 1 ? "s" : ""}`}
-                >
-                  <svg width={32} height={32} viewBox="0 0 24 24" fill={(hovered || note) >= star ? "#F5842A" : "none"} stroke={(hovered || note) >= star ? "#F5842A" : "var(--border)"} strokeWidth={1.5} aria-hidden="true">
-                    <path d="M12 2l2.09 6.26L20 9.27l-5 4.87L16.18 22 12 18.77 7.82 22 9 14.14 4 9.27l5.91-.91L12 2z"/>
-                  </svg>
-                </button>
-              ))}
-            </div>
-            {note > 0 && (
-              <p className="text-xs font-bold mt-1.5" style={{ color: "var(--muted)" }}>
-                {["", "Mauvais", "Décevant", "Correct", "Bien", "Excellent !"][note]}
-              </p>
-            )}
-          </div>
-
-          {/* Nom */}
-          <div className="mb-4">
-            <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
-              Votre prénom / nom *
-            </label>
-            <input
-              type="text"
-              value={authorName}
-              onChange={e => setAuthorName(e.target.value)}
-              placeholder="Ex : Marie D."
-              className="w-full rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all"
-              style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
-              onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
-              onBlur={e => (e.target.style.borderColor = "var(--border)")}
-            />
-          </div>
-
-          {/* Commentaire */}
-          <div className="mb-6">
-            <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
-              Votre commentaire
-            </label>
-            <textarea
-              value={commentaire}
-              onChange={e => setCommentaire(e.target.value)}
-              placeholder="Décrivez votre expérience…"
-              rows={4}
-              className="w-full rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all resize-none"
-              style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
-              onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
-              onBlur={e => (e.target.style.borderColor = "var(--border)")}
-            />
-          </div>
-
-          {error && (
-            <div className="mb-4 px-4 py-3 rounded-xl text-sm font-bold" style={{ background: "rgba(239,68,68,0.08)", border: "1.5px solid rgba(239,68,68,0.2)", color: "#dc2626" }}>
-              ✕ {error}
-            </div>
-          )}
-
-          <button
-            onClick={submit}
-            disabled={saving || !note || !authorName.trim()}
-            className="w-full text-white font-extrabold py-3.5 rounded-xl transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ background: "var(--grad)", boxShadow: "0 6px 20px rgba(74,108,247,0.3)" }}
-          >
-            {saving ? "Envoi…" : "Envoyer mon avis"}
-          </button>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

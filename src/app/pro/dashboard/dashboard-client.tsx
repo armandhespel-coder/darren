@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Prestataire } from "@/types";
 import Navbar from "@/components/Navbar";
@@ -15,7 +15,7 @@ function completionScore(p: Prestataire) {
     p.images?.length >= 3,
     (p.description?.length ?? 0) > 30,
     p.prix > 0,
-    p.tags?.length >= 2,
+    p.tags?.length >= 1,
   ];
   const done = checks.filter(Boolean).length;
   return { done, total: checks.length, pct: Math.round((done / checks.length) * 100) };
@@ -174,6 +174,46 @@ function EditableCalendar({ prestataire: p }: { prestataire: Prestataire }) {
 
 export default function DashboardClient({ prestataire: p, userEmail }: Props) {
   const [showCalendar, setShowCalendar] = useState(false);
+  const [isVisible, setIsVisible] = useState(p.is_visible !== false);
+  const [togglingVisibility, setTogglingVisibility] = useState(false);
+
+  // Category / subcategory editor
+  const [dbCategories, setDbCategories] = useState<Array<{ name: string }>>([]);
+  const [dbSubcats, setDbSubcats] = useState<Array<{ name: string; category_name: string | null }>>([]);
+  const [editCat, setEditCat] = useState(p.categorie);
+  const [editSubcat, setEditSubcat] = useState(p.tags?.[0] ?? "");
+  const [savingCat, setSavingCat] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.from("site_categories").select("name").order("position").then(({ data }) => {
+      if (data?.length) setDbCategories(data as Array<{ name: string }>);
+    });
+    supabase.from("site_subcategories").select("name, category_name").then(({ data }) => {
+      if (data?.length) setDbSubcats(data as Array<{ name: string; category_name: string | null }>);
+    });
+  }, []);
+
+  const availableSubcats = dbSubcats.filter(s => s.category_name === editCat).map(s => s.name);
+
+  const saveCategorySubcat = async () => {
+    setSavingCat(true);
+    const supabase = createClient();
+    await supabase.from("prestataires").update({
+      categorie: editCat,
+      tags: editSubcat ? [editSubcat] : [],
+    }).eq("id", p.id);
+    setSavingCat(false);
+  };
+
+  const toggleVisibility = async () => {
+    setTogglingVisibility(true);
+    const next = !isVisible;
+    setIsVisible(next);
+    const supabase = createClient();
+    await supabase.from("prestataires").update({ is_visible: next }).eq("id", p.id);
+    setTogglingVisibility(false);
+  };
 
   const { done, total, pct } = completionScore(p);
 
@@ -196,6 +236,43 @@ export default function DashboardClient({ prestataire: p, userEmail }: Props) {
             </span>
           </h1>
           <p className="text-sm font-semibold" style={{ color: "var(--muted)" }}>{userEmail}</p>
+        </div>
+
+        {/* Visibility toggle — prominent */}
+        <div
+          className="flex items-center justify-between gap-4 mb-4 p-4 rounded-2xl flex-wrap"
+          style={{
+            background: isVisible ? "rgba(74,222,128,0.07)" : "rgba(239,68,68,0.06)",
+            border: `1.5px solid ${isVisible ? "rgba(74,222,128,0.3)" : "rgba(239,68,68,0.2)"}`,
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div style={{
+              width: 10, height: 10, borderRadius: "50%", flexShrink: 0,
+              background: isVisible ? "#4ADE80" : "#f87171",
+              boxShadow: isVisible ? "0 0 8px #4ADE80" : "0 0 8px #f87171",
+            }} />
+            <div>
+              <p className="font-extrabold text-sm" style={{ color: isVisible ? "#16a34a" : "#dc2626" }}>
+                {isVisible ? "Fiche visible sur la plateforme" : "Fiche masquée — invisible pour les clients"}
+              </p>
+              <p className="text-xs font-semibold" style={{ color: "var(--muted)" }}>
+                {isVisible ? "Les clients peuvent trouver votre profil." : "Votre profil n'apparaît pas dans les résultats."}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={toggleVisibility}
+            disabled={togglingVisibility}
+            className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-extrabold cursor-pointer transition-all disabled:opacity-50"
+            style={{
+              background: isVisible ? "rgba(239,68,68,0.1)" : "rgba(74,222,128,0.1)",
+              color: isVisible ? "#dc2626" : "#16a34a",
+              border: `1.5px solid ${isVisible ? "rgba(239,68,68,0.25)" : "rgba(74,222,128,0.25)"}`,
+            }}
+          >
+            {isVisible ? "👁️ Masquer ma fiche" : "👁️ Rendre visible"}
+          </button>
         </div>
 
         {/* Stats */}
@@ -233,7 +310,7 @@ export default function DashboardClient({ prestataire: p, userEmail }: Props) {
                   { lbl: "3+ photos", done: p.images?.length >= 3 },
                   { lbl: "Description", done: (p.description?.length ?? 0) > 30 },
                   { lbl: "Prix", done: p.prix > 0 },
-                  { lbl: "2+ tags", done: p.tags?.length >= 2 },
+                  { lbl: "Sous-catégorie", done: p.tags?.length >= 1 },
                 ].map((c) => (
                   <div key={c.lbl} className="flex items-center gap-2 text-xs font-semibold"
                     style={{ color: c.done ? "#16a34a" : "var(--muted)" }}>
@@ -255,6 +332,57 @@ export default function DashboardClient({ prestataire: p, userEmail }: Props) {
                   Compléter mon profil →
                 </a>
               )}
+            </div>
+
+            {/* Catégorie & Sous-catégorie */}
+            <div className="rounded-2xl p-6"
+              style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
+              <h2 className="font-black text-lg mb-4" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
+                🏷️ Catégorie & Spécialité
+              </h2>
+              <div className="flex flex-col gap-3">
+                <div>
+                  <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
+                    Catégorie
+                  </label>
+                  <select
+                    value={editCat}
+                    onChange={e => { setEditCat(e.target.value); setEditSubcat(""); }}
+                    className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold outline-none"
+                    style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)", appearance: "none" }}
+                  >
+                    {(dbCategories.length ? dbCategories : [{ name: p.categorie }]).map(c => (
+                      <option key={c.name} value={c.name}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+                {availableSubcats.length > 0 && (
+                  <div>
+                    <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--pink)" }}>
+                      Sous-catégorie
+                    </label>
+                    <select
+                      value={editSubcat}
+                      onChange={e => setEditSubcat(e.target.value)}
+                      className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold outline-none"
+                      style={{ background: "var(--bg)", border: "1.5px solid rgba(217,63,181,0.4)", color: "var(--text)", appearance: "none" }}
+                    >
+                      <option value="">— Sélectionner —</option>
+                      {availableSubcats.map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <button
+                  onClick={saveCategorySubcat}
+                  disabled={savingCat}
+                  className="w-full py-2.5 rounded-xl text-sm font-extrabold text-white cursor-pointer disabled:opacity-50"
+                  style={{ background: "var(--grad2)" }}
+                >
+                  {savingCat ? "Sauvegarde..." : "Enregistrer"}
+                </button>
+              </div>
             </div>
 
             {/* Quick actions */}

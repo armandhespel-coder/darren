@@ -53,14 +53,14 @@ export default function SearchBar({ filters, onChange, onSearch, categories = []
 
   return (
     <div
-      className="bg-white rounded-2xl overflow-visible"
+      className="bg-white rounded-2xl overflow-hidden"
       style={{ boxShadow: "0 20px 60px rgba(74,108,247,0.18)" }}
     >
       <div className="flex flex-wrap items-end gap-3 p-4 md:p-6">
 
         {/* Search input */}
         <div
-          className="flex items-center gap-2 flex-[2] min-w-[160px] w-full rounded-xl px-3.5"
+          className="flex items-center gap-2 flex-[2] min-w-0 sm:min-w-[160px] w-full rounded-xl px-3.5"
           style={{
             background: "var(--bg)",
             border: "1.5px solid var(--border)",
@@ -83,7 +83,7 @@ export default function SearchBar({ filters, onChange, onSearch, categories = []
         </div>
 
         {/* Catégorie */}
-        <div className="flex-1 min-w-[150px]">
+        <div className="flex-1 min-w-0 sm:min-w-[150px]">
           <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--blue2)" }}>
             <IconTag /> Prestataire
           </div>
@@ -116,7 +116,7 @@ export default function SearchBar({ filters, onChange, onSearch, categories = []
         )}
 
         {/* Budget slider */}
-        <div className="flex-1 min-w-[160px]">
+        <div className="flex-1 min-w-0 sm:min-w-[160px]">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest" style={{ color: "var(--blue2)" }}>
               <IconEuro /> Budget
@@ -152,21 +152,6 @@ export default function SearchBar({ filters, onChange, onSearch, categories = []
 
         {/* Buttons */}
         <div className="flex gap-2 w-full sm:w-auto">
-          <button
-            onClick={onSearch}
-            className="flex-1 sm:flex-initial text-white text-sm font-extrabold px-7 rounded-xl cursor-pointer transition-all duration-200"
-            style={{ height: 44, background: "var(--grad)", boxShadow: "0 6px 20px rgba(74,108,247,0.35)", letterSpacing: "0.06em" }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 10px 28px rgba(74,108,247,0.45)";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(74,108,247,0.35)";
-            }}
-          >
-            Rechercher
-          </button>
           <button
             onClick={reset}
             className="flex items-center gap-1.5 text-sm font-bold px-4 rounded-xl cursor-pointer transition-all duration-200"

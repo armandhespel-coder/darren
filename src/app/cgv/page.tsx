@@ -53,7 +53,7 @@ export default function CGVPage() {
         </Section>
 
         <Section title="5. Offre Premium prestataires">
-          <p>L&apos;offre <strong>Premium</strong> (payante, via Stripe) permet :</p>
+          <p>L&apos;offre <strong>Premium</strong> (payante) permet :</p>
           <ul>
             <li>L&apos;affichage du numéro de téléphone sur la fiche</li>
             <li>Une mise en avant dans les résultats</li>
@@ -77,7 +77,7 @@ export default function CGVPage() {
         </Section>
 
         <Section title="8. Propriété intellectuelle">
-          <p>Le contenu de la plateforme (logo, design, textes, code) est la propriété de Hesperides Studio. Les prestataires conservent la propriété de leurs contenus mais accordent à Connect Event une licence d&apos;affichage non exclusive.</p>
+          <p>Le contenu de la plateforme (logo, design, textes, code) est la propriété de Connect Event. Les prestataires conservent la propriété de leurs contenus mais accordent à Connect Event une licence d&apos;affichage non exclusive.</p>
         </Section>
 
         <Section title="9. Résiliation">

@@ -62,7 +62,7 @@ export default function AProposPage() {
           <div>
             <h3 style={{ fontFamily: "var(--font-raleway)", fontWeight: 900, color: "white", fontSize: "1.15rem", marginBottom: "0.3rem" }}>Une startup belge indépendante</h3>
             <p style={{ color: "rgba(255,255,255,0.6)", lineHeight: 1.7, fontSize: "0.95rem", maxWidth: 560 }}>
-              Connect Event est développé par Hesperides Studio, basé en Belgique. On est une petite équipe passionnée par l&apos;événementiel et la technologie — et on construit une plateforme qu&apos;on aurait voulu avoir nous-mêmes.
+              Connect Event est basé en Belgique. On est une petite équipe passionnée par l&apos;événementiel et la technologie — et on construit une plateforme qu&apos;on aurait voulu avoir nous-mêmes.
             </p>
           </div>
         </section>

@@ -33,7 +33,7 @@ export default function AdminUsersPage() {
 
   const roleCount = {
     total: users.length,
-    prestataire: users.filter((u) => u.role === "prestataire").length,
+    prestataire: users.filter((u) => u.role === "pro").length,
     client: users.filter((u) => u.role === "client").length,
     admin: users.filter((u) => u.role === "admin").length,
   };

@@ -32,7 +32,7 @@ export default function ConfidentialitePage() {
         <p style={{ color: "#888", fontSize: "0.9rem", marginBottom: "2.5rem" }}>Dernière mise à jour : avril 2026</p>
 
         <Section title="1. Responsable du traitement">
-          <p>Connect Event, exploité par Hesperides Studio, est responsable du traitement de vos données personnelles collectées via la plateforme.</p>
+          <p>Connect Event est responsable du traitement de vos données personnelles collectées via la plateforme.</p>
           <p>Contact : <a href="mailto:yagan_darren@hotmail.com" style={{ color: "var(--blue2)" }}>yagan_darren@hotmail.com</a></p>
         </Section>
 
@@ -42,7 +42,6 @@ export default function ConfidentialitePage() {
             <li>Informations de profil prestataire (catégorie, zone géographique, description, photos)</li>
             <li>Messages échangés via la messagerie interne</li>
             <li>Données de navigation (cookies techniques et analytiques)</li>
-            <li>Informations de paiement traitées par Stripe (nous ne stockons pas les données bancaires)</li>
           </ul>
         </Section>
 
@@ -68,7 +67,6 @@ export default function ConfidentialitePage() {
           <p>Vos données ne sont jamais vendues. Elles peuvent être partagées avec :</p>
           <ul>
             <li>Supabase (hébergement base de données) — Union européenne</li>
-            <li>Stripe (paiements) — certifié PCI DSS</li>
             <li>Vercel (hébergement) — région Europe</li>
           </ul>
         </Section>

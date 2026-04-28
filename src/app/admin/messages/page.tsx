@@ -20,6 +20,7 @@ interface Conversation {
   unread: number;
   lastTime: string;
   prestaNom: string;
+  prestaEmail: string;
 }
 
 function timeAgo(date: string) {
@@ -59,13 +60,18 @@ export default function AdminMessagesPage() {
 
     const [{ data: profiles }, { data: prestas }] = await Promise.all([
       partnerIds.length ? supabase.from("profiles").select("id, email").in("id", partnerIds) : Promise.resolve({ data: [] }),
-      prestaIds.length ? supabase.from("prestataires").select("id, nom").in("id", prestaIds) : Promise.resolve({ data: [] }),
+      prestaIds.length ? supabase.from("prestataires").select("id, nom, email, owner_id").in("id", prestaIds) : Promise.resolve({ data: [] }),
     ]);
 
     const profMap: Record<string, string> = {};
     (profiles ?? []).forEach((p: { id: string; email: string }) => { profMap[p.id] = p.email; });
+
     const prestaMap: Record<string, string> = {};
-    (prestas ?? []).forEach((p: { id: string; nom: string }) => { prestaMap[p.id] = p.nom; });
+    const prestaEmailMap: Record<string, string> = {};
+    (prestas ?? []).forEach((p: { id: string; nom: string; email?: string | null; owner_id?: string }) => {
+      prestaMap[p.id] = p.nom;
+      prestaEmailMap[p.id] = p.email ?? profMap[p.owner_id ?? ""] ?? "";
+    });
 
     const convMap = new Map<string, Conversation>();
     for (const msg of msgs as Msg[]) {
@@ -80,13 +86,17 @@ export default function AdminMessagesPage() {
           unread: 0,
           lastTime: msg.created_at,
           prestaNom: "",
+          prestaEmail: "",
         });
       }
       const conv = convMap.get(partnerId)!;
       conv.messages.push(msg);
       if (msg.created_at > conv.lastTime) conv.lastTime = msg.created_at;
       if (!msg.read && msg.sender_id !== user.id) conv.unread++;
-      if (!conv.prestaNom && msg.prestataire_id) conv.prestaNom = prestaMap[msg.prestataire_id] ?? "";
+      if (!conv.prestaNom && msg.prestataire_id) {
+        conv.prestaNom = prestaMap[msg.prestataire_id] ?? "";
+        conv.prestaEmail = prestaEmailMap[msg.prestataire_id] ?? "";
+      }
     }
 
     const list = [...convMap.values()].sort((a, b) => b.lastTime.localeCompare(a.lastTime));
@@ -296,8 +306,23 @@ export default function AdminMessagesPage() {
                     </div>
                   )}
                 </div>
-                <span className="text-xs font-extrabold px-3 py-1 rounded-full"
-                  style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)", flexShrink: 0 }}>
+
+                {/* Mailto presta */}
+                {active.prestaEmail && (
+                  <a
+                    href={`mailto:${active.prestaEmail}?subject=Demande client via Connect Event&body=Bonjour,%0A%0AUn client vous a contacté via Connect Event.%0A%0A---${encodeURIComponent("\n" + (active.messages[active.messages.length - 1]?.content ?? ""))}`}
+                    title={`Écrire à ${active.prestaNom} par email`}
+                    className="flex items-center gap-1.5 text-[11px] font-extrabold px-3 py-1.5 rounded-xl transition-all flex-shrink-0"
+                    style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.2)", textDecoration: "none" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(74,108,247,0.15)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "rgba(74,108,247,0.08)")}
+                  >
+                    📧 Email presta
+                  </a>
+                )}
+
+                <span className="text-xs font-extrabold px-3 py-1 rounded-full flex-shrink-0"
+                  style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)" }}>
                   {active.messages.length} message{active.messages.length !== 1 ? "s" : ""}
                 </span>
                 {/* Delete conversation */}
@@ -305,8 +330,8 @@ export default function AdminMessagesPage() {
                   onClick={deleteConversation}
                   disabled={deleting}
                   title="Supprimer la conversation"
-                  className="flex items-center justify-center rounded-xl cursor-pointer transition-all disabled:opacity-50"
-                  style={{ width: 36, height: 36, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#dc2626", flexShrink: 0 }}
+                  className="flex items-center justify-center rounded-xl cursor-pointer transition-all disabled:opacity-50 flex-shrink-0"
+                  style={{ width: 36, height: 36, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#dc2626" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.15)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "rgba(239,68,68,0.08)")}
                 >
