@@ -26,7 +26,7 @@ export default async function ClaimPage({ params }: { params: Promise<{ token: s
     );
   }
 
-  const presta = tokenData.prestataires as { nom: string; categorie: string } | null;
+  const presta = tokenData.prestataires as unknown as { nom: string; categorie: string } | null;
 
   return <ClaimClient token={token} prestataireId={tokenData.prestataire_id} prestaName={presta?.nom ?? ""} />;
 }
