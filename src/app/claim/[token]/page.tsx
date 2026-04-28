@@ -43,7 +43,7 @@ export default async function ClaimPage({ params }: { params: Promise<{ token: s
         service.from("profiles").update({ role: "pro" }).eq("id", user.id),
       ]);
     }
-    redirect("/");
+    redirect("/pro/dashboard");
   }
 
   const presta = tokenData.prestataires as unknown as { nom: string; categorie: string } | null;
