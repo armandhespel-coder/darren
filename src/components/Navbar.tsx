@@ -65,7 +65,7 @@ export default function Navbar() {
       setUserEmail(data.user?.email ?? null);
       if (data.user) {
         const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
-        setUserIsPrestataire(profile?.role === "prestataire");
+        setUserIsPrestataire(profile?.role === "pro");
       }
     });
   }, []);
@@ -126,12 +126,9 @@ export default function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
-          {/* Espace Pro */}
-          <button
-            onClick={() => {
-              if (userIsPrestataire) router.push("/pro/dashboard");
-              else setShowPrestaireModal(true);
-            }}
+          {/* Espace Pro — caché pour les pros */}
+          {!userIsPrestataire && <button
+            onClick={() => setShowPrestaireModal(true)}
             className="hidden sm:flex items-center gap-1.5 text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer"
             style={{ height: 40, background: "transparent", border: "1.5px solid var(--border)", color: "var(--text)" }}
             onMouseEnter={e => {
@@ -144,10 +141,10 @@ export default function Navbar() {
             }}
           >
             🏠 Espace Pro
-          </button>
+          </button>}
 
-          {/* Devenir prestataire */}
-          <button
+          {/* Devenir prestataire — caché pour les pros */}
+          {!userIsPrestataire && <button
             onClick={() => setShowPrestaireModal(true)}
             className="hidden sm:flex items-center gap-1.5 text-white text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer"
             style={{ height: 40, background: "var(--grad)", boxShadow: "0 4px 14px rgba(217,63,181,0.3)", border: "none", letterSpacing: "0.04em" }}
@@ -161,7 +158,7 @@ export default function Navbar() {
             }}
           >
             <IconStar /> Devenir prestataire
-          </button>
+          </button>}
 
           {/* Hamburger */}
           <div className="relative" ref={menuRef}>
@@ -199,27 +196,23 @@ export default function Navbar() {
                         <IconLock /> Admin
                       </a>
                     )}
-                    <a href="/messages"
+                    {!userIsPrestataire && <a href="/messages"
                       className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
                       style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
                       onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                     >
                       💬 Messages
-                    </a>
-                    <button
-                      onClick={() => {
-                        if (userIsPrestataire) router.push("/pro/dashboard");
-                        else setShowPrestaireModal(true);
-                        setShowMenu(false);
-                      }}
+                    </a>}
+                    {!userIsPrestataire && <button
+                      onClick={() => { setShowPrestaireModal(true); setShowMenu(false); }}
                       className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all w-full text-left cursor-pointer"
                       style={{ color: "var(--text)", background: "transparent", border: "none", borderBottom: "1px solid var(--border)" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
                       onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                     >
                       🏠 Espace Pro
-                    </button>
+                    </button>}
                     <a href="/fonctionnement"
                       className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
                       style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
@@ -232,8 +225,7 @@ export default function Navbar() {
                       onClick={async () => {
                         const s = createClient();
                         await s.auth.signOut();
-                        setUserEmail(null);
-                        setShowMenu(false);
+                        window.location.href = '/';
                       }}
                       className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all w-full text-left cursor-pointer"
                       style={{ color: "#dc2626", background: "transparent", border: "none" }}
