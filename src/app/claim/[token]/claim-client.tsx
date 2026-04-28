@@ -26,13 +26,24 @@ export default function ClaimClient({ token, prestaName }: Props) {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true); setError('');
-    const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(`/claim/${token}`)}`;
-    const { error: err } = await supabase.auth.signUp({
-      email, password,
-      options: { data: { role: 'client' }, emailRedirectTo: redirectTo },
+
+    // 1. Admin API: create user + link prestataire (no email confirmation required)
+    const res = await fetch('/api/claim/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, token }),
     });
-    if (err) { setError(err.message); setLoading(false); return; }
+    const json = await res.json();
+    if (!res.ok) { setError(json.error || 'Erreur lors de la création du compte.'); setLoading(false); return; }
+
+    // 2. Send magic link so user gets a login email (OTP flow, no PKCE cookie needed)
+    const supabase = createClient();
+    const redirectTo = `${window.location.origin}/auth/callback?next=/pro/dashboard`;
+    await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: false, emailRedirectTo: redirectTo },
+    });
+
     setEmailSent(true); setLoading(false);
   };
 
@@ -42,18 +53,22 @@ export default function ClaimClient({ token, prestaName }: Props) {
     const supabase = createClient();
     const { error: err } = await supabase.auth.signInWithPassword({ email, password });
     if (err) { setError(err.message); setLoading(false); return; }
+    // Link prestataire in case it wasn't done yet
     await fetch('/api/link-prestataire', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),
     });
-    window.location.href = '/';
+    window.location.href = '/pro/dashboard';
   };
 
   const resend = async () => {
     const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(`/claim/${token}`)}`;
-    await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: redirectTo } });
+    const redirectTo = `${window.location.origin}/auth/callback?next=/pro/dashboard`;
+    await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: false, emailRedirectTo: redirectTo },
+    });
   };
 
   if (emailSent) return (
@@ -62,16 +77,23 @@ export default function ClaimClient({ token, prestaName }: Props) {
         <div style={{ fontSize: 56, marginBottom: 20 }}>📧</div>
         <h2 style={{ fontWeight: 900, fontSize: 22, color: '#1E1C3A', marginBottom: 12 }}>Vérifiez vos emails</h2>
         <p style={{ color: '#6B6A87', fontSize: 14, lineHeight: 1.7, marginBottom: 8 }}>
-          Un lien de confirmation a été envoyé à<br /><strong>{email}</strong>
+          Un lien de connexion a été envoyé à<br /><strong>{email}</strong>
         </p>
         <p style={{ color: '#6B6A87', fontSize: 13, lineHeight: 1.6, marginBottom: 28 }}>
-          Cliquez sur ce lien pour confirmer votre adresse et accéder automatiquement à votre espace prestataire.<br />
+          Cliquez sur ce lien pour accéder directement à votre espace prestataire.<br />
           <em>Pensez à vérifier vos spams.</em>
         </p>
         <button type="button" onClick={resend}
           style={{ fontSize: 13, color: '#4A6CF7', background: 'none', border: '1.5px solid rgba(74,108,247,0.3)', borderRadius: 10, padding: '8px 20px', cursor: 'pointer', fontWeight: 700 }}>
-          Renvoyer l&apos;email
+          Renvoyer le lien
         </button>
+        <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+          <p style={{ fontSize: 12, color: '#9999B3', marginBottom: 8 }}>Vous pouvez aussi vous connecter directement :</p>
+          <button type="button" onClick={() => { setEmailSent(false); setMode('login'); }}
+            style={{ fontSize: 13, color: '#4A6CF7', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}>
+            Se connecter avec mot de passe →
+          </button>
+        </div>
       </div>
     </main>
   );
@@ -117,7 +139,7 @@ export default function ClaimClient({ token, prestaName }: Props) {
 
         {mode === 'signup' && (
           <p style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: '#9999B3' }}>
-            Un email de confirmation vous sera envoyé.
+            Un lien de connexion vous sera envoyé par email.
           </p>
         )}
       </div>
