@@ -282,7 +282,7 @@ export default function HomePage() {
           <button
             onClick={() => {
               if (userIsPrestataire) router.push("/pro/dashboard");
-              else router.push("/pro/avantages");
+              else router.push("/avantages-pro");
             }}
             className="hidden sm:flex items-center gap-1.5 text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer"
             style={{
@@ -381,7 +381,7 @@ export default function HomePage() {
                     <button
                       onClick={() => {
                         if (userIsPrestataire) { router.push("/pro/dashboard"); }
-                        else { router.push("/pro/avantages"); }
+                        else { router.push("/avantages-pro"); }
                         setShowMenu(false);
                       }}
                       className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all w-full text-left cursor-pointer"

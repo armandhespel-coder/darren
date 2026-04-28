@@ -128,7 +128,7 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           {/* Espace Pro — caché pour les pros */}
           {!userIsPrestataire && <button
-            onClick={() => router.push("/pro/avantages")}
+            onClick={() => router.push("/avantages-pro")}
             className="hidden sm:flex items-center gap-1.5 text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer"
             style={{ height: 40, background: "transparent", border: "1.5px solid var(--border)", color: "var(--text)" }}
             onMouseEnter={e => {
@@ -205,7 +205,7 @@ export default function Navbar() {
                       💬 Messages
                     </a>}
                     {!userIsPrestataire && <button
-                      onClick={() => { router.push("/pro/avantages"); setShowMenu(false); }}
+                      onClick={() => { router.push("/avantages-pro"); setShowMenu(false); }}
                       className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all w-full text-left cursor-pointer"
                       style={{ color: "var(--text)", background: "transparent", border: "none", borderBottom: "1px solid var(--border)" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
