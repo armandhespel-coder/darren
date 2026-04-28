@@ -39,7 +39,7 @@ export default function ClaimClient({ token, prestataireId, prestaName }: Props)
     e.preventDefault();
     setLoading(true); setError('');
     const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=/&ptoken=${token}`;
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(`/claim/${token}`)}`;
     const { error: err } = await supabase.auth.signUp({
       email, password,
       options: { data: { role: 'client' }, emailRedirectTo: redirectTo },
@@ -65,7 +65,7 @@ export default function ClaimClient({ token, prestataireId, prestaName }: Props)
         </p>
         <button type="button" onClick={async () => {
           const supabase = createClient();
-          await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/&ptoken=${token}` } });
+          await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(`/claim/${token}`)}` } });
         }} style={{ fontSize: 13, color: '#4A6CF7', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}>
           Renvoyer l&apos;email
         </button>

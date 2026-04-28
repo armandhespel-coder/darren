@@ -1,12 +1,13 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/service";
+import { createClient } from "@/lib/supabase/server";
 import ClaimClient from "./claim-client";
 
 export default async function ClaimPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const supabase = createServiceClient();
+  const service = createServiceClient();
 
-  const { data: tokenData } = await supabase
+  const { data: tokenData } = await service
     .from("edit_tokens")
     .select("prestataire_id, expires_at, prestataires(nom, categorie)")
     .eq("id", token)
@@ -24,6 +25,25 @@ export default async function ClaimPage({ params }: { params: Promise<{ token: s
         </div>
       </main>
     );
+  }
+
+  // Si l'utilisateur est déjà connecté → claim immédiat côté serveur → accueil
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: presta } = await service
+      .from("prestataires")
+      .select("owner_id")
+      .eq("id", tokenData.prestataire_id)
+      .single();
+
+    if (presta && !presta.owner_id) {
+      await Promise.all([
+        service.from("prestataires").update({ owner_id: user.id }).eq("id", tokenData.prestataire_id),
+        service.from("profiles").update({ role: "pro" }).eq("id", user.id),
+      ]);
+    }
+    redirect("/");
   }
 
   const presta = tokenData.prestataires as unknown as { nom: string; categorie: string } | null;
