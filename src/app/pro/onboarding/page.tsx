@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 const CATEGORIES = ["DJ", "Décoratrice", "Matériel", "Voiture", "Traiteur", "Photo & Caméra", "Feux d'artifice", "Location de salle", "Gâteau"];
-const CONTINENTS = ["Europe", "Afrique", "Amérique", "Asie", "Océanie"];
 const DEFAULT_TAGS = ["Mariage", "Anniversaire", "Corporate", "Vinyl", "House", "Techno", "Latino", "Hip-Hop", "Soirée étudiante", "Cocktail", "Brunch", "Retro"];
 
 export default function OnboardingPage() {
@@ -16,7 +15,7 @@ export default function OnboardingPage() {
   const [error, setError] = useState("");
 
   const [form, setForm] = useState({
-    nom: "", company: "", categorie: "DJ", continent: "Europe",
+    nom: "", company: "", categorie: "DJ",
     description: "", prix: "", price_note: "", tags: [] as string[],
   });
 
@@ -25,13 +24,10 @@ export default function OnboardingPage() {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) { router.push("/auth/login"); return; }
       setUserId(data.user.id);
-      // Si l'utilisateur a déjà une fiche → dashboard
       const { data: p } = await supabase.from("prestataires").select("id").eq("owner_id", data.user.id).single();
       if (p) { router.push("/pro/dashboard"); return; }
-      // Sinon : vérifier le rôle — seuls les pros (invités par l'admin) peuvent créer leur fiche
       const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
       if (profile?.role !== "pro") { router.push("/"); return; }
-      // Role pro sans fiche → afficher l'onboarding
     });
   }, [router]);
 
@@ -52,7 +48,7 @@ export default function OnboardingPage() {
       nom: form.nom.trim(),
       company: form.company.trim() || null,
       categorie: form.categorie,
-      continent: form.continent,
+      continent: "Europe",
       description: form.description.trim() || null,
       prix: Number(form.prix) || 0,
       price_note: form.price_note.trim() || null,
@@ -65,25 +61,6 @@ export default function OnboardingPage() {
     });
     setSaving(false);
     if (error) { setError(error.message); return; }
-    // Upgrade role to 'pro'
-    await supabase.from("profiles").update({ role: "pro" }).eq("id", userId);
-    const supabase2 = createClient();
-    const { data: { user } } = await supabase2.auth.getUser();
-    fetch("/api/demande-prestataire", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nom: form.nom.trim(),
-        company: form.company.trim() || null,
-        categorie: form.categorie,
-        continent: form.continent,
-        description: form.description.trim() || null,
-        tags: form.tags,
-        prix: Number(form.prix) || 0,
-        price_note: form.price_note.trim() || null,
-        email: user?.email ?? null,
-      }),
-    });
     router.push("/pro/dashboard");
   };
 
@@ -98,7 +75,6 @@ export default function OnboardingPage() {
     <main className="min-h-screen flex items-center justify-center px-4 py-12"
       style={{ background: "var(--bg)" }}>
       <div className="w-full max-w-lg">
-        {/* Logo */}
         <div className="flex items-center justify-center mb-8">
           <img src="/logo.png" alt="Connect Event" className="h-24 w-auto object-contain" />
         </div>
@@ -148,25 +124,14 @@ export default function OnboardingPage() {
                     onChange={(e) => up("company", e.target.value)} onFocus={focusIn} onBlur={focusOut}
                     placeholder="Martin Events" />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
-                      Catégorie
-                    </label>
-                    <select className={inputCls} style={{ ...inputStyle, appearance: "none" }} value={form.categorie}
-                      onChange={(e) => up("categorie", e.target.value)} onFocus={focusIn} onBlur={focusOut}>
-                      {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
-                      Zone
-                    </label>
-                    <select className={inputCls} style={{ ...inputStyle, appearance: "none" }} value={form.continent}
-                      onChange={(e) => up("continent", e.target.value)} onFocus={focusIn} onBlur={focusOut}>
-                      {CONTINENTS.map((c) => <option key={c}>{c}</option>)}
-                    </select>
-                  </div>
+                <div>
+                  <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
+                    Catégorie
+                  </label>
+                  <select className={inputCls} style={{ ...inputStyle, appearance: "none" }} value={form.categorie}
+                    onChange={(e) => up("categorie", e.target.value)} onFocus={focusIn} onBlur={focusOut}>
+                    {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+                  </select>
                 </div>
                 {error && <p className="text-red-500 text-xs font-semibold">{error}</p>}
                 <button onClick={() => { if (!form.nom.trim()) { setError("Le nom est obligatoire."); return; } setError(""); setStep(2); }}
