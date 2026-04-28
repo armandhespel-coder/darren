@@ -22,15 +22,16 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) { router.push("/auth/login"); return; }
       setUserId(data.user.id);
-      // Si l'utilisateur a déjà un prestataire, rediriger vers le dashboard
-      supabase.from("prestataires").select("id").eq("owner_id", data.user.id).single().then(({ data: p }) => {
-        if (p) { router.push("/pro/dashboard"); return; }
-        // Sinon : l'accès pro passe uniquement par le lien admin → rediriger
-        router.push("/?message=acces_invite");
-      });
+      // Si l'utilisateur a déjà une fiche → dashboard
+      const { data: p } = await supabase.from("prestataires").select("id").eq("owner_id", data.user.id).single();
+      if (p) { router.push("/pro/dashboard"); return; }
+      // Sinon : vérifier le rôle — seuls les pros (invités par l'admin) peuvent créer leur fiche
+      const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
+      if (profile?.role !== "pro") { router.push("/"); return; }
+      // Role pro sans fiche → afficher l'onboarding
     });
   }, [router]);
 

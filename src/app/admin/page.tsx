@@ -571,6 +571,28 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* ── Lien d'invitation (sans fiche) ── */}
+        <div className="mb-6 flex items-center gap-4 flex-wrap">
+          <button
+            onClick={async () => {
+              const res = await fetch("/api/admin/generate-invite-link", { method: "POST" });
+              const json = await res.json();
+              if (json.token_id) {
+                const link = `${window.location.origin}/claim/${json.token_id}`;
+                navigator.clipboard.writeText(link);
+                setCreatedLink(link);
+              }
+            }}
+            className="flex items-center gap-2 text-sm font-extrabold px-5 py-2.5 rounded-xl cursor-pointer text-white transition-all"
+            style={{ background: "linear-gradient(135deg, #4A6CF7, #D93FB5)", boxShadow: "0 4px 14px rgba(74,108,247,0.3)" }}
+          >
+            ✉️ Générer un lien d&apos;invitation prestataire
+          </button>
+          <p className="text-xs font-semibold" style={{ color: "var(--muted)" }}>
+            Le prestataire créera lui-même sa fiche après inscription.
+          </p>
+        </div>
+
         {/* ── Grid : Form + Table ── */}
         <div className="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-6 items-start">
 

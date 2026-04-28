@@ -7,9 +7,10 @@ interface Props {
   token: string;
   prestataireId: string;
   prestaName: string;
+  isInvite: boolean;
 }
 
-export default function ClaimClient({ token, prestaName }: Props) {
+export default function ClaimClient({ token, prestaName, isInvite }: Props) {
   const [mode, setMode] = useState<'signup' | 'login'>('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,7 +27,6 @@ export default function ClaimClient({ token, prestaName }: Props) {
     e.preventDefault();
     setLoading(true); setError('');
 
-    // Admin API: crée le compte confirmé + lie le prestataire
     const res = await fetch('/api/claim/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -35,12 +35,11 @@ export default function ClaimClient({ token, prestaName }: Props) {
     const json = await res.json();
     if (!res.ok) { setError(json.error || 'Erreur lors de la création du compte.'); setLoading(false); return; }
 
-    // Connexion directe — compte déjà confirmé, pas besoin de vérification email
     const supabase = createClient();
     const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
     if (loginErr) { setError(loginErr.message); setLoading(false); return; }
 
-    window.location.href = '/pro/dashboard';
+    window.location.href = json.isInvite ? '/pro/onboarding' : '/pro/dashboard';
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -49,21 +48,27 @@ export default function ClaimClient({ token, prestaName }: Props) {
     const supabase = createClient();
     const { error: err } = await supabase.auth.signInWithPassword({ email, password });
     if (err) { setError(err.message); setLoading(false); return; }
-    await fetch('/api/link-prestataire', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
-    });
-    window.location.href = '/pro/dashboard';
+
+    if (!isInvite) {
+      await fetch('/api/link-prestataire', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+    }
+    window.location.href = isInvite ? '/pro/onboarding' : '/pro/dashboard';
   };
+
+  const title = isInvite ? 'Créez votre fiche prestataire' : 'Votre espace prestataire';
+  const subtitle = isInvite ? 'Créez votre compte pour remplir votre profil.' : prestaName ? `Fiche ${prestaName}` : '';
 
   return (
     <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #12112A, #1E1C3A)', padding: 24 }}>
       <div style={{ background: 'white', borderRadius: 24, padding: '48px 40px', maxWidth: 440, width: '100%', boxShadow: '0 30px 80px rgba(74,108,247,0.25)' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <img src="/logo.png" alt="Connect Event" style={{ height: 72, objectFit: 'contain', marginBottom: 20 }} />
-          <h1 style={{ fontWeight: 900, fontSize: 22, color: '#1E1C3A', marginBottom: 8 }}>Votre espace prestataire</h1>
-          {prestaName && <p style={{ color: '#6B6A87', fontSize: 14 }}>Fiche <strong>{prestaName}</strong></p>}
+          <h1 style={{ fontWeight: 900, fontSize: 22, color: '#1E1C3A', marginBottom: 8 }}>{title}</h1>
+          {subtitle && <p style={{ color: '#6B6A87', fontSize: 14 }}>{subtitle}</p>}
         </div>
 
         <div style={{ display: 'flex', gap: 6, marginBottom: 24, background: '#F7F8FC', borderRadius: 12, padding: 4 }}>
@@ -96,11 +101,9 @@ export default function ClaimClient({ token, prestaName }: Props) {
           </button>
         </form>
 
-        {mode === 'signup' && (
-          <p style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: '#9999B3' }}>
-            Accès immédiat — aucune vérification email requise.
-          </p>
-        )}
+        <p style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: '#9999B3' }}>
+          {mode === 'signup' ? 'Accès immédiat — aucune vérification email requise.' : ''}
+        </p>
       </div>
     </main>
   );

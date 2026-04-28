@@ -27,26 +27,41 @@ export default async function ClaimPage({ params }: { params: Promise<{ token: s
     );
   }
 
-  // Si l'utilisateur est déjà connecté → claim immédiat côté serveur → accueil
+  const isInvite = !tokenData.prestataire_id;
+
+  // Si l'utilisateur est déjà connecté
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
-    const { data: presta } = await service
-      .from("prestataires")
-      .select("owner_id")
-      .eq("id", tokenData.prestataire_id)
-      .single();
-
-    if (presta && !presta.owner_id) {
-      await Promise.all([
-        service.from("prestataires").update({ owner_id: user.id }).eq("id", tokenData.prestataire_id),
-        service.from("profiles").update({ role: "pro" }).eq("id", user.id),
-      ]);
+    if (isInvite) {
+      // Lien d'invitation : passer en pro + rediriger vers onboarding
+      await service.from("profiles").update({ role: "pro" }).eq("id", user.id);
+      redirect("/pro/onboarding");
+    } else {
+      // Lien de claim : lier la fiche si pas encore fait
+      const { data: presta } = await service
+        .from("prestataires")
+        .select("owner_id")
+        .eq("id", tokenData.prestataire_id)
+        .single();
+      if (presta && !presta.owner_id) {
+        await Promise.all([
+          service.from("prestataires").update({ owner_id: user.id }).eq("id", tokenData.prestataire_id),
+          service.from("profiles").update({ role: "pro" }).eq("id", user.id),
+        ]);
+      }
+      redirect("/pro/dashboard");
     }
-    redirect("/pro/dashboard");
   }
 
   const presta = tokenData.prestataires as unknown as { nom: string; categorie: string } | null;
 
-  return <ClaimClient token={token} prestataireId={tokenData.prestataire_id} prestaName={presta?.nom ?? ""} />;
+  return (
+    <ClaimClient
+      token={token}
+      prestataireId={tokenData.prestataire_id ?? ""}
+      prestaName={presta?.nom ?? ""}
+      isInvite={isInvite}
+    />
+  );
 }
