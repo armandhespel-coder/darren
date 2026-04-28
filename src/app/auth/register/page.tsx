@@ -13,18 +13,20 @@ function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isPro = searchParams.get("role") === "pro";
+  const nextParam = searchParams.get("next") ?? "";
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     const supabase = createClient();
+    const redirectNext = nextParam || (isPro ? "/pro/onboarding" : "");
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { role: isPro ? "prestataire" : "client" },
-        emailRedirectTo: `${window.location.origin}/auth/callback${isPro ? "?next=/pro/onboarding" : ""}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback${redirectNext ? `?next=${encodeURIComponent(redirectNext)}` : ""}`,
       },
     });
     if (error) {

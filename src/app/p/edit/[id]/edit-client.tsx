@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Prestataire } from '@/types';
+import Navbar from '@/components/Navbar';
 import './portal.css';
 
 const DEFAULT_TAGS = ['Mariage', 'Anniversaire', 'Corporate', 'Vinyl', 'House', 'Techno', 'Latino', 'Hip-Hop', 'Soirée étudiante', 'Cocktail', 'Brunch', 'Retro', 'Club'];
@@ -539,7 +540,8 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
 
   return (
     <div className="ce-root">
-      <header className="ce-portal-top">
+      <Navbar />
+      <header className="ce-portal-top" style={{ top: 80, zIndex: 40 }}>
         <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <img src="/logo.png" alt="Connect Event" style={{ height: 104, width: 'auto', objectFit: 'contain' }} />
         </a>

@@ -12,10 +12,10 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      if (ptoken) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const service = createServiceClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const service = createServiceClient();
+        if (ptoken) {
           const { data: tokenData } = await service
             .from("edit_tokens")
             .select("prestataire_id")
@@ -24,8 +24,19 @@ export async function GET(request: NextRequest) {
           if (tokenData) {
             await Promise.all([
               service.from("prestataires").update({ owner_id: user.id }).eq("id", tokenData.prestataire_id),
-              service.from("profiles").update({ role: "prestataire" }).eq("id", user.id),
+              service.from("profiles").update({ role: "pro" }).eq("id", user.id),
             ]);
+          }
+        } else if (next.startsWith("/p/edit/")) {
+          const prestataireId = next.split("/p/edit/")[1]?.split("?")[0];
+          if (prestataireId) {
+            const { data: presta } = await service.from("prestataires").select("id, owner_id").eq("id", prestataireId).single();
+            if (presta && !presta.owner_id) {
+              await Promise.all([
+                service.from("prestataires").update({ owner_id: user.id }).eq("id", prestataireId),
+                service.from("profiles").update({ role: "pro" }).eq("id", user.id),
+              ]);
+            }
           }
         }
       }
