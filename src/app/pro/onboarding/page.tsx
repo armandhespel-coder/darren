@@ -23,11 +23,13 @@ export default function OnboardingPage() {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) { router.push("/auth/login?next=/pro/onboarding"); return; }
+      if (!data.user) { router.push("/auth/login"); return; }
       setUserId(data.user.id);
-      // Redirect if already has prestataire
+      // Si l'utilisateur a déjà un prestataire, rediriger vers le dashboard
       supabase.from("prestataires").select("id").eq("owner_id", data.user.id).single().then(({ data: p }) => {
-        if (p) router.push("/pro/dashboard");
+        if (p) { router.push("/pro/dashboard"); return; }
+        // Sinon : l'accès pro passe uniquement par le lien admin → rediriger
+        router.push("/?message=acces_invite");
       });
     });
   }, [router]);

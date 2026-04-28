@@ -290,15 +290,15 @@ export default function AdminPage() {
       if (error) setMsg({ type: "err", text: error.message });
       else { setMsg({ type: "ok", text: "Prestataire mis à jour !" }); resetForm(); load(); }
     } else {
-      const createdId = newPrestaIdRef.current;
-      const { error } = await supabase.from("prestataires").insert({
-        ...payload,
-        id: createdId,
-        owner_id: null,
+      const res = await fetch("/api/admin/new-prestataire", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, id: newPrestaIdRef.current }),
       });
-      if (error) setMsg({ type: "err", text: error.message });
+      const json = await res.json();
+      if (!res.ok) setMsg({ type: "err", text: json.error ?? "Erreur création." });
       else {
-        const link = `${window.location.origin}/p/edit/${createdId}`;
+        const link = `${window.location.origin}/p/edit/${json.token_id}`;
         setCreatedLink(link);
         setMsg({ type: "ok", text: "Prestataire créé ! Copiez le lien ci-dessous et envoyez-le au prestataire." });
         newPrestaIdRef.current = crypto.randomUUID();
