@@ -298,7 +298,7 @@ export default function AdminPage() {
       const json = await res.json();
       if (!res.ok) setMsg({ type: "err", text: json.error ?? "Erreur création." });
       else {
-        const link = `${window.location.origin}/p/edit/${json.token_id}`;
+        const link = `${window.location.origin}/claim/${json.token_id}`;
         setCreatedLink(link);
         setMsg({ type: "ok", text: "Prestataire créé ! Copiez le lien ci-dessous et envoyez-le au prestataire." });
         newPrestaIdRef.current = crypto.randomUUID();
@@ -872,10 +872,18 @@ export default function AdminPage() {
                             </span>
                           ) : (
                             <button
-                              onClick={() => {
-                                const link = `${window.location.origin}/p/edit/${p.id}`;
-                                navigator.clipboard.writeText(link);
-                                setCreatedLink(link);
+                              onClick={async () => {
+                                const res = await fetch("/api/admin/generate-claim-link", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ prestataire_id: p.id }),
+                                });
+                                const json = await res.json();
+                                if (json.token_id) {
+                                  const link = `${window.location.origin}/claim/${json.token_id}`;
+                                  navigator.clipboard.writeText(link);
+                                  setCreatedLink(link);
+                                }
                               }}
                               className="text-[11px] font-extrabold px-3 py-1.5 rounded-lg cursor-pointer transition-all"
                               style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.2)" }}>
