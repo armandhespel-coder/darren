@@ -368,7 +368,7 @@ function ProAuthCard({ tokenId, prestataireId }: { tokenId: string; prestataireI
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: tokenId }),
     });
-    window.location.href = `/p/edit/${prestataireId}`;
+    window.location.href = '/pro/dashboard';
   };
 
   const handleRegister = async (e: React.FormEvent) => {

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   await Promise.all([
     service.from("prestataires").update({ owner_id: user.id }).eq("id", tokenData.prestataire_id),
-    service.from("profiles").update({ role: "prestataire" }).eq("id", user.id),
+    service.from("profiles").update({ role: "pro" }).eq("id", user.id),
   ]);
 
   return NextResponse.json({ success: true });
