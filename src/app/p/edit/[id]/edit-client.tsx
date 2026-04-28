@@ -541,22 +541,7 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
   return (
     <div className="ce-root">
       <Navbar />
-      <header className="ce-portal-top" style={{ top: 80, zIndex: 40 }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-          <img src="/logo.png" alt="Connect Event" style={{ height: 104, width: 'auto', objectFit: 'contain' }} />
-        </a>
-        <div className="ce-portal-top-center">
-          <span className="ce-portal-pill"><Ico.User s={12} /> Espace de {state.nom}</span>
-        </div>
-        <div className="ce-portal-top-right">
-          {dirty && <span className="ce-unsaved">Modifications non enregistrées</span>}
-          <button className="ce-grad-btn" style={{ height: 40 }} onClick={save} disabled={saving || !dirty}>
-            <Ico.Check s={14} /><span>{saving ? 'Enregistrement…' : 'Enregistrer'}</span>
-          </button>
-        </div>
-      </header>
-
-      <div className="ce-portal-layout">
+      <div className="ce-portal-layout" style={{ paddingTop: 96 }}>
         <nav className="ce-portal-rail">
           <div className="ce-portal-heading">
             <div className="ce-portal-heading-sub">Bienvenue</div>
@@ -577,6 +562,12 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
               </li>
             ))}
           </ul>
+          <div style={{ padding: '12px 0' }}>
+            {dirty && <p style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>Modifications non enregistrées</p>}
+            <button className="ce-grad-btn" style={{ width: '100%', height: 40 }} onClick={save} disabled={saving || !dirty}>
+              <Ico.Check s={14} /><span>{saving ? 'Enregistrement…' : 'Enregistrer'}</span>
+            </button>
+          </div>
           <div className="ce-portal-tip">
             <div className="ce-portal-tip-ico"><Ico.Sparkle s={13} /></div>
             <div>
