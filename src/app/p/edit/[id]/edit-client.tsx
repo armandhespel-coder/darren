@@ -351,9 +351,15 @@ function ProAuthCard({ tokenId, prestataireId }: { tokenId: string; prestataireI
   if (done) return (
     <div style={cardStyle}>
       <div style={{ fontSize: 12, fontWeight: 800, color: "var(--dark)", marginBottom: 4 }}>📧 Vérifiez votre email</div>
-      <p style={{ margin: 0, fontSize: 11, color: "var(--muted)", fontWeight: 600, lineHeight: 1.5 }}>
-        Confirmez votre adresse pour activer votre accès prestataire permanent.
+      <p style={{ margin: '0 0 8px', fontSize: 11, color: "var(--muted)", fontWeight: 600, lineHeight: 1.5 }}>
+        Confirmez votre adresse pour activer votre accès prestataire. Pensez à vérifier vos spams.
       </p>
+      <button type="button" onClick={async () => {
+        const { createClient: cc } = await import('@/lib/supabase/client');
+        await cc().auth.resend({ type: 'signup', email, options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/p/edit/${prestataireId}&ptoken=${tokenId}` } });
+      }} style={{ fontSize: 10, color: 'var(--blue2)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700 }}>
+        Renvoyer l&apos;email
+      </button>
     </div>
   );
 
@@ -410,6 +416,11 @@ function ProAuthCard({ tokenId, prestataireId }: { tokenId: string; prestataireI
       <form onSubmit={mode === 'login' ? handleLogin : handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="Email" style={inputStyle} />
         <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} placeholder="Mot de passe (min. 6 carac.)" style={inputStyle} />
+        {mode === 'login' && (
+          <a href="/auth/forgot-password" style={{ fontSize: 10, color: 'var(--muted)', textAlign: 'right', textDecoration: 'none' }}>
+            Mot de passe oublié ?
+          </a>
+        )}
         {error && <p style={{ fontSize: 11, color: '#e53e3e', margin: 0 }}>{error}</p>}
         <button type="submit" disabled={loading} style={{
           width: '100%', padding: '9px', borderRadius: 9, border: 'none',
