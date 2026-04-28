@@ -16,11 +16,21 @@ function ResetPasswordForm() {
 
   useEffect(() => {
     const supabase = createClient();
-    // La session est déjà établie par /auth/callback via verifyOtp (token_hash)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setReady(true);
-      else setError("Lien invalide ou expiré. Demandez un nouveau lien.");
-    });
+    const token_hash = searchParams.get("token_hash");
+    const type = searchParams.get("type");
+
+    if (token_hash && type) {
+      supabase.auth.verifyOtp({ token_hash, type: type as "recovery" }).then(({ error }) => {
+        if (error) setError("Lien invalide ou expiré. Demandez un nouveau lien.");
+        else setReady(true);
+      });
+    } else {
+      // Déjà connecté via session existante
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) setReady(true);
+        else setError("Lien invalide ou expiré. Demandez un nouveau lien.");
+      });
+    }
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
