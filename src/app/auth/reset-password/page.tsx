@@ -16,21 +16,11 @@ function ResetPasswordForm() {
 
   useEffect(() => {
     const supabase = createClient();
-    const code = searchParams.get("code");
-
-    if (code) {
-      // PKCE flow — échange le code contre une session
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        if (error) setError("Lien invalide ou expiré. Demandez un nouveau lien.");
-        else setReady(true);
-      });
-    } else {
-      // Implicit flow — vérifie si une session existe déjà (hash fragment)
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) setReady(true);
-        else setError("Lien invalide ou expiré. Demandez un nouveau lien.");
-      });
-    }
+    // La session est déjà établie par /auth/callback via verifyOtp (token_hash)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setReady(true);
+      else setError("Lien invalide ou expiré. Demandez un nouveau lien.");
+    });
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
