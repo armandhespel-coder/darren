@@ -229,10 +229,10 @@ export default function AdminPage() {
     ] = await Promise.all([
       supabase.from("prestataires").select("*").order("created_at", { ascending: false }),
       supabase.from("prestataires").select("*", { count: "exact", head: true }).eq("is_premium", true),
-      supabase.from("profiles").select("*", { count: "exact", head: true }),
+      supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "client"),
       supabase.from("messages").select("*", { count: "exact", head: true }).eq("read", false),
       supabase.from("site_categories").select("name").order("position"),
-      supabase.from("profiles").select("created_at").order("created_at", { ascending: false }).limit(200),
+      supabase.from("profiles").select("created_at").eq("role", "client").order("created_at", { ascending: false }).limit(200),
       supabase.from("site_subcategories").select("name").order("name"),
       supabase.from("site_tags").select("name").order("name"),
     ]);
@@ -495,7 +495,7 @@ export default function AdminPage() {
           {[
             { label: "Prestataires", value: prestataires.length, icon: "🎵", color: "var(--blue2)", bg: "rgba(74,108,247,0.08)" },
             { label: "Premium", value: stats.premium, icon: "⭐", color: "#7c3aed", bg: "rgba(124,58,237,0.08)" },
-            { label: "Utilisateurs", value: stats.users, icon: "👥", color: "#16a34a", bg: "rgba(22,163,74,0.08)" },
+            { label: "Clients", value: stats.users, icon: "👥", color: "#16a34a", bg: "rgba(22,163,74,0.08)" },
             { label: "Non lus", value: stats.messages, icon: "📨", color: "#d97706", bg: "rgba(217,119,6,0.08)" },
           ].map(s => (
             <div key={s.label} className="rounded-2xl p-5"
@@ -514,7 +514,7 @@ export default function AdminPage() {
         <div className="rounded-2xl p-6 mb-6"
           style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
           <h2 className="font-black text-base mb-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
-            Nouveaux utilisateurs — 14 derniers jours
+            Nouveaux clients — 14 derniers jours
           </h2>
           <p className="text-xs font-semibold mb-4" style={{ color: "var(--muted)" }}>
             {userProfiles.filter(p => {

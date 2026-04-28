@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import DashboardClient from "./dashboard-client";
+import EditClient from "@/app/p/edit/[id]/edit-client";
 import Navbar from "@/components/Navbar";
 
 export default async function ProDashboardPage() {
@@ -14,7 +14,7 @@ export default async function ProDashboardPage() {
   const { data: prestataire } = await service
     .from("prestataires")
     .select("*")
-    .eq("owner_id", user!.id)
+    .eq("owner_id", user.id)
     .single();
 
   if (!prestataire) {
@@ -27,7 +27,7 @@ export default async function ProDashboardPage() {
             Espace Prestataire
           </h1>
           <p style={{ color: "var(--muted)", fontSize: 15, lineHeight: 1.7, marginBottom: 32 }}>
-            Cet espace est réservé aux prestataires inscrits sur Connect Event — DJ, traiteur, photographe, etc.<br /><br />
+            Cet espace est réservé aux prestataires inscrits sur Connect Event.<br /><br />
             Pour créer votre profil prestataire, vous devez recevoir un lien d&apos;invitation de notre équipe.
           </p>
           <a href="mailto:contact@connect-event.be"
@@ -42,10 +42,5 @@ export default async function ProDashboardPage() {
     );
   }
 
-  return (
-    <DashboardClient
-      prestataire={prestataire}
-      userEmail={user.email ?? ""}
-    />
-  );
+  return <EditClient prestataire={prestataire} />;
 }

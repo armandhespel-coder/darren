@@ -21,7 +21,7 @@ const stepsClient = [
 
 const stepsPro = [
   { num: "01", title: "Créez votre fiche", desc: "Inscription gratuite : catégorie, zone, photos, description et tarifs indicatifs." },
-  { num: "02", title: "Recevez des demandes", desc: "Les clients vous envoient des messages via la messagerie interne. Notification par email." },
+  { num: "02", title: "Recevez des demandes", desc: "Les clients vous contactent directement par téléphone (Premium) ou via le formulaire de contact." },
   { num: "03", title: "Passez Premium", desc: "Affichez votre téléphone, soyez mis en avant dans les résultats et gagnez un badge de confiance." },
   { num: "04", title: "Développez votre activité", desc: "Répondez, gérez vos disponibilités et construisez votre réputation sur la plateforme." },
 ];
