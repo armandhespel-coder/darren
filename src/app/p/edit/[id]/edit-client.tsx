@@ -378,7 +378,7 @@ function ProAuthCard({ tokenId, prestataireId }: { tokenId: string; prestataireI
     const { error: err } = await createClient().auth.signUp({
       email, password,
       options: {
-        data: { role: 'prestataire' },
+        data: { role: 'client' },
         emailRedirectTo: `${window.location.origin}/auth/callback?next=/p/edit/${prestataireId}&ptoken=${tokenId}`,
       },
     });
