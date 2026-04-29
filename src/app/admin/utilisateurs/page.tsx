@@ -155,10 +155,10 @@ export default function AdminUsersPage() {
                     <td className="px-5 py-3">
                       <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-full"
                         style={{
-                          background: u.role === "prestataire" ? "rgba(124,58,237,0.1)" : u.role === "admin" ? "rgba(220,38,38,0.1)" : "rgba(34,197,94,0.1)",
-                          color: u.role === "prestataire" ? "#7c3aed" : u.role === "admin" ? "#dc2626" : "#16a34a",
+                          background: u.role === "pro" ? "rgba(124,58,237,0.1)" : u.role === "admin" ? "rgba(220,38,38,0.1)" : "rgba(34,197,94,0.1)",
+                          color: u.role === "pro" ? "#7c3aed" : u.role === "admin" ? "#dc2626" : "#16a34a",
                         }}>
-                        {u.role === "prestataire" ? "🎵 Prestataire" : u.role === "admin" ? "🔐 Admin" : "👤 Client"}
+                        {u.role === "pro" ? "🎵 Prestataire" : u.role === "admin" ? "🔐 Admin" : "👤 Client"}
                       </span>
                     </td>
                     <td className="px-5 py-3 text-sm font-semibold" style={{ color: "var(--muted)" }}>

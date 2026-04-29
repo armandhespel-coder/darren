@@ -555,18 +555,27 @@ export default function AdminPage() {
                 style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", fontSize: 18, lineHeight: 1 }}
               >✕</button>
             </div>
-            <div className="flex items-center gap-2 mt-3">
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
               <code className="flex-1 text-xs font-semibold px-3 py-2 rounded-xl break-all"
-                style={{ background: "white", border: "1.5px solid var(--border)", color: "var(--dark)" }}>
+                style={{ background: "white", border: "1.5px solid var(--border)", color: "var(--dark)", minWidth: 0 }}>
                 {createdLink}
               </code>
               <button
-                onClick={() => { navigator.clipboard.writeText(createdLink); }}
+                onClick={() => { navigator.clipboard.writeText(createdLink!); }}
                 className="text-xs font-extrabold px-4 py-2 rounded-xl cursor-pointer text-white flex-shrink-0"
                 style={{ background: "var(--grad2)" }}
               >
                 📋 Copier
               </button>
+              <a
+                href={`mailto:?subject=${encodeURIComponent("Votre invitation prestataire — Connect Event")}&body=${encodeURIComponent(
+                  `Bonjour,\n\nVous avez été invité(e) à rejoindre Connect Event en tant que prestataire événementiel.\n\nCliquez sur le lien ci-dessous pour créer votre compte et configurer votre profil :\n\n${createdLink}\n\nCe lien est valable 90 jours.\n\nÀ très bientôt,\nL'équipe Connect Event\nwww.connect-event.be`
+                )}`}
+                className="text-xs font-extrabold px-4 py-2 rounded-xl text-white flex-shrink-0 flex items-center gap-1.5"
+                style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", textDecoration: "none", boxShadow: "0 4px 12px rgba(22,163,74,0.3)" }}
+              >
+                📧 Envoyer par mail
+              </a>
             </div>
           </div>
         )}
@@ -830,7 +839,7 @@ export default function AdminPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr style={{ background: "var(--bg)", borderBottom: "1px solid var(--border)" }}>
-                      {["Nom", "Catégorie", "Prix", "Premium", "Dispo", "Lien pro", "Actions"].map(h => (
+                      {["Nom", "Catégorie", "Prix", "Premium", "Dispo", "Actions"].map(h => (
                         <th key={h} className="text-left px-5 py-3 text-[10px] font-extrabold uppercase tracking-widest"
                           style={{ color: "var(--muted)" }}>
                           {h}
@@ -885,33 +894,6 @@ export default function AdminPage() {
                             }}>
                             {p.is_available ? "Dispo" : "Limité"}
                           </span>
-                        </td>
-                        <td className="px-5 py-3">
-                          {p.owner_id ? (
-                            <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-full"
-                              style={{ background: "rgba(22,163,74,0.1)", color: "#16a34a" }}>
-                              ✓ Réclamé
-                            </span>
-                          ) : (
-                            <button
-                              onClick={async () => {
-                                const res = await fetch("/api/admin/generate-claim-link", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({ prestataire_id: p.id }),
-                                });
-                                const json = await res.json();
-                                if (json.token_id) {
-                                  const link = `${window.location.origin}/claim/${json.token_id}`;
-                                  navigator.clipboard.writeText(link);
-                                  setCreatedLink(link);
-                                }
-                              }}
-                              className="text-[11px] font-extrabold px-3 py-1.5 rounded-lg cursor-pointer transition-all"
-                              style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.2)" }}>
-                              🔗 Copier lien
-                            </button>
-                          )}
                         </td>
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2">

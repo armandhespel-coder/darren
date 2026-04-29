@@ -42,7 +42,7 @@ export default function AvisClient({ token, prestataire }: Props) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, #12112A 0%, #1E1C3A 60%, #2A1042 100%)" }}>
         <div className="text-center max-w-md mx-auto px-6">
-          <img src="/logo.png" alt="Connect Event" className="h-20 w-auto object-contain mx-auto mb-8" />
+          <img src="/logo.png" alt="Connect Event" className="h-32 w-auto object-contain mx-auto mb-8" />
           <div className="text-6xl mb-4">🎉</div>
           <h1 className="font-black text-2xl mb-3 text-white" style={{ fontFamily: "var(--font-raleway)" }}>
             Merci pour votre avis !
@@ -68,7 +68,7 @@ export default function AvisClient({ token, prestataire }: Props) {
 
       {/* Logo */}
       <header className="relative z-10 flex justify-center pt-8 pb-4">
-        <img src="/logo.png" alt="Connect Event" className="h-16 w-auto object-contain" />
+        <img src="/logo.png" alt="Connect Event" className="h-32 w-auto object-contain" />
       </header>
 
       <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-8">
@@ -91,10 +91,10 @@ export default function AvisClient({ token, prestataire }: Props) {
             <div className="px-8 py-6">
               {/* Stars */}
               <div className="mb-6">
-                <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-4 text-center" style={{ color: "var(--muted)" }}>
+                <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-5 text-center" style={{ color: "var(--muted)" }}>
                   Votre note *
                 </label>
-                <div className="flex gap-2 justify-center mb-2">
+                <div className="flex gap-3 justify-center mb-3">
                   {[1, 2, 3, 4, 5].map(star => (
                     <button
                       key={star}
@@ -102,27 +102,38 @@ export default function AvisClient({ token, prestataire }: Props) {
                       onClick={() => setNote(star)}
                       onMouseEnter={() => setHovered(star)}
                       onMouseLeave={() => setHovered(0)}
-                      className="cursor-pointer transition-all"
+                      className="cursor-pointer"
                       style={{
-                        background: "none", border: "none", padding: "4px",
-                        transform: displayNote >= star ? "scale(1.25)" : "scale(1)",
-                        filter: displayNote >= star ? "drop-shadow(0 0 6px rgba(245,132,42,0.6))" : "none",
-                        transition: "transform 0.15s, filter 0.15s",
+                        background: "none", border: "none", padding: "2px",
+                        transform: displayNote >= star ? "scale(1.3)" : "scale(1)",
+                        filter: displayNote >= star
+                          ? "drop-shadow(0 0 10px rgba(251,191,36,0.7)) drop-shadow(0 0 4px rgba(245,158,11,0.5))"
+                          : "none",
+                        transition: "transform 0.15s ease, filter 0.15s ease",
                       }}
                       aria-label={`${star} étoile${star > 1 ? "s" : ""}`}
                     >
-                      <svg width={36} height={36} viewBox="0 0 24 24"
-                        fill={displayNote >= star ? "#F5842A" : "none"}
-                        stroke={displayNote >= star ? "#F5842A" : "#CBD5E1"}
-                        strokeWidth={1.5} aria-hidden="true">
-                        <path d="M12 2l2.09 6.26L20 9.27l-5 4.87L16.18 22 12 18.77 7.82 22 9 14.14 4 9.27l5.91-.91L12 2z"/>
+                      <svg width={56} height={56} viewBox="0 0 24 24" aria-hidden="true">
+                        <defs>
+                          <linearGradient id={`sg-${star}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#FCD34D" />
+                            <stop offset="100%" stopColor="#F59E0B" />
+                          </linearGradient>
+                        </defs>
+                        <path
+                          d="M12 2l2.09 6.26L20 9.27l-5 4.87L16.18 22 12 18.77 7.82 22 9 14.14 4 9.27l5.91-.91L12 2z"
+                          fill={displayNote >= star ? `url(#sg-${star})` : "none"}
+                          stroke={displayNote >= star ? "#F59E0B" : "#CBD5E1"}
+                          strokeWidth={1.5}
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     </button>
                   ))}
                 </div>
-                <div className="text-center" style={{ minHeight: 20 }}>
+                <div className="text-center" style={{ minHeight: 24 }}>
                   {displayNote > 0 && (
-                    <span className="text-sm font-extrabold" style={{ color: "#F5842A" }}>
+                    <span className="text-base font-extrabold" style={{ color: "#F59E0B" }}>
                       {["", "Mauvais 😕", "Décevant 😐", "Correct 🙂", "Bien 😊", "Excellent ! 🤩"][displayNote]}
                     </span>
                   )}

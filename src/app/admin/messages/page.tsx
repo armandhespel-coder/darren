@@ -51,6 +51,13 @@ export default function AdminMessagesPage() {
     const { data: msgs } = await supabase.from("messages").select("*").order("created_at", { ascending: true });
     if (!msgs?.length) { setLoading(false); return; }
 
+    // Marquer tous les messages non lus comme lus dès l'ouverture de la page
+    const unreadIds = (msgs as Msg[]).filter(m => !m.read && m.sender_id !== user.id).map(m => m.id);
+    if (unreadIds.length > 0) {
+      await supabase.from("messages").update({ read: true }).in("id", unreadIds);
+      (msgs as Msg[]).forEach(m => { if (unreadIds.includes(m.id)) m.read = true; });
+    }
+
     const partnerIds = [...new Set(msgs.flatMap((m: Msg) => {
       if (m.sender_id === user.id) return m.receiver_id ? [m.receiver_id] : [];
       return [m.sender_id];
