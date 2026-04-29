@@ -20,6 +20,7 @@ interface FormData {
   specialites: string[];
   description: string;
   is_available: boolean; is_premium: boolean; telephone: string;
+  video_url: string;
 }
 
 function emptyForm(cats: string[]): FormData {
@@ -31,6 +32,7 @@ function emptyForm(cats: string[]): FormData {
     tags: [],
     specialites: [],
     description: "",
+    video_url: "",
     is_available: true, is_premium: false, telephone: "",
   };
 }
@@ -152,6 +154,50 @@ function AdminPhotoUpload({ images, onChange, prestataireId }: {
   );
 }
 
+function AdminVideoUpload({ value, onChange, prestataireId }: {
+  value: string; onChange: (url: string) => void; prestataireId: string;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true); setErr(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("prestataire_id", prestataireId);
+      const res = await fetch("/api/upload-video", { method: "POST", body: fd });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Upload échoué."); }
+      const { url } = await res.json();
+      onChange(url);
+    } catch (e) { setErr(e instanceof Error ? e.message : "Erreur upload"); }
+    finally { setUploading(false); if (fileRef.current) fileRef.current.value = ""; }
+  };
+
+  return (
+    <div>
+      <input type="file" ref={fileRef} accept="video/mp4,video/webm,video/quicktime" style={{ display: "none" }} onChange={handleFile} />
+      {value && (
+        <div className="mb-2 rounded-xl overflow-hidden relative" style={{ background: "#000", border: "1.5px solid var(--border)" }}>
+          <video src={value} controls className="w-full" style={{ maxHeight: 140 }} />
+          <button type="button" onClick={() => onChange("")}
+            className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-black cursor-pointer"
+            style={{ background: "rgba(239,68,68,0.9)", border: "none" }}>✕</button>
+        </div>
+      )}
+      <button type="button" disabled={uploading} onClick={() => fileRef.current?.click()}
+        className="w-full py-2.5 rounded-xl text-sm font-bold cursor-pointer transition-all disabled:opacity-50"
+        style={{ background: "var(--bg)", border: "1.5px dashed var(--border)", color: "var(--muted)" }}>
+        {uploading ? "Upload en cours…" : value ? "🎬 Remplacer la vidéo" : "🎬 Uploader une vidéo"}
+      </button>
+      {err && <p className="text-xs mt-1 font-semibold" style={{ color: "#ef4444" }}>{err}</p>}
+    </div>
+  );
+}
+
 function UserGrowthChart({ profiles }: { profiles: Array<{ created_at: string }> }) {
   const now = new Date();
   const DAYS = 14;
@@ -221,6 +267,8 @@ export default function AdminPage() {
   const up = (k: keyof FormData, v: string | boolean | string[]) => setForm(f => ({ ...f, [k]: v }));
 
   const load = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id ?? "";
     const [
       { data },
       premiumRes,
@@ -234,7 +282,7 @@ export default function AdminPage() {
       supabase.from("prestataires").select("*").order("created_at", { ascending: false }),
       supabase.from("prestataires").select("*", { count: "exact", head: true }).eq("is_premium", true),
       supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "client"),
-      supabase.from("messages").select("*", { count: "exact", head: true }).eq("read", false),
+      supabase.from("messages").select("*", { count: "exact", head: true }).eq("read", false).eq("receiver_id", userId),
       supabase.from("site_categories").select("name").order("position"),
       supabase.from("profiles").select("created_at").eq("role", "client").order("created_at", { ascending: false }).limit(200),
       supabase.from("site_subcategories").select("name").order("name"),
@@ -293,6 +341,7 @@ export default function AdminPage() {
       is_available: form.is_available,
       is_premium: form.is_premium,
       telephone: form.is_premium ? (form.telephone.trim() || null) : null,
+      video_url: form.video_url.trim() || null,
     };
 
     if (editId) {
@@ -332,6 +381,7 @@ export default function AdminPage() {
       description: p.description ?? "",
       is_available: p.is_available, is_premium: p.is_premium,
       telephone: p.telephone ?? "",
+      video_url: p.video_url ?? "",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -702,7 +752,7 @@ export default function AdminPage() {
                 </Select>
               </div>
 
-              <div>
+              <div style={{ display: "none" }}>
                 <Label>Continent</Label>
                 <Select value={form.continent} onChange={v => up("continent", v)}>
                   {CONTINENTS.map(c => <option key={c} value={c}>{c}</option>)}
@@ -755,6 +805,16 @@ export default function AdminPage() {
                 <AdminPhotoUpload
                   images={form.images}
                   onChange={imgs => up("images", imgs)}
+                  prestataireId={currentPrestaId}
+                />
+              </div>
+
+              {/* Vidéo */}
+              <div>
+                <Label>Vidéo</Label>
+                <AdminVideoUpload
+                  value={form.video_url}
+                  onChange={url => up("video_url", url)}
                   prestataireId={currentPrestaId}
                 />
               </div>
