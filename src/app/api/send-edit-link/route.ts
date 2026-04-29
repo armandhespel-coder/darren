@@ -101,6 +101,7 @@ export async function POST(req: NextRequest) {
     from: "Connect Event <contact@connect-event.be>",
     to: email,
     bcc: process.env.CONTACT_EMAIL ?? "armand.hespel@hotmail.com",
+    replyTo: "yagan_darren@hotmail.com",
     subject: "Mettez à jour votre profil Connect Event",
     html,
   });

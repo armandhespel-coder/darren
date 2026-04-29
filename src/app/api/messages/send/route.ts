@@ -89,6 +89,7 @@ export async function POST(req: NextRequest) {
     },
     body: JSON.stringify({
       from: "Connect Event <contact@connect-event.be>",
+      reply_to: "yagan_darren@hotmail.com",
       to: ADMIN_EMAILS,
       subject: prestaNom
         ? `Nouvelle demande de ${clientEmail} pour ${prestaNom}`

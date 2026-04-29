@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
     },
     body: JSON.stringify({
       from: from ? `Connect Event <${from}>` : "Connect Event <contact@connect-event.be>",
+      reply_to: "yagan_darren@hotmail.com",
       to: [to],
       subject: subject || "Demande via Connect Event",
       text: body,
