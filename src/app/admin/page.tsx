@@ -256,6 +256,12 @@ export default function AdminPage() {
   }, [load, router, supabase.auth]);
 
   useEffect(() => {
+    const onFocus = () => load();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [load]);
+
+  useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) setShowMobileMenu(false);
     };
@@ -405,11 +411,6 @@ export default function AdminPage() {
             style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
             ⭐ Avis
           </a>
-          <a href="/admin/portail"
-            className="text-xs font-extrabold px-4 py-2 rounded-full transition-all text-white"
-            style={{ background: "var(--grad)" }}>
-            ✉️ Portail
-          </a>
           <a href="/"
             className="text-xs font-bold px-4 py-2 rounded-full transition-all"
             style={{ background: "var(--bg2)", color: "var(--muted)" }}>
@@ -449,7 +450,6 @@ export default function AdminPage() {
                 { href: "/admin/utilisateurs", label: "👥 Utilisateurs" },
                 { href: "/admin/messages", label: "💬 Messages" },
                 { href: "/admin/avis", label: "⭐ Avis" },
-                { href: "/admin/portail", label: "✉️ Portail" },
                 { href: "/", label: "← Site" },
               ].map((item, i, arr) => (
                 <a key={item.href} href={item.href}
