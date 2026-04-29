@@ -237,9 +237,10 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
   );
 }
 
-function ProfilTab({ s, patch, siteCategories, allSubcats }: {
+function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium }: {
   s: PrestaState;
   patch: (k: keyof PrestaState, v: unknown) => void;
+  isPremium?: boolean;
   siteCategories: string[];
   allSubcats: Array<{name: string; category_name: string | null}>;
 }) {
@@ -314,7 +315,7 @@ function ProfilTab({ s, patch, siteCategories, allSubcats }: {
             <span style={{ fontFamily: 'var(--font-raleway)', fontWeight: 900, fontSize: '1rem', color: 'var(--dark)' }}>Aperçu carte</span>
             <span className="ce-chip">Temps réel</span>
           </div>
-          <div className="ce-mini-card">
+          <div className="ce-mini-card" style={{ maxWidth: 200, margin: '0 auto 14px' }}>
             <div className="ce-mc-img" style={{ backgroundImage: s.images[0] ? `url(${s.images[0]})` : 'none' }}>
               {!s.images[0] && <div className="ce-mc-placeholder"><Ico.Image s={32} /></div>}
               <div className="ce-mc-overlay" />
@@ -336,6 +337,37 @@ function ProfilTab({ s, patch, siteCategories, allSubcats }: {
               )}
               <p className="ce-mc-desc">{s.description || "Votre description s'affichera ici…"}</p>
             </div>
+          </div>
+
+          {/* Badge Confiance */}
+          <div style={{ borderRadius: 10, padding: '10px 12px', marginBottom: 8, background: 'rgba(22,163,74,0.05)', border: '1.5px solid rgba(22,163,74,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <span>✅</span>
+              <span style={{ fontWeight: 800, fontSize: 11, color: '#16a34a' }}>Badge Confiance — Gratuit</span>
+            </div>
+            <p style={{ margin: 0, fontSize: 10, color: 'var(--muted)', lineHeight: 1.5, fontWeight: 600 }}>
+              Acquis avec une moyenne de <strong>3★ et 10 avis</strong> clients.
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: 10, fontWeight: 700, color: '#ea580c' }}>
+              Aucune mise en avant dans les résultats.
+            </p>
+          </div>
+
+          {/* Badge Top */}
+          <div style={{ borderRadius: 10, padding: '10px 12px', background: isPremium ? 'rgba(124,58,237,0.06)' : 'rgba(124,58,237,0.03)', border: `1.5px solid ${isPremium ? 'rgba(124,58,237,0.35)' : 'rgba(124,58,237,0.15)'}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <span>⭐</span>
+              <span style={{ fontWeight: 800, fontSize: 11, color: '#7c3aed' }}>Badge Top — {isPremium ? 'Actif' : 'Payant'}</span>
+              {isPremium && <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 20, background: '#7c3aed', color: 'white' }}>Premium</span>}
+            </div>
+            <p style={{ margin: 0, fontSize: 10, color: 'var(--muted)', lineHeight: 1.5, fontWeight: 600 }}>
+              Mieux référencié · Leads sérieux · <strong>Mise en avant</strong>.
+            </p>
+            {!isPremium && (
+              <p style={{ margin: '4px 0 0', fontSize: 10, fontWeight: 700, color: '#7c3aed' }}>
+                Contactez-nous pour activer Premium →
+              </p>
+            )}
           </div>
         </aside>
       </div>
@@ -615,7 +647,7 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
           <CompletionBar s={state} />
           {tab === 'photos' && <PhotosTab s={state} patch={patch} prestataireId={prestataire.id} />}
           {tab === 'dispo' && <DispoTab s={state} patch={patch} />}
-          {tab === 'profil' && <ProfilTab s={state} patch={patch} siteCategories={siteCategories.length ? siteCategories : [prestataire.categorie]} allSubcats={siteTags} />}
+          {tab === 'profil' && <ProfilTab s={state} patch={patch} siteCategories={siteCategories.length ? siteCategories : [prestataire.categorie]} allSubcats={siteTags} isPremium={prestataire.is_premium} />}
         </main>
       </div>
 
