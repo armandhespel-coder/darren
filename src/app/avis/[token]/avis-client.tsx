@@ -33,6 +33,15 @@ export default function AvisClient({ token, prestataire }: Props) {
 
     if (insertErr) { setError(insertErr.message); setSaving(false); return; }
 
+    const { data: allAvis } = await supabase
+      .from("reviews")
+      .select("note")
+      .eq("prestataire_id", prestataire.id);
+    if (allAvis && allAvis.length > 0) {
+      const avg = allAvis.reduce((s, r) => s + r.note, 0) / allAvis.length;
+      await supabase.from("prestataires").update({ note: Math.round(avg * 10) / 10 }).eq("id", prestataire.id);
+    }
+
     await supabase.from("avis_tokens").update({ used_at: new Date().toISOString() }).eq("id", token);
     setDone(true);
     setSaving(false);
