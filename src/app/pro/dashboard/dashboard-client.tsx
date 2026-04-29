@@ -456,53 +456,74 @@ export default function DashboardClient({ prestataire: p, userEmail }: Props) {
           </div>
 
           {/* Right — profile preview */}
-          <div className="rounded-2xl p-6"
+          <div className="rounded-2xl p-5"
             style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
-            <h2 className="font-black text-lg mb-4" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
+            <h2 className="font-black text-base mb-3" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
               Aperçu de votre fiche
             </h2>
-            <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-              <div className="relative aspect-video"
-                style={{ background: p.images?.[0] ? undefined : "var(--dark2)" }}>
+
+            {/* Mini card preview */}
+            <div className="rounded-xl overflow-hidden mb-4" style={{ border: "1px solid var(--border)", maxWidth: 220, margin: "0 auto 16px" }}>
+              <div className="relative" style={{ aspectRatio: "4/3", background: p.images?.[0] ? undefined : "var(--dark2)" }}>
                 {p.images?.[0] ? (
                   <img src={p.images[0]} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-3xl">🎵</div>
+                  <div className="w-full h-full flex items-center justify-center text-2xl">🎵</div>
                 )}
-                <span className="absolute top-2 left-2 text-[10px] font-extrabold px-2 py-1 rounded-full text-white"
+                <span className="absolute top-1.5 left-1.5 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full text-white"
                   style={{ background: "rgba(74,108,247,0.85)" }}>
                   {p.categorie}
                 </span>
               </div>
-              <div className="p-4">
-                <div className="font-extrabold text-sm" style={{ color: "var(--dark)" }}>{p.nom}</div>
-                {p.company && <div className="text-xs" style={{ color: "var(--muted)" }}>{p.company}</div>}
-                <div className="font-black text-lg mt-1" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                  {p.prix} €
-                  {p.price_note && <span className="text-xs font-semibold" style={{ WebkitTextFillColor: "var(--muted)" }}> {p.price_note}</span>}
+              <div className="p-3">
+                <div className="font-extrabold text-xs" style={{ color: "var(--dark)" }}>{p.nom}</div>
+                {p.company && <div className="text-[10px]" style={{ color: "var(--muted)" }}>{p.company}</div>}
+                <div className="font-black text-sm mt-0.5" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  {p.prix} €{p.price_note && <span className="text-[10px] font-semibold" style={{ WebkitTextFillColor: "var(--muted)" }}> {p.price_note}</span>}
                 </div>
-                {p.tags?.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {p.tags.slice(0, 3).map((t) => (
-                      <span key={t} className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                        style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)" }}>
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
-            {!p.is_premium && (
-              <div className="mt-4 p-4 rounded-xl text-center"
-                style={{ background: "rgba(124,58,237,0.06)", border: "1.5px solid rgba(124,58,237,0.2)" }}>
-                <div className="text-lg mb-1">⭐</div>
-                <p className="text-xs font-extrabold mb-1" style={{ color: "#7c3aed" }}>Passez Premium</p>
-                <p className="text-[11px]" style={{ color: "var(--muted)" }}>
-                  Affichez votre téléphone et recevez des appels directs.
-                </p>
+
+            {/* Badge Confiance */}
+            <div className="rounded-xl p-3 mb-3"
+              style={{ background: "rgba(22,163,74,0.05)", border: "1.5px solid rgba(22,163,74,0.2)" }}>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm">✅</span>
+                <span className="font-extrabold text-xs" style={{ color: "#16a34a" }}>Badge Confiance — Gratuit</span>
               </div>
-            )}
+              <p className="text-[10px] font-semibold" style={{ color: "var(--muted)", lineHeight: 1.5 }}>
+                Acquis avec une moyenne de <strong>3★ et 10 avis</strong> clients.
+              </p>
+              <p className="text-[10px] font-bold mt-1" style={{ color: "#ea580c" }}>
+                Aucune mise en avant dans les résultats.
+              </p>
+            </div>
+
+            {/* Badge Top */}
+            <div className="rounded-xl p-3"
+              style={{
+                background: p.is_premium ? "rgba(124,58,237,0.06)" : "rgba(124,58,237,0.04)",
+                border: `1.5px solid ${p.is_premium ? "rgba(124,58,237,0.35)" : "rgba(124,58,237,0.15)"}`,
+              }}>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm">⭐</span>
+                <span className="font-extrabold text-xs" style={{ color: "#7c3aed" }}>
+                  Badge Top — {p.is_premium ? "Actif" : "Payant"}
+                </span>
+                {p.is_premium && (
+                  <span className="ml-auto text-[9px] font-extrabold px-1.5 py-0.5 rounded-full text-white"
+                    style={{ background: "#7c3aed" }}>Premium</span>
+                )}
+              </div>
+              <p className="text-[10px] font-semibold" style={{ color: "var(--muted)", lineHeight: 1.5 }}>
+                Mieux référencié · Leads sérieux · <strong>Mise en avant</strong> dans les résultats.
+              </p>
+              {!p.is_premium && (
+                <p className="text-[10px] font-bold mt-1" style={{ color: "#7c3aed" }}>
+                  Contactez-nous pour activer Premium →
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

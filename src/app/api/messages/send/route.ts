@@ -75,7 +75,9 @@ export async function POST(req: NextRequest) {
         <div style="font-size:11px;font-weight:800;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Message</div>
         <div style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.6;">${content.trim().replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
       </div>
-      <a href="${adminMessagesUrl}" style="display:inline-block;background:linear-gradient(135deg,#4A6CF7,#D93FB5);color:white;font-size:13px;font-weight:800;padding:12px 24px;border-radius:50px;text-decoration:none;">📧 Voir et transmettre au prestataire</a>
+      <a href="${adminMessagesUrl}" style="display:inline-block;background:#4A6CF7;color:white;font-size:13px;font-weight:800;padding:12px 24px;border-radius:50px;text-decoration:none;margin-bottom:16px;">Voir et transmettre au prestataire →</a>
+      <br/>
+      <a href="mailto:${clientEmail}" style="display:inline-block;font-size:12px;color:#4A6CF7;font-weight:700;margin-top:12px;">↩ Répondre directement au client : ${clientEmail}</a>
     </div>
   </div>
 </body>
