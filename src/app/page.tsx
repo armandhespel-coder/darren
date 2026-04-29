@@ -50,11 +50,7 @@ function IconLock({ size = 12 }: { size?: number }) {
 }
 
 function IconStar({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2l2.09 6.26L20 9.27l-5 4.87L16.18 22 12 18.77 7.82 22 9 14.14 4 9.27l5.91-.91L12 2z"/>
-    </svg>
-  );
+  return <i className="fa-solid fa-star" style={{ fontSize: size, color: "#F59E0B" }} aria-hidden="true" />;
 }
 
 // ─── Page principale ──────────────────────────────────────────────────────────
