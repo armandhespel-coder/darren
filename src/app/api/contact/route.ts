@@ -39,8 +39,10 @@ export async function POST(req: NextRequest) {
               <tr><td style="font-size:12px;color:#6B6A87;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding-top:14px;padding-bottom:4px;">Email</td></tr>
               <tr><td><a href="mailto:${email}" style="font-size:15px;color:#4A6CF7;font-weight:700;">${email}</a></td></tr>
             </table>
-            <div style="font-size:12px;color:#6B6A87;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Message</div>
-            <div style="font-size:14px;color:#2C2B4B;line-height:1.7;white-space:pre-wrap;">${message}</div>
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#F7F8FC;border-radius:12px;padding:20px;margin-top:4px;">
+              <tr><td style="font-size:12px;color:#6B6A87;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding-bottom:8px;">Message</td></tr>
+              <tr><td style="font-size:14px;color:#12112A;font-weight:600;line-height:1.7;">${message.replace(/\n/g, "<br/>")}</td></tr>
+            </table>
           </td>
         </tr>
       </table>

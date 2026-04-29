@@ -210,6 +210,10 @@ export default function AdminPage() {
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [stats, setStats] = useState({ premium: 0, users: 0, messages: 0 });
   const [createdLink, setCreatedLink] = useState<string | null>(null);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteSending, setInviteSending] = useState(false);
+  const [inviteResult, setInviteResult] = useState<"ok" | "err" | null>(null);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [availableSpecialites, setAvailableSpecialites] = useState<string[]>([]);
   const [userProfiles, setUserProfiles] = useState<Array<{ created_at: string }>>([]);
@@ -339,6 +343,23 @@ export default function AdminPage() {
     else { setMsg({ type: "ok", text: "Prestataire supprimé." }); load(); }
   };
 
+  const sendInvite = async () => {
+    if (!inviteEmail || !createdLink) return;
+    setInviteSending(true);
+    setInviteResult(null);
+    const body = `Bonjour,\n\nVous avez été invité(e) à rejoindre Connect Event en tant que prestataire événementiel.\n\nCliquez sur le lien ci-dessous pour créer votre compte et configurer votre profil :\n\n${createdLink}\n\nCe lien est valable 90 jours.\n\nÀ très bientôt,\nL'équipe Connect Event\nwww.connect-event.be`;
+    try {
+      const res = await fetch("/api/admin/forward-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: inviteEmail, from: "contact@connect-event.be", subject: "Votre invitation prestataire — Connect Event", body }),
+      });
+      setInviteResult(res.ok ? "ok" : "err");
+      if (res.ok) setTimeout(() => { setInviteOpen(false); setInviteEmail(""); }, 1500);
+    } catch { setInviteResult("err"); }
+    setInviteSending(false);
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/auth/login");
@@ -362,6 +383,45 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)" }}>
+
+      {/* ── Modale invitation par email ── */}
+      {inviteOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)" }}
+          onClick={e => { if (e.target === e.currentTarget) setInviteOpen(false); }}>
+          <div className="w-full max-w-md rounded-2xl overflow-hidden" style={{ background: "white", boxShadow: "0 30px 80px rgba(0,0,0,0.25)" }}>
+            <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
+              <h2 className="font-black text-base" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>📧 Envoyer l&apos;invitation</h2>
+              <button onClick={() => setInviteOpen(false)} style={{ width: 32, height: 32, background: "var(--bg2)", border: "none", borderRadius: 10, color: "var(--muted)", fontSize: 18, cursor: "pointer" }}>×</button>
+            </div>
+            <div className="px-6 py-5 flex flex-col gap-4">
+              <div>
+                <label className="block text-[10px] font-extrabold uppercase tracking-wider mb-1.5" style={{ color: "var(--blue2)" }}>Email du prestataire</label>
+                <input type="email" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
+                  placeholder="presta@exemple.com"
+                  className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold outline-none"
+                  style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                  onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
+                  onBlur={e => (e.target.style.borderColor = "var(--border)")} />
+              </div>
+              <div className="rounded-xl px-4 py-3 text-xs font-semibold" style={{ background: "var(--bg)", color: "var(--muted)", lineHeight: 1.6 }}>
+                Le prestataire recevra l&apos;invitation avec le lien pour créer son compte.
+              </div>
+              {inviteResult === "ok" && <p className="text-sm font-extrabold text-center" style={{ color: "#16a34a" }}>✓ Invitation envoyée !</p>}
+              {inviteResult === "err" && <p className="text-sm font-extrabold text-center" style={{ color: "#dc2626" }}>Erreur lors de l&apos;envoi.</p>}
+            </div>
+            <div className="flex items-center justify-end gap-3 px-6 py-4" style={{ borderTop: "1px solid var(--border)" }}>
+              <button onClick={() => setInviteOpen(false)} className="text-sm font-bold px-4 py-2 rounded-full cursor-pointer"
+                style={{ background: "var(--bg2)", border: "1px solid var(--border)", color: "var(--muted)" }}>Annuler</button>
+              <button onClick={sendInvite} disabled={inviteSending || !inviteEmail}
+                className="text-white text-sm font-extrabold px-5 py-2 rounded-full cursor-pointer disabled:opacity-50"
+                style={{ background: "linear-gradient(135deg,#16a34a,#15803d)", border: "none" }}>
+                {inviteSending ? "Envoi…" : "Envoyer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Header ── */}
       <div
@@ -567,15 +627,13 @@ export default function AdminPage() {
               >
                 📋 Copier
               </button>
-              <a
-                href={`mailto:?subject=${encodeURIComponent("Votre invitation prestataire — Connect Event")}&body=${encodeURIComponent(
-                  `Bonjour,\n\nVous avez été invité(e) à rejoindre Connect Event en tant que prestataire événementiel.\n\nCliquez sur le lien ci-dessous pour créer votre compte et configurer votre profil :\n\n${createdLink}\n\nCe lien est valable 90 jours.\n\nÀ très bientôt,\nL'équipe Connect Event\nwww.connect-event.be`
-                )}`}
-                className="text-xs font-extrabold px-4 py-2 rounded-xl text-white flex-shrink-0 flex items-center gap-1.5"
-                style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", textDecoration: "none", boxShadow: "0 4px 12px rgba(22,163,74,0.3)" }}
+              <button
+                onClick={() => { setInviteEmail(""); setInviteResult(null); setInviteOpen(true); }}
+                className="text-xs font-extrabold px-4 py-2 rounded-xl text-white flex-shrink-0 flex items-center gap-1.5 cursor-pointer"
+                style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", border: "none", boxShadow: "0 4px 12px rgba(22,163,74,0.3)" }}
               >
                 📧 Envoyer par mail
-              </a>
+              </button>
             </div>
           </div>
         )}
