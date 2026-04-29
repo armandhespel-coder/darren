@@ -49,13 +49,8 @@ export async function POST(req: NextRequest) {
   const prestaEmail = (presta as { email?: string | null } | null)?.email ?? "";
   const clientEmail = user.email ?? "client inconnu";
 
-  const mailtoSubject = encodeURIComponent(`Demande client via Connect Event${prestaNom ? ` — ${prestaNom}` : ""}`);
-  const mailtoBody = encodeURIComponent(
-    `Bonjour,\n\nUn client vous a contacté via Connect Event.\n\nClient : ${clientEmail}\n\n---\n\n${content.trim()}\n\n---\n\nCordialement,\nL'équipe Connect Event`
-  );
-  const mailtoHref = prestaEmail
-    ? `mailto:${prestaEmail}?subject=${mailtoSubject}&body=${mailtoBody}`
-    : "";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://connect-event.be";
+  const adminMessagesUrl = `${siteUrl}/admin/messages`;
 
   const html = `<!DOCTYPE html>
 <html>
@@ -80,7 +75,7 @@ export async function POST(req: NextRequest) {
         <div style="font-size:11px;font-weight:800;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Message</div>
         <div style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.6;">${content.trim().replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
       </div>
-      ${mailtoHref ? `<a href="${mailtoHref}" style="display:inline-block;background:linear-gradient(135deg,#4A6CF7,#D93FB5);color:white;font-size:13px;font-weight:800;padding:12px 24px;border-radius:50px;text-decoration:none;">📧 Transmettre par email au prestataire</a>` : ""}
+      <a href="${adminMessagesUrl}" style="display:inline-block;background:linear-gradient(135deg,#4A6CF7,#D93FB5);color:white;font-size:13px;font-weight:800;padding:12px 24px;border-radius:50px;text-decoration:none;">📧 Voir et transmettre au prestataire</a>
     </div>
   </div>
 </body>
