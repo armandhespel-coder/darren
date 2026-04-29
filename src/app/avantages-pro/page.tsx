@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Espace Prestataire — Connect Event",
@@ -19,9 +20,9 @@ export default function AvantagesPage() {
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
       {/* Header */}
-      <header style={{ background: "var(--dark2)", padding: "1.2rem 2rem" }}>
-        <Link href="/" style={{ color: "white", fontFamily: "var(--font-raleway)", fontWeight: 900, fontSize: "1.4rem", textDecoration: "none" }}>
-          Connect<span style={{ color: "var(--pink)" }}>Event</span>
+      <header style={{ background: "var(--dark2)", padding: "0.6rem 2rem" }}>
+        <Link href="/">
+          <Image src="/logo.png" alt="Connect Event" width={80} height={56} style={{ objectFit: "contain", display: "block" }} />
         </Link>
       </header>
 
@@ -40,10 +41,6 @@ export default function AvantagesPage() {
           Rejoignez des dizaines de prestataires DJ, traiteurs, photographes et décorateurs qui ont déjà rejoint Connect Event.
         </p>
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap", position: "relative" }}>
-          <Link href="/auth/login"
-            style={{ background: "var(--grad)", color: "white", padding: "0.9rem 2.5rem", borderRadius: 50, fontWeight: 800, textDecoration: "none", fontSize: "1rem", boxShadow: "0 8px 28px rgba(217,63,181,0.4)" }}>
-            Créer mon espace pro →
-          </Link>
           <Link href="/fonctionnement"
             style={{ background: "rgba(255,255,255,0.08)", color: "white", padding: "0.9rem 2.5rem", borderRadius: 50, fontWeight: 700, textDecoration: "none", fontSize: "1rem", border: "1.5px solid rgba(255,255,255,0.2)" }}>
             Comment ça marche ?
@@ -71,14 +68,14 @@ export default function AvantagesPage() {
         {/* CTA final */}
         <div style={{ background: "var(--dark2)", borderRadius: 24, padding: "3rem 2rem", textAlign: "center" }}>
           <h3 style={{ fontFamily: "var(--font-raleway)", fontWeight: 900, fontSize: "1.5rem", color: "white", marginBottom: "0.75rem" }}>
-            Prêt à rejoindre la plateforme ?
+            Intéressé ? Contactez-nous.
           </h3>
           <p style={{ color: "rgba(255,255,255,0.55)", marginBottom: "2rem", fontSize: "0.95rem" }}>
-            Inscription gratuite — visible en quelques minutes.
+            Notre équipe vous accompagne pour créer votre fiche et démarrer rapidement.
           </p>
-          <Link href="/auth/login"
+          <Link href="/contact"
             style={{ background: "var(--grad)", color: "white", padding: "0.9rem 2.5rem", borderRadius: 50, fontWeight: 800, textDecoration: "none", fontSize: "1rem", boxShadow: "0 8px 28px rgba(217,63,181,0.4)", display: "inline-block" }}>
-            Créer mon espace pro →
+            Nous contacter →
           </Link>
         </div>
       </main>

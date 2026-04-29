@@ -163,8 +163,8 @@ export default function PrestaCard({ presta, onSelect, isFavorited, onToggleFavo
           </span>
           {presta.note > 0 && (
             <span className="flex items-center gap-0.5 text-[10px] sm:text-xs font-semibold flex-shrink-0" style={{ color: "var(--dark)" }}>
-              <span style={{ color: "#FFD700" }}>★</span>
-              {presta.note}
+              <i className="fa-solid fa-star" style={{ fontSize: 10, color: "#F59E0B" }} aria-hidden="true" />
+              {presta.note.toFixed(1)}
             </span>
           )}
         </div>

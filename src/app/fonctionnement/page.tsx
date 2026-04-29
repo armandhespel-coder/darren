@@ -2,14 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import DevenirPrestaireModal from "@/components/DevenirPrestaireModal";
 
 function IconStar() {
-  return (
-    <svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2l2.09 6.26L20 9.27l-5 4.87L16.18 22 12 18.77 7.82 22 9 14.14 4 9.27l5.91-.91L12 2z"/>
-    </svg>
-  );
+  return <i className="fa-solid fa-star" style={{ fontSize: 13, color: "#F59E0B" }} aria-hidden="true" />;
 }
 
 const stepsClient = [
@@ -32,9 +29,9 @@ export default function FonctionnementPage() {
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
       {showModal && <DevenirPrestaireModal onClose={() => setShowModal(false)} />}
 
-      <header style={{ background: "var(--dark2)", padding: "1.2rem 2rem" }}>
-        <Link href="/" style={{ color: "white", fontFamily: "var(--font-raleway)", fontWeight: 900, fontSize: "1.4rem", textDecoration: "none" }}>
-          Connect<span style={{ color: "var(--pink)" }}>Event</span>
+      <header style={{ background: "var(--dark2)", padding: "0.6rem 2rem" }}>
+        <Link href="/">
+          <Image src="/logo.png" alt="Connect Event" width={80} height={56} style={{ objectFit: "contain", display: "block" }} />
         </Link>
       </header>
 
