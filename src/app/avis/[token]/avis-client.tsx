@@ -113,21 +113,15 @@ export default function AvisClient({ token, prestataire }: Props) {
                       }}
                       aria-label={`${star} étoile${star > 1 ? "s" : ""}`}
                     >
-                      <svg width={56} height={56} viewBox="0 0 24 24" aria-hidden="true">
-                        <defs>
-                          <linearGradient id={`sg-${star}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#FCD34D" />
-                            <stop offset="100%" stopColor="#F59E0B" />
-                          </linearGradient>
-                        </defs>
-                        <path
-                          d="M12 2l2.09 6.26L20 9.27l-5 4.87L16.18 22 12 18.77 7.82 22 9 14.14 4 9.27l5.91-.91L12 2z"
-                          fill={displayNote >= star ? `url(#sg-${star})` : "none"}
-                          stroke={displayNote >= star ? "#F59E0B" : "#CBD5E1"}
-                          strokeWidth={1.5}
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                      <i
+                        className={displayNote >= star ? "fa-solid fa-star" : "fa-regular fa-star"}
+                        style={{
+                          fontSize: 44,
+                          color: displayNote >= star ? "#F59E0B" : "#CBD5E1",
+                          lineHeight: 1,
+                        }}
+                        aria-hidden="true"
+                      />
                     </button>
                   ))}
                 </div>

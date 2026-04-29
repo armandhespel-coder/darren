@@ -73,11 +73,19 @@ export default function AdminMessagesPage() {
     const profMap: Record<string, string> = {};
     (profiles ?? []).forEach((p: { id: string; email: string }) => { profMap[p.id] = p.email; });
 
+    // Fetch owner profiles to get their email as fallback for prestaEmail
+    const ownerIds = [...new Set((prestas ?? []).map((p: { owner_id?: string }) => p.owner_id).filter(Boolean))] as string[];
+    const { data: ownerProfiles } = ownerIds.length
+      ? await supabase.from("profiles").select("id, email").in("id", ownerIds)
+      : { data: [] };
+    const ownerMap: Record<string, string> = {};
+    (ownerProfiles ?? []).forEach((p: { id: string; email: string }) => { ownerMap[p.id] = p.email; });
+
     const prestaMap: Record<string, string> = {};
     const prestaEmailMap: Record<string, string> = {};
     (prestas ?? []).forEach((p: { id: string; nom: string; email?: string | null; owner_id?: string }) => {
       prestaMap[p.id] = p.nom;
-      prestaEmailMap[p.id] = p.email ?? profMap[p.owner_id ?? ""] ?? "";
+      prestaEmailMap[p.id] = p.email ?? profMap[p.owner_id ?? ""] ?? ownerMap[p.owner_id ?? ""] ?? "";
     });
 
     const convMap = new Map<string, Conversation>();

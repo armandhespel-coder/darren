@@ -29,6 +29,7 @@ const Ico = {
 
 interface PrestaState {
   nom: string; company: string; description: string; tags: string[];
+  categorie: string;
   prix: number; price_note: string; telephone: string;
   is_available: boolean; images: string[]; busy_dates: string[];
   video_url: string;
@@ -40,6 +41,7 @@ function fromDB(p: Prestataire): PrestaState {
     company: p.company ?? '',
     description: p.description ?? '',
     tags: p.tags ?? [],
+    categorie: p.categorie,
     prix: p.prix,
     price_note: p.price_note ?? '',
     telephone: p.telephone ?? '',
@@ -55,7 +57,7 @@ function CompletionBar({ s }: { s: PrestaState }) {
     { lbl: 'Photos (min. 3)', done: s.images.length >= 3 },
     { lbl: 'Description', done: s.description.length > 30 },
     { lbl: 'Prix', done: s.prix > 0 },
-    { lbl: 'Tags (min. 2)', done: s.tags.length >= 2 },
+    { lbl: 'Sous-catégorie (min. 1)', done: s.tags.length >= 1 },
   ];
   const done = checks.filter(c => c.done).length;
   const pct = Math.round((done / checks.length) * 100);
@@ -235,11 +237,17 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
   );
 }
 
-function ProfilTab({ s, patch, categorie, availableTags }: { s: PrestaState; patch: (k: keyof PrestaState, v: unknown) => void; categorie: string; availableTags: string[] }) {
+function ProfilTab({ s, patch, siteCategories, allSubcats }: {
+  s: PrestaState;
+  patch: (k: keyof PrestaState, v: unknown) => void;
+  siteCategories: string[];
+  allSubcats: Array<{name: string; category_name: string | null}>;
+}) {
   const toggleTag = (t: string) => {
     const has = s.tags.includes(t);
     patch('tags', has ? s.tags.filter(x => x !== t) : [...s.tags, t]);
   };
+  const filteredSubcats = allSubcats.filter(t => !t.category_name || t.category_name === s.categorie);
   return (
     <section className="ce-tab">
       <header className="ce-tab-hd">
@@ -284,11 +292,19 @@ function ProfilTab({ s, patch, categorie, availableTags }: { s: PrestaState; pat
             onChange={e => patch('video_url', e.target.value)}
             placeholder="https://youtube.com/watch?v=… ou https://…/video.mp4"
           />
-          <label className="ce-lbl" style={{ marginTop: 18 }}>Tags</label>
+          <label className="ce-lbl" style={{ marginTop: 18 }}>Catégorie</label>
+          <select className="ce-input" value={s.categorie}
+            onChange={e => { patch('categorie', e.target.value); patch('tags', []); }}
+            style={{ appearance: 'none', cursor: 'pointer' }}>
+            {siteCategories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <label className="ce-lbl" style={{ marginTop: 18 }}>Sous-catégorie</label>
           <div className="ce-tag-cloud">
-            {availableTags.map(t => (
-              <button key={t} onClick={() => toggleTag(t)} className={`ce-tag${s.tags.includes(t) ? ' is-on' : ''}`}>
-                {s.tags.includes(t) && <Ico.Check s={11} />}{t}
+            {filteredSubcats.length === 0
+              ? <span style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600 }}>Aucune sous-catégorie pour cette catégorie.</span>
+              : filteredSubcats.map(t => (
+              <button key={t.name} onClick={() => toggleTag(t.name)} className={`ce-tag${s.tags.includes(t.name) ? ' is-on' : ''}`}>
+                {s.tags.includes(t.name) && <Ico.Check s={11} />}{t.name}
               </button>
             ))}
           </div>
@@ -302,7 +318,7 @@ function ProfilTab({ s, patch, categorie, availableTags }: { s: PrestaState; pat
             <div className="ce-mc-img" style={{ backgroundImage: s.images[0] ? `url(${s.images[0]})` : 'none' }}>
               {!s.images[0] && <div className="ce-mc-placeholder"><Ico.Image s={32} /></div>}
               <div className="ce-mc-overlay" />
-              <div className="ce-mc-badge">{categorie}</div>
+              <div className="ce-mc-badge">{s.categorie}</div>
             </div>
             <div className="ce-mc-body">
               <div className="ce-mc-row">
@@ -441,7 +457,8 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [siteTags, setSiteTags] = useState<string[]>(DEFAULT_TAGS);
+  const [siteTags, setSiteTags] = useState<Array<{name: string; category_name: string | null}>>([]);
+  const [siteCategories, setSiteCategories] = useState<string[]>([]);
   const [claimStatus, setClaimStatus] = useState<'loading' | 'needsAuth' | 'claiming' | 'done'>('done');
 
   useEffect(() => {
@@ -463,8 +480,12 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
 
   useEffect(() => {
     import('@/lib/supabase/client').then(({ createClient }) => {
-      createClient().from('site_subcategories').select('name').order('name').then(({ data }) => {
-        if (data?.length) setSiteTags(data.map((t: { name: string }) => t.name));
+      const sb = createClient();
+      sb.from('site_subcategories').select('name, category_name').order('name').then(({ data }) => {
+        if (data?.length) setSiteTags(data as Array<{name: string; category_name: string | null}>);
+      });
+      sb.from('site_categories').select('name').order('position').then(({ data }) => {
+        if (data?.length) setSiteCategories((data as Array<{name: string}>).map(c => c.name));
       });
     });
   }, []);
@@ -535,6 +556,7 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
         company: state.company || null,
         description: state.description || null,
         tags: state.tags,
+        categorie: state.categorie,
         prix: state.prix,
         price_note: state.price_note || null,
         telephone: state.telephone || null,
@@ -593,7 +615,7 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
           <CompletionBar s={state} />
           {tab === 'photos' && <PhotosTab s={state} patch={patch} prestataireId={prestataire.id} />}
           {tab === 'dispo' && <DispoTab s={state} patch={patch} />}
-          {tab === 'profil' && <ProfilTab s={state} patch={patch} categorie={prestataire.categorie} availableTags={siteTags} />}
+          {tab === 'profil' && <ProfilTab s={state} patch={patch} siteCategories={siteCategories.length ? siteCategories : [prestataire.categorie]} allSubcats={siteTags} />}
         </main>
       </div>
 
