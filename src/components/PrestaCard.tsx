@@ -161,12 +161,10 @@ export default function PrestaCard({ presta, onSelect, isFavorited, onToggleFavo
           <span className="font-bold text-[11px] sm:text-sm leading-tight line-clamp-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
             {presta.nom}
           </span>
-          {presta.note > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] sm:text-xs font-semibold flex-shrink-0" style={{ color: "var(--dark)" }}>
-              <i className="fa-solid fa-star" style={{ fontSize: 10, color: "#F59E0B" }} aria-hidden="true" />
-              {presta.note.toFixed(1)}
-            </span>
-          )}
+          <span className="flex items-center gap-0.5 text-[10px] sm:text-xs font-semibold flex-shrink-0" style={{ color: presta.note > 0 ? "var(--dark)" : "#9CA3AF" }}>
+            <i className="fa-solid fa-star" style={{ fontSize: 10, color: presta.note > 0 ? "#F59E0B" : "#D1D5DB" }} aria-hidden="true" />
+            {presta.note > 0 ? presta.note.toFixed(1) : "Nouveau"}
+          </span>
         </div>
 
         <div className="text-[10px] sm:text-xs mt-0.5 line-clamp-1" style={{ color: "var(--muted)" }}>
