@@ -23,6 +23,13 @@ interface Conversation {
   prestaEmail: string;
 }
 
+interface FwdState {
+  to: string;
+  from: string;
+  subject: string;
+  body: string;
+}
+
 function timeAgo(date: string) {
   const diff = (Date.now() - new Date(date).getTime()) / 1000;
   if (diff < 60) return "À l'instant";
@@ -40,6 +47,10 @@ export default function AdminMessagesPage() {
   const [deleting, setDeleting] = useState(false);
   const [adminId, setAdminId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [fwdOpen, setFwdOpen] = useState(false);
+  const [fwd, setFwd] = useState<FwdState>({ to: "", from: "contact@connect-event.be", subject: "", body: "" });
+  const [fwdSending, setFwdSending] = useState(false);
+  const [fwdResult, setFwdResult] = useState<"ok" | "err" | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
@@ -51,7 +62,6 @@ export default function AdminMessagesPage() {
     const { data: msgs } = await supabase.from("messages").select("*").order("created_at", { ascending: true });
     if (!msgs?.length) { setLoading(false); return; }
 
-    // Marquer tous les messages non lus comme lus dès l'ouverture de la page
     const unreadIds = (msgs as Msg[]).filter(m => !m.read && m.sender_id !== user.id).map(m => m.id);
     if (unreadIds.length > 0) {
       await supabase.from("messages").update({ read: true }).in("id", unreadIds);
@@ -73,7 +83,6 @@ export default function AdminMessagesPage() {
     const profMap: Record<string, string> = {};
     (profiles ?? []).forEach((p: { id: string; email: string }) => { profMap[p.id] = p.email; });
 
-    // Fetch owner profiles to get their email as fallback for prestaEmail
     const ownerIds = [...new Set((prestas ?? []).map((p: { owner_id?: string }) => p.owner_id).filter(Boolean))] as string[];
     const { data: ownerProfiles } = ownerIds.length
       ? await supabase.from("profiles").select("id, email").in("id", ownerIds)
@@ -150,6 +159,38 @@ export default function AdminMessagesPage() {
     }
   }, []);
 
+  const openForward = useCallback(() => {
+    if (!active) return;
+    const clientMsgs = active.messages.filter(m => m.sender_id !== adminId);
+    const lastClient = clientMsgs[clientMsgs.length - 1]?.content ?? "";
+    setFwd({
+      to: active.prestaEmail,
+      from: "contact@connect-event.be",
+      subject: active.prestaNom ? `Demande client — ${active.prestaNom}` : "Demande client via Connect Event",
+      body: `Bonjour,\n\nUn client vous a contacté via Connect Event.\n\n---\n\n${lastClient}\n\n---\n\nCordialement,\nL'équipe Connect Event`,
+    });
+    setFwdResult(null);
+    setFwdOpen(true);
+  }, [active, adminId]);
+
+  const sendForward = async () => {
+    if (!fwd.to || !fwd.body) return;
+    setFwdSending(true);
+    setFwdResult(null);
+    try {
+      const res = await fetch("/api/admin/forward-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(fwd),
+      });
+      setFwdResult(res.ok ? "ok" : "err");
+      if (res.ok) setTimeout(() => setFwdOpen(false), 1500);
+    } catch {
+      setFwdResult("err");
+    }
+    setFwdSending(false);
+  };
+
   const sendReply = async () => {
     const text = reply.trim();
     if (!text || !active || !adminId) return;
@@ -190,8 +231,121 @@ export default function AdminMessagesPage() {
     c.prestaNom.toLowerCase().includes(search.toLowerCase())
   );
 
+  const inputCls = "w-full rounded-xl px-4 py-2.5 text-sm font-semibold outline-none transition-all";
+  const inputStyle = { background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" };
+
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)" }}>
+      {/* Forward modal */}
+      {fwdOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)" }}
+          onClick={e => { if (e.target === e.currentTarget) setFwdOpen(false); }}
+        >
+          <div className="w-full max-w-lg rounded-2xl overflow-hidden"
+            style={{ background: "white", boxShadow: "0 30px 80px rgba(0,0,0,0.25)" }}>
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
+              <h2 className="font-black text-base" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
+                📧 Transmettre par email
+              </h2>
+              <button onClick={() => setFwdOpen(false)}
+                className="rounded-xl flex items-center justify-center cursor-pointer"
+                style={{ width: 32, height: 32, background: "var(--bg2)", border: "none", color: "var(--muted)", fontSize: 18 }}>
+                ×
+              </button>
+            </div>
+
+            {/* Modal body */}
+            <div className="px-6 py-5 flex flex-col gap-4">
+              <div>
+                <label className="block text-[10px] font-extrabold uppercase tracking-wider mb-1.5" style={{ color: "var(--blue2)" }}>
+                  Destinataire (À)
+                </label>
+                <input
+                  type="email"
+                  value={fwd.to}
+                  onChange={e => setFwd(f => ({ ...f, to: e.target.value }))}
+                  className={inputCls}
+                  style={inputStyle}
+                  onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
+                  onBlur={e => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-extrabold uppercase tracking-wider mb-1.5" style={{ color: "var(--blue2)" }}>
+                  Expéditeur (De)
+                </label>
+                <input
+                  type="email"
+                  value={fwd.from}
+                  onChange={e => setFwd(f => ({ ...f, from: e.target.value }))}
+                  className={inputCls}
+                  style={inputStyle}
+                  onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
+                  onBlur={e => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-extrabold uppercase tracking-wider mb-1.5" style={{ color: "var(--blue2)" }}>
+                  Objet
+                </label>
+                <input
+                  type="text"
+                  value={fwd.subject}
+                  onChange={e => setFwd(f => ({ ...f, subject: e.target.value }))}
+                  className={inputCls}
+                  style={inputStyle}
+                  onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
+                  onBlur={e => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-extrabold uppercase tracking-wider mb-1.5" style={{ color: "var(--blue2)" }}>
+                  Message
+                </label>
+                <textarea
+                  value={fwd.body}
+                  onChange={e => setFwd(f => ({ ...f, body: e.target.value }))}
+                  rows={7}
+                  className={inputCls + " resize-none"}
+                  style={inputStyle}
+                  onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
+                  onBlur={e => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+
+              {fwdResult === "ok" && (
+                <p className="text-sm font-extrabold text-center" style={{ color: "#16a34a" }}>✓ Email envoyé !</p>
+              )}
+              {fwdResult === "err" && (
+                <p className="text-sm font-extrabold text-center" style={{ color: "#dc2626" }}>Erreur lors de l'envoi.</p>
+              )}
+            </div>
+
+            {/* Modal footer */}
+            <div className="flex items-center justify-end gap-3 px-6 py-4" style={{ borderTop: "1px solid var(--border)" }}>
+              <button
+                onClick={() => setFwdOpen(false)}
+                className="text-sm font-bold px-4 py-2 rounded-xl cursor-pointer"
+                style={{ background: "var(--bg2)", border: "none", color: "var(--muted)" }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={sendForward}
+                disabled={fwdSending || !fwd.to || !fwd.body}
+                className="text-white text-sm font-extrabold px-5 py-2 rounded-xl cursor-pointer disabled:opacity-50"
+                style={{ background: "var(--grad2)", border: "none", boxShadow: "0 4px 14px rgba(74,108,247,0.25)" }}
+              >
+                {fwdSending ? "Envoi…" : "Envoyer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="sticky top-0 z-50 flex items-center justify-between"
         style={{
@@ -322,25 +476,24 @@ export default function AdminMessagesPage() {
                   )}
                 </div>
 
-                {/* Mailto presta */}
+                {/* Transmettre par email */}
                 {active.prestaEmail && (
-                  <a
-                    href={`mailto:${active.prestaEmail}?subject=Demande client via Connect Event&body=Bonjour,%0A%0AUn client vous a contacté via Connect Event.%0A%0A---${encodeURIComponent("\n" + (active.messages[active.messages.length - 1]?.content ?? ""))}`}
-                    title={`Écrire à ${active.prestaNom} par email`}
-                    className="flex items-center gap-1.5 text-[11px] font-extrabold px-3 py-1.5 rounded-xl transition-all flex-shrink-0"
-                    style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.2)", textDecoration: "none" }}
+                  <button
+                    onClick={openForward}
+                    title={`Transmettre par email à ${active.prestaNom}`}
+                    className="flex items-center gap-1.5 text-[11px] font-extrabold px-3 py-1.5 rounded-xl transition-all flex-shrink-0 cursor-pointer"
+                    style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.2)" }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(74,108,247,0.15)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "rgba(74,108,247,0.08)")}
                   >
-                    📧 Email presta
-                  </a>
+                    📧 Transmettre
+                  </button>
                 )}
 
                 <span className="text-xs font-extrabold px-3 py-1 rounded-full flex-shrink-0"
                   style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)" }}>
                   {active.messages.length} message{active.messages.length !== 1 ? "s" : ""}
                 </span>
-                {/* Delete conversation */}
                 <button
                   onClick={deleteConversation}
                   disabled={deleting}
