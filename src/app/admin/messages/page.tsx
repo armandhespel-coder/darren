@@ -477,18 +477,16 @@ export default function AdminMessagesPage() {
                 </div>
 
                 {/* Transmettre par email */}
-                {active.prestaEmail && (
-                  <button
-                    onClick={openForward}
-                    title={`Transmettre par email à ${active.prestaNom}`}
-                    className="flex items-center gap-1.5 text-[11px] font-extrabold px-3 py-1.5 rounded-xl transition-all flex-shrink-0 cursor-pointer"
-                    style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.2)" }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(74,108,247,0.15)")}
-                    onMouseLeave={e => (e.currentTarget.style.background = "rgba(74,108,247,0.08)")}
-                  >
-                    📧 Transmettre
-                  </button>
-                )}
+                <button
+                  onClick={openForward}
+                  title="Transmettre par email au prestataire"
+                  className="flex items-center gap-1.5 text-[11px] font-extrabold px-3 py-1.5 rounded-xl transition-all flex-shrink-0 cursor-pointer"
+                  style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)", border: "1px solid rgba(74,108,247,0.2)" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(74,108,247,0.15)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(74,108,247,0.08)")}
+                >
+                  📧 Transmettre
+                </button>
 
                 <span className="text-xs font-extrabold px-3 py-1 rounded-full flex-shrink-0"
                   style={{ background: "rgba(74,108,247,0.08)", color: "var(--blue2)" }}>
