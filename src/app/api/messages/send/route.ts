@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const [{ data: adminProfiles }, { data: presta }] = await Promise.all([
     service.from("profiles").select("id").in("email", ADMIN_EMAILS).limit(1),
     prestataire_id
-      ? service.from("prestataires").select("nom, email, owner_id").eq("id", prestataire_id).single()
+      ? service.from("prestataires").select("nom, email").eq("id", prestataire_id).single()
       : Promise.resolve({ data: null }),
   ]);
 
@@ -45,28 +45,46 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Send notification email to admins
   const prestaNom = (presta as { nom?: string } | null)?.nom ?? "";
   const prestaEmail = (presta as { email?: string | null } | null)?.email ?? "";
   const clientEmail = user.email ?? "client inconnu";
-  const adminMessagesUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://connect-event.be"}/admin/messages`;
 
-  const emailBody = [
-    `Nouvelle demande reçue sur Connect Event`,
-    ``,
-    `Client : ${clientEmail}`,
-    prestaNom ? `Prestataire : ${prestaNom}` : "",
-    prestaEmail ? `Email prestataire : ${prestaEmail}` : "",
-    ``,
-    `--- Message du client ---`,
-    content.trim(),
-    `------------------------`,
-    ``,
-    `Voir les messages : ${adminMessagesUrl}`,
-    prestaEmail
-      ? `Transmettre par email : ${adminMessagesUrl} (bouton "Transmettre" dans la conversation)`
-      : "",
-  ].filter(l => l !== undefined).join("\n");
+  const mailtoSubject = encodeURIComponent(`Demande client via Connect Event${prestaNom ? ` — ${prestaNom}` : ""}`);
+  const mailtoBody = encodeURIComponent(
+    `Bonjour,\n\nUn client vous a contacté via Connect Event.\n\nClient : ${clientEmail}\n\n---\n\n${content.trim()}\n\n---\n\nCordialement,\nL'équipe Connect Event`
+  );
+  const mailtoHref = prestaEmail
+    ? `mailto:${prestaEmail}?subject=${mailtoSubject}&body=${mailtoBody}`
+    : "";
+
+  const html = `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#F7F8FC;font-family:sans-serif;">
+  <div style="max-width:520px;margin:40px auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+    <div style="background:#1E1C3A;padding:24px 32px;">
+      <div style="color:white;font-size:20px;font-weight:900;letter-spacing:-0.5px;">Connect Event</div>
+      <div style="color:rgba(255,255,255,0.6);font-size:12px;margin-top:4px;">Nouvelle demande client</div>
+    </div>
+    <div style="padding:28px 32px;">
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+        <tr>
+          <td style="padding:8px 0;font-size:12px;font-weight:700;color:#9CA3AF;width:110px;">Client</td>
+          <td style="padding:8px 0;font-size:13px;font-weight:700;color:#1E1C3A;">${clientEmail}</td>
+        </tr>
+        ${prestaNom ? `<tr>
+          <td style="padding:8px 0;font-size:12px;font-weight:700;color:#9CA3AF;">Prestataire</td>
+          <td style="padding:8px 0;font-size:13px;font-weight:700;color:#4A6CF7;">${prestaNom}</td>
+        </tr>` : ""}
+      </table>
+      <div style="background:#F7F8FC;border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+        <div style="font-size:11px;font-weight:800;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Message</div>
+        <div style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.6;">${content.trim().replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+      </div>
+      ${mailtoHref ? `<a href="${mailtoHref}" style="display:inline-block;background:linear-gradient(135deg,#4A6CF7,#D93FB5);color:white;font-size:13px;font-weight:800;padding:12px 24px;border-radius:50px;text-decoration:none;">📧 Transmettre par email au prestataire</a>` : ""}
+    </div>
+  </div>
+</body>
+</html>`;
 
   await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -78,11 +96,11 @@ export async function POST(req: NextRequest) {
       from: "Connect Event <contact@connect-event.be>",
       to: ADMIN_EMAILS,
       subject: prestaNom
-        ? `[Connect Event] Nouvelle demande de ${clientEmail} pour ${prestaNom}`
-        : `[Connect Event] Nouveau message de ${clientEmail}`,
-      text: emailBody,
+        ? `Nouvelle demande de ${clientEmail} pour ${prestaNom}`
+        : `Nouveau message de ${clientEmail}`,
+      html,
     }),
-  }).catch(() => null); // ne pas bloquer si Resend échoue
+  }).catch(() => null);
 
   return NextResponse.json({ message: msg });
 }
