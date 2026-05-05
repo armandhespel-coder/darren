@@ -196,14 +196,6 @@ export default function Navbar() {
                         <IconLock /> Admin
                       </a>
                     )}
-                    {!userIsPrestataire && <a href="/messages"
-                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
-                      style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                    >
-                      💬 Messages
-                    </a>}
                     {!userIsPrestataire && <button
                       onClick={() => { router.push("/avantages-pro"); setShowMenu(false); }}
                       className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all w-full text-left cursor-pointer"

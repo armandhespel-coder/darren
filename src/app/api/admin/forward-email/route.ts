@@ -20,7 +20,9 @@ export async function POST(req: NextRequest) {
 
     <!-- Header -->
     <div style="background:#1E1C3A;padding:28px 36px;text-align:center;">
-      <img src="${siteUrl}/logo.png" alt="Connect Event" style="height:60px;object-fit:contain;" />
+      <span style="font-size:26px;font-weight:900;color:white;font-family:Arial,Helvetica,sans-serif;letter-spacing:-0.5px;">
+        Connect<span style="color:#D93FB5;">Event</span>
+      </span>
     </div>
 
     <!-- Body -->
