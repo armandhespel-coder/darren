@@ -31,7 +31,7 @@ export default function FonctionnementPage() {
 
       <header style={{ background: "var(--dark2)", padding: "0.6rem 2rem" }}>
         <Link href="/">
-          <Image src="/logo.png" alt="Connect Event" width={80} height={56} style={{ objectFit: "contain", display: "block" }} />
+          <Image src="/logo.png" alt="Connect Event" width={160} height={112} style={{ objectFit: "contain", display: "block" }} />
         </Link>
       </header>
 

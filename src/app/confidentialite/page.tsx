@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité — Connect Event",
@@ -19,9 +20,9 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export default function ConfidentialitePage() {
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
-      <header style={{ background: "var(--dark2)", padding: "1.2rem 2rem" }}>
-        <Link href="/" style={{ color: "white", fontFamily: "var(--font-raleway)", fontWeight: 900, fontSize: "1.4rem", textDecoration: "none" }}>
-          Connect<span style={{ color: "var(--pink)" }}>Event</span>
+      <header style={{ background: "var(--dark2)", padding: "0.6rem 2rem" }}>
+        <Link href="/">
+          <Image src="/logo.png" alt="Connect Event" width={160} height={112} style={{ objectFit: "contain", display: "block" }} />
         </Link>
       </header>
 
