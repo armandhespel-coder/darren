@@ -220,18 +220,21 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
     setSending(true);
     setMsgError("");
     const parts: string[] = [];
-    parts.push(`👤 Nom : ${senderName.trim()}`);
-    parts.push(`📧 Email : ${senderEmail.trim()}`);
-    parts.push(`📞 Téléphone : ${bookingPhone.trim()}`);
-    if (bookingDate) parts.push(`📅 Date de l'événement : ${new Date(bookingDate).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`);
-    if (bookingGuests) parts.push(`👥 Nombre de personnes : ${bookingGuests}`);
+    if (bookingDate) parts.push(`📅 Date : ${new Date(bookingDate).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`);
+    if (bookingGuests) parts.push(`👥 Personnes : ${bookingGuests}`);
     if (bookingLocation) parts.push(`📍 Lieu : ${bookingLocation}`);
-    parts.push(`💬 Message : ${bookingMsg.trim()}`);
-    const content = `Demande de réservation — ${p.nom}\n\n${parts.join("\n")}`;
+    parts.push(`💬 ${bookingMsg.trim()}`);
+    const content = parts.join("\n");
     const res = await fetch("/api/messages/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prestataire_id: p.id, content, sender_name: senderName.trim(), sender_email: senderEmail.trim() }),
+      body: JSON.stringify({
+        prestataire_id: p.id,
+        content,
+        sender_name: senderName.trim(),
+        sender_email: senderEmail.trim(),
+        sender_phone: bookingPhone.trim(),
+      }),
     });
     setSending(false);
     if (!res.ok) {

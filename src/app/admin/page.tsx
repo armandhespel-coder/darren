@@ -465,6 +465,11 @@ export default function AdminPage() {
             style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
             👥 Utilisateurs
           </a>
+          <a href="/admin/demandes"
+            className="text-xs font-bold px-4 py-2 rounded-full transition-all"
+            style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
+            📋 Demandes
+          </a>
           <a href="/admin/messages"
             className="text-xs font-bold px-4 py-2 rounded-full transition-all"
             style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
@@ -512,6 +517,7 @@ export default function AdminPage() {
                 { href: "/admin/tags", label: "🏷️ Sous-catégories" },
                 { href: "/admin/categories", label: "📂 Catégories" },
                 { href: "/admin/utilisateurs", label: "👥 Utilisateurs" },
+                { href: "/admin/demandes", label: "📋 Demandes" },
                 { href: "/admin/messages", label: "💬 Messages" },
                 { href: "/admin/avis", label: "⭐ Avis" },
                 { href: "/", label: "← Site" },
