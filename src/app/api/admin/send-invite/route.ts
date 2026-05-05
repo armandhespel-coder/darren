@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
       <!-- CTA -->
       <div style="text-align:center;margin:32px 0;">
         <a href="${claimLink}"
-          style="display:inline-block;background:linear-gradient(135deg,#4A6CF7,#D93FB5);color:white;font-size:15px;font-weight:800;padding:16px 36px;border-radius:50px;text-decoration:none;letter-spacing:-0.2px;">
-          ✨ Créer mon profil prestataire
+          style="display:inline-block;background:#4A6CF7;color:#ffffff;font-size:15px;font-weight:800;padding:16px 36px;border-radius:50px;text-decoration:none;letter-spacing:-0.2px;">
+          Créer mon profil prestataire →
         </a>
       </div>
 
