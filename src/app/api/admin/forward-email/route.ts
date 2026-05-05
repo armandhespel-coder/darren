@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com"];
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
 
-  const { to, from, subject, body } = await req.json();
+  const { to, subject, body } = await req.json();
   if (!to || !body) return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
+
+  const fullBody = `${body}\n\n---\nPour répondre, écrivez directement à : ${ADMIN_EMAILS.join(" ou ")}`;
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -16,11 +20,11 @@ export async function POST(req: NextRequest) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: from ? `Connect Event <${from}>` : "Connect Event <contact@connect-event.be>",
-      reply_to: "yagan_darren@hotmail.com",
+      from: "Connect Event <contact@connect-event.be>",
+      reply_to: ADMIN_EMAILS,
       to: [to],
-      subject: subject || "Demande via Connect Event",
-      text: body,
+      subject: subject || "Votre demande — Connect Event",
+      text: fullBody,
     }),
   });
 
