@@ -5,7 +5,9 @@ import { createClient } from "@/lib/supabase/client";
 
 interface Msg {
   id: string;
-  sender_id: string;
+  sender_id: string | null;
+  sender_name: string | null;
+  sender_email: string | null;
   receiver_id: string | null;
   prestataire_id: string | null;
   content: string;
@@ -15,8 +17,9 @@ interface Msg {
 
 interface Conversation {
   key: string;
-  partnerId: string;
+  partnerId: string | null;
   partnerEmail: string;
+  partnerName: string;
   messages: Msg[];
   unread: number;
   lastTime: string;
@@ -70,11 +73,11 @@ export default function AdminMessagesPage() {
     }
 
     const partnerIds = [...new Set(msgs.flatMap((m: Msg) => {
-      if (m.sender_id === user.id) return m.receiver_id ? [m.receiver_id] : [];
+      if (!m.sender_id || m.sender_id === user.id) return m.receiver_id ? [m.receiver_id] : [];
       return [m.sender_id];
-    }))].filter(Boolean);
+    }))].filter(Boolean) as string[];
 
-    const prestaIds = [...new Set(msgs.map((m: Msg) => m.prestataire_id).filter(Boolean))];
+    const prestaIds = [...new Set(msgs.map((m: Msg) => m.prestataire_id).filter(Boolean))] as string[];
 
     const [{ data: profiles }, { data: prestas }] = await Promise.all([
       partnerIds.length ? supabase.from("profiles").select("id, email").in("id", partnerIds) : Promise.resolve({ data: [] }),
@@ -98,19 +101,24 @@ export default function AdminMessagesPage() {
       prestaEmailMap[p.id] = p.email ?? profMap[p.owner_id ?? ""] ?? ownerMap[p.owner_id ?? ""] ?? "";
     });
 
-    // Group by client + prestataire so each request is a separate conversation
+    // Group by client + prestataire — supporte les clients anonymes (sender_id null)
     const convMap = new Map<string, Conversation>();
     for (const msg of msgs as Msg[]) {
-      const partnerId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
-      if (!partnerId || partnerId === user.id) continue;
+      // Message anonyme (client sans compte)
+      const isAnonymous = !msg.sender_id;
+      const partnerId = isAnonymous ? null : (msg.sender_id === user.id ? msg.receiver_id : msg.sender_id);
+      if (!isAnonymous && (!partnerId || partnerId === user.id)) continue;
 
-      const convKey = msg.prestataire_id ? `${partnerId}-${msg.prestataire_id}` : partnerId;
+      const convKey = isAnonymous
+        ? `anon-${msg.sender_email ?? ""}-${msg.prestataire_id ?? ""}-${msg.id}`
+        : (msg.prestataire_id ? `${partnerId}-${msg.prestataire_id}` : partnerId!);
 
       if (!convMap.has(convKey)) {
         convMap.set(convKey, {
           key: convKey,
           partnerId,
-          partnerEmail: profMap[partnerId] ?? "Inconnu",
+          partnerName: isAnonymous ? (msg.sender_name ?? "Anonyme") : "",
+          partnerEmail: isAnonymous ? (msg.sender_email ?? "Anonyme") : (partnerId ? (profMap[partnerId] ?? "Inconnu") : "Inconnu"),
           messages: [],
           unread: 0,
           lastTime: msg.created_at,
@@ -227,6 +235,7 @@ export default function AdminMessagesPage() {
 
   const filtered = conversations.filter(c =>
     c.partnerEmail.toLowerCase().includes(search.toLowerCase()) ||
+    c.partnerName.toLowerCase().includes(search.toLowerCase()) ||
     c.prestaNom.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -389,7 +398,7 @@ export default function AdminMessagesPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-0.5">
                         <span className="font-extrabold text-[11px] truncate" style={{ color: "var(--dark)" }}>
-                          {conv.partnerEmail}
+                          {conv.partnerName || conv.partnerEmail}
                         </span>
                         <span className="text-[10px] flex-shrink-0" style={{ color: "var(--muted)" }}>
                           {timeAgo(conv.lastTime)}
@@ -426,11 +435,14 @@ export default function AdminMessagesPage() {
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white flex-shrink-0"
                     style={{ background: "var(--grad)" }}>
-                    {(active.partnerEmail[0] ?? "?").toUpperCase()}
+                    {(active.partnerName?.[0] ?? active.partnerEmail[0] ?? "?").toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[10px] font-extrabold uppercase tracking-wider mb-0.5" style={{ color: "var(--muted)" }}>Client</div>
-                    <div className="font-extrabold text-sm" style={{ color: "var(--dark)" }}>{active.partnerEmail}</div>
+                    {active.partnerName && (
+                      <div className="font-black text-sm" style={{ color: "var(--dark)" }}>{active.partnerName}</div>
+                    )}
+                    <div className="font-semibold text-xs" style={{ color: "var(--muted)" }}>{active.partnerEmail}</div>
                   </div>
                 </div>
 

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
-const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com"];
-
 export async function POST(req: NextRequest) {
   const { prestataire_id, content, sender_name, sender_email } = await req.json();
 
@@ -13,75 +11,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Nom et email requis." }, { status: 400 });
   }
 
-  let prestaNom = "";
-  try {
-    const service = createServiceClient();
-    if (prestataire_id) {
-      const { data: presta } = await service.from("prestataires").select("nom").eq("id", prestataire_id).single();
-      prestaNom = (presta as { nom?: string } | null)?.nom ?? "";
-    }
-  } catch {
-    // non-blocking — nom du prestataire est optionnel
-  }
+  const service = createServiceClient();
 
-  const clientEmail = sender_email.trim();
-  const clientName = sender_name.trim();
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://connect-event.be";
-  const adminMessagesUrl = `${siteUrl}/admin/messages`;
-
-  const html = `<!DOCTYPE html>
-<html>
-<body style="margin:0;padding:0;background:#F7F8FC;font-family:sans-serif;">
-  <div style="max-width:520px;margin:40px auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-    <div style="background:#1E1C3A;padding:24px 32px;">
-      <div style="color:white;font-size:20px;font-weight:900;letter-spacing:-0.5px;">Connect Event</div>
-      <div style="color:rgba(255,255,255,0.6);font-size:12px;margin-top:4px;">Nouvelle demande client</div>
-    </div>
-    <div style="padding:28px 32px;">
-      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
-        <tr>
-          <td style="padding:8px 0;font-size:12px;font-weight:700;color:#9CA3AF;width:110px;">Client</td>
-          <td style="padding:8px 0;font-size:13px;font-weight:700;color:#1E1C3A;">${clientName} &lt;${clientEmail}&gt;</td>
-        </tr>
-        ${prestaNom ? `<tr>
-          <td style="padding:8px 0;font-size:12px;font-weight:700;color:#9CA3AF;">Prestataire</td>
-          <td style="padding:8px 0;font-size:13px;font-weight:700;color:#4A6CF7;">${prestaNom}</td>
-        </tr>` : ""}
-      </table>
-      <div style="background:#F7F8FC;border-radius:12px;padding:16px 20px;margin-bottom:24px;">
-        <div style="font-size:11px;font-weight:800;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Message</div>
-        <div style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.6;">${content.trim().replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
-      </div>
-      <a href="${adminMessagesUrl}" style="display:inline-block;background:#4A6CF7;color:white;font-size:13px;font-weight:800;padding:12px 24px;border-radius:50px;text-decoration:none;margin-bottom:16px;">Voir dans l&apos;admin →</a>
-      <br/>
-      <a href="mailto:${clientEmail}" style="display:inline-block;font-size:12px;color:#4A6CF7;font-weight:700;margin-top:12px;">↩ Répondre directement au client : ${clientEmail}</a>
-    </div>
-  </div>
-</body>
-</html>`;
-
-  const resendRes = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Connect Event <contact@connect-event.be>",
-      reply_to: clientEmail,
-      to: ADMIN_EMAILS,
-      subject: prestaNom
-        ? `Nouvelle demande de ${clientName} pour ${prestaNom}`
-        : `Nouveau message de ${clientName}`,
-      html,
-    }),
+  const { error } = await service.from("messages").insert({
+    sender_id: null,
+    sender_name: sender_name.trim(),
+    sender_email: sender_email.trim(),
+    receiver_id: null,
+    prestataire_id: prestataire_id ?? null,
+    content: content.trim(),
+    read: false,
   });
 
-  if (!resendRes.ok) {
-    const errBody = await resendRes.json().catch(() => ({}));
-    console.error("Resend error:", resendRes.status, errBody);
-    return NextResponse.json({ error: "Erreur lors de l'envoi de l'email." }, { status: 500 });
+  if (error) {
+    console.error("DB insert error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });
