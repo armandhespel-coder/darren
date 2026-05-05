@@ -13,13 +13,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Nom et email requis." }, { status: 400 });
   }
 
-  const service = createServiceClient();
+  let prestaNom = "";
+  try {
+    const service = createServiceClient();
+    if (prestataire_id) {
+      const { data: presta } = await service.from("prestataires").select("nom").eq("id", prestataire_id).single();
+      prestaNom = (presta as { nom?: string } | null)?.nom ?? "";
+    }
+  } catch {
+    // non-blocking — nom du prestataire est optionnel
+  }
 
-  const { data: presta } = prestataire_id
-    ? await service.from("prestataires").select("nom, email").eq("id", prestataire_id).single()
-    : { data: null };
-
-  const prestaNom = (presta as { nom?: string } | null)?.nom ?? "";
   const clientEmail = sender_email.trim();
   const clientName = sender_name.trim();
 
@@ -57,7 +61,7 @@ export async function POST(req: NextRequest) {
 </body>
 </html>`;
 
-  await fetch("https://api.resend.com/emails", {
+  const resendRes = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
@@ -72,7 +76,13 @@ export async function POST(req: NextRequest) {
         : `Nouveau message de ${clientName}`,
       html,
     }),
-  }).catch(() => null);
+  });
+
+  if (!resendRes.ok) {
+    const errBody = await resendRes.json().catch(() => ({}));
+    console.error("Resend error:", resendRes.status, errBody);
+    return NextResponse.json({ error: "Erreur lors de l'envoi de l'email." }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true });
 }

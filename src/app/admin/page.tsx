@@ -198,46 +198,6 @@ function AdminVideoUpload({ value, onChange, prestataireId }: {
   );
 }
 
-function UserGrowthChart({ profiles }: { profiles: Array<{ created_at: string }> }) {
-  const now = new Date();
-  const DAYS = 14;
-  const counts = Array.from({ length: DAYS }, (_, i) => {
-    const d = new Date(now);
-    d.setDate(d.getDate() - (DAYS - 1 - i));
-    const dateStr = d.toISOString().slice(0, 10);
-    const count = profiles.filter(p => p.created_at.slice(0, 10) === dateStr).length;
-    return { count, label: d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) };
-  });
-  const max = Math.max(...counts.map(c => c.count), 1);
-  const H = 60;
-  const W = DAYS * 26;
-
-  return (
-    <div>
-      <svg width="100%" height={H + 16} viewBox={`0 0 ${W} ${H + 16}`} preserveAspectRatio="xMidYMid meet">
-        {counts.map((c, i) => {
-          const barH = Math.max((c.count / max) * H, 2);
-          const x = i * 26;
-          return (
-            <g key={i}>
-              <rect x={x + 4} y={H - barH} width={18} height={barH} rx={4}
-                fill={c.count > 0 ? "var(--blue2)" : "var(--border)"} opacity={c.count > 0 ? 0.85 : 0.4} />
-              {c.count > 0 && (
-                <text x={x + 13} y={H - barH - 3} textAnchor="middle" fontSize={7} fill="var(--blue2)" fontWeight={700}>
-                  {c.count}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-      <div className="flex justify-between text-[9px] font-semibold mt-0.5" style={{ color: "var(--muted)" }}>
-        <span>{counts[0].label}</span>
-        <span>{counts[DAYS - 1].label}</span>
-      </div>
-    </div>
-  );
-}
 
 export default function AdminPage() {
   const router = useRouter();
@@ -254,7 +214,7 @@ export default function AdminPage() {
   const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
-  const [stats, setStats] = useState({ premium: 0, users: 0, messages: 0 });
+  const [stats, setStats] = useState({ premium: 0, messages: 0 });
   const [createdLink, setCreatedLink] = useState<string | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -262,7 +222,6 @@ export default function AdminPage() {
   const [inviteResult, setInviteResult] = useState<"ok" | "err" | null>(null);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [availableSpecialites, setAvailableSpecialites] = useState<string[]>([]);
-  const [userProfiles, setUserProfiles] = useState<Array<{ created_at: string }>>([]);
 
   const up = (k: keyof FormData, v: string | boolean | string[]) => setForm(f => ({ ...f, [k]: v }));
 
@@ -272,25 +231,20 @@ export default function AdminPage() {
     const [
       { data },
       premiumRes,
-      usersRes,
       msgsRes,
       { data: catsData },
-      { data: profilesData },
       { data: tagsData },
       { data: specialitesData },
     ] = await Promise.all([
       supabase.from("prestataires").select("*").order("created_at", { ascending: false }),
       supabase.from("prestataires").select("*", { count: "exact", head: true }).eq("is_premium", true),
-      supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "client"),
       supabase.from("messages").select("*", { count: "exact", head: true }).eq("read", false).eq("receiver_id", userId),
       supabase.from("site_categories").select("name").order("position"),
-      supabase.from("profiles").select("created_at").eq("role", "client").order("created_at", { ascending: false }).limit(200),
       supabase.from("site_subcategories").select("name").order("name"),
       supabase.from("site_tags").select("name").order("name"),
     ]);
     setPrestataires((data as Prestataire[]) ?? []);
-    setStats({ premium: premiumRes.count ?? 0, users: usersRes.count ?? 0, messages: msgsRes.count ?? 0 });
-    setUserProfiles((profilesData ?? []) as Array<{ created_at: string }>);
+    setStats({ premium: premiumRes.count ?? 0, messages: msgsRes.count ?? 0 });
     if (catsData?.length) {
       const cats = (catsData as Array<{ name: string }>).map(c => c.name);
       setCategories(cats);
@@ -605,7 +559,6 @@ export default function AdminPage() {
           {[
             { label: "Prestataires", value: prestataires.length, icon: "🎵", color: "var(--blue2)", bg: "rgba(74,108,247,0.08)" },
             { label: "Premium", value: stats.premium, icon: "⭐", color: "#7c3aed", bg: "rgba(124,58,237,0.08)" },
-            { label: "Clients", value: stats.users, icon: "👥", color: "#16a34a", bg: "rgba(22,163,74,0.08)" },
             { label: "Non lus", value: stats.messages, icon: "📨", color: "#d97706", bg: "rgba(217,119,6,0.08)" },
           ].map(s => (
             <div key={s.label} className="rounded-2xl p-5"
@@ -620,20 +573,6 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* User growth chart */}
-        <div className="rounded-2xl p-6 mb-6"
-          style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
-          <h2 className="font-black text-base mb-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
-            Nouveaux clients — 14 derniers jours
-          </h2>
-          <p className="text-xs font-semibold mb-4" style={{ color: "var(--muted)" }}>
-            {userProfiles.filter(p => {
-              const d = new Date(); d.setDate(d.getDate() - 14);
-              return new Date(p.created_at) >= d;
-            }).length} inscriptions sur la période
-          </p>
-          <UserGrowthChart profiles={userProfiles} />
-        </div>
 
         {/* Flash message */}
         {msg && (
