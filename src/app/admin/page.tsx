@@ -351,12 +351,11 @@ export default function AdminPage() {
     if (!inviteEmail || !createdLink) return;
     setInviteSending(true);
     setInviteResult(null);
-    const body = `Bonjour,\n\nVous avez été invité(e) à rejoindre Connect Event en tant que prestataire événementiel.\n\nCliquez sur le lien ci-dessous pour créer votre compte et configurer votre profil :\n\n${createdLink}\n\nCe lien est valable 90 jours.\n\nÀ très bientôt,\nL'équipe Connect Event\nwww.connect-event.be`;
     try {
-      const res = await fetch("/api/admin/forward-email", {
+      const res = await fetch("/api/admin/send-invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to: inviteEmail, from: "contact@connect-event.be", subject: "Votre invitation prestataire — Connect Event", body }),
+        body: JSON.stringify({ to: inviteEmail, claimLink: createdLink }),
       });
       setInviteResult(res.ok ? "ok" : "err");
       if (res.ok) setTimeout(() => { setInviteOpen(false); setInviteEmail(""); }, 1500);
