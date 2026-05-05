@@ -31,6 +31,9 @@ export default function AdminDemandesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [replySending, setReplySending] = useState(false);
+  const [replyResult, setReplyResult] = useState<"ok" | "err" | null>(null);
 
   const load = useCallback(async () => {
     const supabase = createClient();
@@ -75,7 +78,33 @@ export default function AdminDemandesPage() {
   const openDemande = useCallback((d: Demande) => {
     setActive(d);
     markLu(d);
+    setReplyText("");
+    setReplyResult(null);
   }, [markLu]);
+
+  const sendReply = async () => {
+    if (!active || !replyText.trim()) return;
+    setReplySending(true);
+    setReplyResult(null);
+    try {
+      const res = await fetch("/api/admin/forward-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: active.email,
+          subject: active.prestataire_nom
+            ? `Votre demande pour ${active.prestataire_nom} — Connect Event`
+            : "Votre demande — Connect Event",
+          body: replyText.trim(),
+        }),
+      });
+      setReplyResult(res.ok ? "ok" : "err");
+      if (res.ok) setReplyText("");
+    } catch {
+      setReplyResult("err");
+    }
+    setReplySending(false);
+  };
 
   const deleteDemande = async () => {
     if (!active) return;
@@ -262,19 +291,43 @@ export default function AdminDemandesPage() {
                   {active.contenu}
                 </div>
 
-                <div className="flex gap-3 mt-5">
-                  <a href={`mailto:${active.email}?subject=Votre demande via Connect Event`}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-extrabold text-white"
-                    style={{ background: "var(--grad2)", textDecoration: "none" }}>
-                    ↩ Répondre par email
-                  </a>
-                  {active.telephone && (
-                    <a href={`tel:${active.telephone}`}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-extrabold"
-                      style={{ background: "var(--bg2)", color: "var(--dark)", border: "1px solid var(--border)", textDecoration: "none" }}>
-                      📞 Appeler
-                    </a>
-                  )}
+                <div className="mt-5">
+                  <div className="text-[10px] font-extrabold uppercase tracking-wider mb-2" style={{ color: "var(--muted)" }}>
+                    Répondre à {active.nom}
+                  </div>
+                  <textarea
+                    value={replyText}
+                    onChange={e => setReplyText(e.target.value)}
+                    rows={4}
+                    placeholder={`Bonjour ${active.nom.split(" ")[0]},\n\n`}
+                    className="w-full rounded-xl px-4 py-3 text-sm font-semibold outline-none resize-none"
+                    style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                    onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
+                    onBlur={e => (e.target.style.borderColor = "var(--border)")}
+                  />
+                  <div className="flex items-center gap-3 mt-2">
+                    <button
+                      onClick={sendReply}
+                      disabled={replySending || !replyText.trim()}
+                      className="px-5 py-2.5 rounded-full text-sm font-extrabold text-white cursor-pointer disabled:opacity-50"
+                      style={{ background: "var(--grad2)" }}
+                    >
+                      {replySending ? "Envoi…" : "↩ Envoyer"}
+                    </button>
+                    {active.telephone && (
+                      <a href={`tel:${active.telephone}`}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-extrabold"
+                        style={{ background: "var(--bg2)", color: "var(--dark)", border: "1px solid var(--border)", textDecoration: "none" }}>
+                        📞 Appeler
+                      </a>
+                    )}
+                    {replyResult === "ok" && (
+                      <span className="text-sm font-extrabold" style={{ color: "#16a34a" }}>✓ Envoyé !</span>
+                    )}
+                    {replyResult === "err" && (
+                      <span className="text-sm font-extrabold" style={{ color: "#dc2626" }}>Erreur envoi</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

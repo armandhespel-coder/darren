@@ -214,7 +214,7 @@ export default function AdminPage() {
   const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
-  const [stats, setStats] = useState({ premium: 0, messages: 0 });
+  const [stats, setStats] = useState({ premium: 0, demandes: 0 });
   const [createdLink, setCreatedLink] = useState<string | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -231,20 +231,20 @@ export default function AdminPage() {
     const [
       { data },
       premiumRes,
-      msgsRes,
+      demandesRes,
       { data: catsData },
       { data: tagsData },
       { data: specialitesData },
     ] = await Promise.all([
       supabase.from("prestataires").select("*").order("created_at", { ascending: false }),
       supabase.from("prestataires").select("*", { count: "exact", head: true }).eq("is_premium", true),
-      supabase.from("messages").select("*", { count: "exact", head: true }).eq("read", false).eq("receiver_id", userId),
+      supabase.from("demandes").select("*", { count: "exact", head: true }).eq("lu", false),
       supabase.from("site_categories").select("name").order("position"),
       supabase.from("site_subcategories").select("name").order("name"),
       supabase.from("site_tags").select("name").order("name"),
     ]);
     setPrestataires((data as Prestataire[]) ?? []);
-    setStats({ premium: premiumRes.count ?? 0, messages: msgsRes.count ?? 0 });
+    setStats({ premium: premiumRes.count ?? 0, demandes: demandesRes.count ?? 0 });
     if (catsData?.length) {
       const cats = (catsData as Array<{ name: string }>).map(c => c.name);
       setCategories(cats);
@@ -470,11 +470,6 @@ export default function AdminPage() {
             style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
             📋 Demandes
           </a>
-          <a href="/admin/messages"
-            className="text-xs font-bold px-4 py-2 rounded-full transition-all"
-            style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
-            💬 Messages
-          </a>
           <a href="/admin/avis"
             className="text-xs font-bold px-4 py-2 rounded-full transition-all"
             style={{ background: "var(--bg2)", color: "var(--muted)", border: "1px solid var(--border)" }}>
@@ -518,7 +513,6 @@ export default function AdminPage() {
                 { href: "/admin/categories", label: "📂 Catégories" },
                 { href: "/admin/utilisateurs", label: "👥 Utilisateurs" },
                 { href: "/admin/demandes", label: "📋 Demandes" },
-                { href: "/admin/messages", label: "💬 Messages" },
                 { href: "/admin/avis", label: "⭐ Avis" },
                 { href: "/", label: "← Site" },
               ].map((item, i, arr) => (
@@ -565,7 +559,7 @@ export default function AdminPage() {
           {[
             { label: "Prestataires", value: prestataires.length, icon: "🎵", color: "var(--blue2)", bg: "rgba(74,108,247,0.08)" },
             { label: "Premium", value: stats.premium, icon: "⭐", color: "#7c3aed", bg: "rgba(124,58,237,0.08)" },
-            { label: "Non lus", value: stats.messages, icon: "📨", color: "#d97706", bg: "rgba(217,119,6,0.08)" },
+            { label: "Demandes", value: stats.demandes, icon: "📋", color: "#d97706", bg: "rgba(217,119,6,0.08)" },
           ].map(s => (
             <div key={s.label} className="rounded-2xl p-5"
               style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
