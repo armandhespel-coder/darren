@@ -366,14 +366,6 @@ export default function HomePage() {
                         <IconLock size={14} /> Admin
                       </a>
                     )}
-                    <a href="/messages"
-                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
-                      style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                    >
-                      💬 Messages
-                    </a>
                     <button
                       onClick={() => {
                         if (userIsPrestataire) { router.push("/pro/dashboard"); }
