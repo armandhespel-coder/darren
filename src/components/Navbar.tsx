@@ -245,14 +245,6 @@ export default function Navbar() {
                     >
                       🔑 Connexion
                     </a>
-                    <a href="/auth/register"
-                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
-                      style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                    >
-                      📝 Créer un compte
-                    </a>
                     <button
                       onClick={() => { setShowPrestaireModal(true); setShowMenu(false); }}
                       className="flex items-center gap-3 px-4 py-3 text-sm font-extrabold transition-all w-full text-left cursor-pointer sm:hidden"

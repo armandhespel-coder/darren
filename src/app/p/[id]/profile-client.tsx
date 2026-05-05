@@ -181,6 +181,8 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
   const [bookingGuests, setBookingGuests] = useState("");
   const [bookingLocation, setBookingLocation] = useState("");
   const [bookingPhone, setBookingPhone] = useState("");
+  const [senderName, setSenderName] = useState("");
+  const [senderEmail, setSenderEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [msgError, setMsgError] = useState("");
@@ -214,10 +216,12 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!bookingMsg.trim() || !bookingPhone.trim() || dateUnavailable) return;
+    if (!bookingMsg.trim() || !bookingPhone.trim() || !senderName.trim() || !senderEmail.trim() || dateUnavailable) return;
     setSending(true);
     setMsgError("");
     const parts: string[] = [];
+    parts.push(`👤 Nom : ${senderName.trim()}`);
+    parts.push(`📧 Email : ${senderEmail.trim()}`);
     parts.push(`📞 Téléphone : ${bookingPhone.trim()}`);
     if (bookingDate) parts.push(`📅 Date de l'événement : ${new Date(bookingDate).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`);
     if (bookingGuests) parts.push(`👥 Nombre de personnes : ${bookingGuests}`);
@@ -227,7 +231,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
     const res = await fetch("/api/messages/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prestataire_id: p.id, receiver_id: p.owner_id, content }),
+      body: JSON.stringify({ prestataire_id: p.id, content, sender_name: senderName.trim(), sender_email: senderEmail.trim() }),
     });
     setSending(false);
     if (!res.ok) {
@@ -235,7 +239,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
       setMsgError(d.error ?? "Erreur lors de l'envoi.");
     } else {
       setSent(true);
-      setBookingMsg(""); setBookingDate(""); setBookingGuests(""); setBookingLocation(""); setBookingPhone("");
+      setBookingMsg(""); setBookingDate(""); setBookingGuests(""); setBookingLocation(""); setBookingPhone(""); setSenderName(""); setSenderEmail("");
     }
   };
 
@@ -481,19 +485,32 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                     Envoyer un autre message
                   </button>
                 </div>
-              ) : !userId ? (
-                <div className="text-center py-2">
-                  <p className="text-sm mb-3" style={{ color: "var(--muted)" }}>
-                    Connectez-vous pour envoyer un message.
-                  </p>
-                  <a href={`/auth/login?next=/p/${p.id}`}
-                    className="inline-block text-sm font-extrabold px-5 py-2.5 rounded-xl text-white"
-                    style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}>
-                    Se connecter
-                  </a>
-                </div>
               ) : (
                 <form onSubmit={handleSendMessage} className="flex flex-col gap-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Votre nom *</label>
+                      <input
+                        type="text" value={senderName} onChange={(e) => setSenderName(e.target.value)}
+                        required placeholder="ex: Marie Dupont"
+                        className="w-full rounded-xl px-3 py-2 text-sm outline-none"
+                        style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                        onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
+                        onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Votre email *</label>
+                      <input
+                        type="email" value={senderEmail} onChange={(e) => setSenderEmail(e.target.value)}
+                        required placeholder="ex: marie@email.com"
+                        className="w-full rounded-xl px-3 py-2 text-sm outline-none"
+                        style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
+                        onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
+                        onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                      />
+                    </div>
+                  </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold" style={{ color: "var(--muted)" }}>Téléphone *</label>
                     <input
@@ -552,7 +569,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                     />
                   </div>
                   {msgError && <p className="text-red-500 text-xs font-semibold">{msgError}</p>}
-                  <button type="submit" disabled={sending || !bookingMsg.trim() || !bookingPhone.trim() || dateUnavailable}
+                  <button type="submit" disabled={sending || !bookingMsg.trim() || !bookingPhone.trim() || !senderName.trim() || !senderEmail.trim() || dateUnavailable}
                     className="w-full py-3 rounded-xl font-extrabold text-sm text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
                     style={{ background: "var(--grad)", boxShadow: "0 4px 16px rgba(217,63,181,0.25)" }}>
                     {sending ? "Envoi..." : "Envoyer ma demande"}

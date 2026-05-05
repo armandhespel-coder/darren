@@ -484,7 +484,7 @@ function ProAuthCard({ tokenId, prestataireId }: { tokenId: string; prestataireI
 }
 
 export default function EditClient({ prestataire, tokenId, claimable }: { prestataire: Prestataire; tokenId?: string; claimable?: boolean }) {
-  const [tab, setTab] = useState('photos');
+  const [tab, setTab] = useState('profil');
   const [state, setState] = useState<PrestaState>(() => fromDB(prestataire));
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -614,9 +614,9 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
           </div>
           <ul className="ce-portal-nav">
             {[
+              { k: 'profil', lbl: 'Profil & Vidéo', ico: <Ico.User s={14} /> },
               { k: 'photos', lbl: 'Photos', ico: <Ico.Image s={14} />, badge: `${state.images.length}/8` },
               { k: 'dispo', lbl: 'Disponibilités', ico: <Ico.Calendar s={14} /> },
-              { k: 'profil', lbl: 'Profil & Vidéo', ico: <Ico.User s={14} /> },
             ].map(i => (
               <li key={i.k}>
                 <button className={tab === i.k ? 'is-active' : ''} onClick={() => setTab(i.k)}>

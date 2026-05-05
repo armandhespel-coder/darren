@@ -93,12 +93,6 @@ function LoginForm() {
         </a>
       </p>
 
-      <p className="text-center text-white/35 text-sm mt-4">
-        Pas de compte ?{" "}
-        <a href="/auth/register" className="text-purple-400 hover:text-purple-300 transition-colors">
-          S&apos;inscrire
-        </a>
-      </p>
     </div>
     </>
   );

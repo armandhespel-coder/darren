@@ -1,53 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com"];
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
-  }
-
-  const { prestataire_id, content } = await req.json();
+  const { prestataire_id, content, sender_name, sender_email } = await req.json();
 
   if (!content?.trim()) {
     return NextResponse.json({ error: "Message vide." }, { status: 400 });
   }
+  if (!sender_email?.trim() || !sender_name?.trim()) {
+    return NextResponse.json({ error: "Nom et email requis." }, { status: 400 });
+  }
 
   const service = createServiceClient();
 
-  const [{ data: adminProfiles }, { data: presta }] = await Promise.all([
-    service.from("profiles").select("id").in("email", ADMIN_EMAILS).limit(1),
-    prestataire_id
-      ? service.from("prestataires").select("nom, email").eq("id", prestataire_id).single()
-      : Promise.resolve({ data: null }),
-  ]);
-
-  const adminId = adminProfiles?.[0]?.id ?? null;
-
-  const { data: msg, error } = await service
-    .from("messages")
-    .insert({
-      sender_id: user.id,
-      receiver_id: adminId,
-      prestataire_id: prestataire_id ?? null,
-      content: content.trim(),
-      read: false,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  const { data: presta } = prestataire_id
+    ? await service.from("prestataires").select("nom, email").eq("id", prestataire_id).single()
+    : { data: null };
 
   const prestaNom = (presta as { nom?: string } | null)?.nom ?? "";
-  const prestaEmail = (presta as { email?: string | null } | null)?.email ?? "";
-  const clientEmail = user.email ?? "client inconnu";
+  const clientEmail = sender_email.trim();
+  const clientName = sender_name.trim();
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://connect-event.be";
   const adminMessagesUrl = `${siteUrl}/admin/messages`;
@@ -64,7 +38,7 @@ export async function POST(req: NextRequest) {
       <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
         <tr>
           <td style="padding:8px 0;font-size:12px;font-weight:700;color:#9CA3AF;width:110px;">Client</td>
-          <td style="padding:8px 0;font-size:13px;font-weight:700;color:#1E1C3A;">${clientEmail}</td>
+          <td style="padding:8px 0;font-size:13px;font-weight:700;color:#1E1C3A;">${clientName} &lt;${clientEmail}&gt;</td>
         </tr>
         ${prestaNom ? `<tr>
           <td style="padding:8px 0;font-size:12px;font-weight:700;color:#9CA3AF;">Prestataire</td>
@@ -75,7 +49,7 @@ export async function POST(req: NextRequest) {
         <div style="font-size:11px;font-weight:800;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Message</div>
         <div style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.6;">${content.trim().replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
       </div>
-      <a href="${adminMessagesUrl}" style="display:inline-block;background:#4A6CF7;color:white;font-size:13px;font-weight:800;padding:12px 24px;border-radius:50px;text-decoration:none;margin-bottom:16px;">Voir et transmettre au prestataire →</a>
+      <a href="${adminMessagesUrl}" style="display:inline-block;background:#4A6CF7;color:white;font-size:13px;font-weight:800;padding:12px 24px;border-radius:50px;text-decoration:none;margin-bottom:16px;">Voir dans l&apos;admin →</a>
       <br/>
       <a href="mailto:${clientEmail}" style="display:inline-block;font-size:12px;color:#4A6CF7;font-weight:700;margin-top:12px;">↩ Répondre directement au client : ${clientEmail}</a>
     </div>
@@ -91,14 +65,14 @@ export async function POST(req: NextRequest) {
     },
     body: JSON.stringify({
       from: "Connect Event <contact@connect-event.be>",
-      reply_to: "yagan_darren@hotmail.com",
+      reply_to: clientEmail,
       to: ADMIN_EMAILS,
       subject: prestaNom
-        ? `Nouvelle demande de ${clientEmail} pour ${prestaNom}`
-        : `Nouveau message de ${clientEmail}`,
+        ? `Nouvelle demande de ${clientName} pour ${prestaNom}`
+        : `Nouveau message de ${clientName}`,
       html,
     }),
   }).catch(() => null);
 
-  return NextResponse.json({ message: msg });
+  return NextResponse.json({ success: true });
 }
