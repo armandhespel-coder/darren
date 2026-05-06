@@ -75,6 +75,22 @@ export default function SearchBar({ filters, onChange, onSearch, categories = []
           </select>
         </div>
 
+        {/* Sous-catégorie — pleine largeur mobile */}
+        {showSub && (
+          <div className="col-span-2 md:flex-1 md:min-w-[130px]">
+            <div style={{ ...labelStyle, color: "var(--pink)" }}>Spécialité</div>
+            <select
+              value={selectedSubcategory ?? ""}
+              onChange={e => onSubcategoryChange?.(e.target.value)}
+              className="w-full rounded-xl px-3 py-2 md:py-2.5 font-semibold cursor-pointer"
+              style={{ ...inputStyle, border: "1.5px solid rgba(217,63,181,0.35)", fontSize: 12 }}
+            >
+              <option value="">Toutes</option>
+              {subcategories!.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        )}
+
         {/* Budget */}
         <div className="col-span-1 md:flex-1 min-w-0 md:min-w-[150px]">
           <div style={{ ...labelStyle, justifyContent: "space-between" }}>
@@ -96,22 +112,6 @@ export default function SearchBar({ filters, onChange, onSearch, categories = []
             <span>0 €</span><span>{MAX_BUDGET}+ €</span>
           </div>
         </div>
-
-        {/* Sous-catégorie — pleine largeur mobile */}
-        {showSub && (
-          <div className="col-span-2 md:flex-1 md:min-w-[130px]">
-            <div style={{ ...labelStyle, color: "var(--pink)" }}>Spécialité</div>
-            <select
-              value={selectedSubcategory ?? ""}
-              onChange={e => onSubcategoryChange?.(e.target.value)}
-              className="w-full rounded-xl px-3 py-2 md:py-2.5 font-semibold cursor-pointer"
-              style={{ ...inputStyle, border: "1.5px solid rgba(217,63,181,0.35)", fontSize: 12 }}
-            >
-              <option value="">Toutes</option>
-              {subcategories!.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-        )}
 
         {/* Reset */}
         <div className="col-span-2 md:w-auto flex justify-end md:justify-start">
