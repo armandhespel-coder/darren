@@ -371,7 +371,7 @@ function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium, note, revi
             <span style={{ fontFamily: 'var(--font-raleway)', fontWeight: 900, fontSize: '1rem', color: 'var(--dark)' }}>Aperçu carte</span>
             <span className="ce-chip">Temps réel</span>
           </div>
-          <div style={{ marginBottom: 14, pointerEvents: 'none' }}>
+          <div style={{ marginBottom: 14 }}>
             <PrestaCard
               presta={{
                 id: 'preview', owner_id: null, created_at: '',
