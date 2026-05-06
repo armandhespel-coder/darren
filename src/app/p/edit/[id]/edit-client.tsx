@@ -254,14 +254,20 @@ function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium, prestatair
     if (!file) return;
     setUploadingVideo(true);
     setVideoUploadError(null);
-    const form = new FormData();
-    form.append('file', file);
-    form.append('prestataire_id', prestataireId);
-    const res = await fetch('/api/upload-video', { method: 'POST', body: form });
-    const json = await res.json();
-    setUploadingVideo(false);
-    if (!res.ok) { setVideoUploadError(json.error ?? 'Erreur upload'); return; }
-    patch('video_url', json.url);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('prestataire_id', prestataireId);
+      const res = await fetch('/api/upload-video', { method: 'POST', body: form });
+      const json = await res.json();
+      if (!res.ok) { setVideoUploadError(json.error ?? 'Erreur upload'); return; }
+      patch('video_url', json.url);
+    } catch {
+      setVideoUploadError('Erreur réseau — réessayez.');
+    } finally {
+      setUploadingVideo(false);
+      if (videoFileRef.current) videoFileRef.current.value = '';
+    }
   };
 
   const toggleTag = (t: string) => {
@@ -304,26 +310,29 @@ function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium, prestatair
           <input className="ce-input" value={s.telephone} onChange={e => patch('telephone', e.target.value)} />
           <label className="ce-lbl" style={{ marginTop: 18 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Ico.Video s={13} /> Vidéo <span className="ce-lbl-opt">(URL YouTube ou lien direct)</span>
+              <Ico.Video s={13} /> Vidéo
             </span>
           </label>
-          <input
-            className="ce-input"
-            value={s.video_url}
-            onChange={e => patch('video_url', e.target.value)}
-            placeholder="https://youtube.com/watch?v=… ou https://…/video.mp4"
-          />
-          <input ref={videoFileRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleVideoUpload} />
-          <button
-            type="button"
-            onClick={() => videoFileRef.current?.click()}
-            disabled={uploadingVideo}
-            className="ce-btn-outline"
-            style={{ marginTop: 8, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
-          >
-            <Ico.Video s={13} />
-            {uploadingVideo ? 'Upload en cours…' : 'Uploader depuis l\'ordinateur'}
-          </button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              className="ce-input"
+              style={{ flex: 1, marginBottom: 0 }}
+              value={s.video_url}
+              onChange={e => patch('video_url', e.target.value)}
+              placeholder="URL YouTube ou lien direct…"
+            />
+            <input ref={videoFileRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleVideoUpload} />
+            <button
+              type="button"
+              onClick={() => videoFileRef.current?.click()}
+              disabled={uploadingVideo}
+              className="ce-btn-outline"
+              style={{ flexShrink: 0, fontSize: 12, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}
+            >
+              <Ico.Video s={13} />
+              {uploadingVideo ? 'Upload…' : 'Depuis l\'ordi'}
+            </button>
+          </div>
           {videoUploadError && <p style={{ color: 'var(--pink)', fontSize: 12, marginTop: 4 }}>{videoUploadError}</p>}
           <label className="ce-lbl" style={{ marginTop: 18 }}>Catégorie</label>
           <select className="ce-input" value={s.categorie}
