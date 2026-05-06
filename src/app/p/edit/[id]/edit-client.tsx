@@ -88,6 +88,37 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [videoUploadError, setVideoUploadError] = useState<string | null>(null);
+  const videoFileRef = useRef<HTMLInputElement>(null);
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingVideo(true);
+    setVideoUploadError(null);
+    try {
+      const res = await fetch('/api/upload-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prestataireId, filename: file.name }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Erreur API');
+      const uploadRes = await fetch(json.signedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type },
+      });
+      if (!uploadRes.ok) throw new Error('Upload Supabase échoué');
+      patch('video_url', json.publicUrl);
+    } catch (err: unknown) {
+      setVideoUploadError(err instanceof Error ? err.message : 'Erreur upload vidéo.');
+    } finally {
+      setUploadingVideo(false);
+      if (videoFileRef.current) videoFileRef.current.value = '';
+    }
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -157,6 +188,39 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
         )}
       </div>
       {uploadError && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 10, fontWeight: 600 }}>{uploadError}</p>}
+
+      {/* Section vidéo */}
+      <div style={{ marginTop: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <Ico.Video s={14} />
+          <span style={{ fontFamily: 'var(--font-raleway)', fontWeight: 900, fontSize: '0.95rem', color: 'var(--dark)' }}>Vidéo de présentation</span>
+          <span className="ce-chip" style={{ fontSize: 10 }}>facultatif</span>
+        </div>
+        <input ref={videoFileRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleVideoUpload} />
+        <div className="ce-photo-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
+          {s.video_url && (
+            <div className="ce-photo" style={{ position: 'relative' }}>
+              <video src={s.video_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} muted />
+              <button className="ce-photo-trash" aria-label="Supprimer" onClick={() => patch('video_url', '')}><Ico.Trash s={13} /></button>
+            </div>
+          )}
+          {!s.video_url && (
+            <button
+              className={`ce-photo-add${uploadingVideo ? ' is-uploading' : ''}`}
+              onClick={() => videoFileRef.current?.click()}
+              disabled={uploadingVideo}
+            >
+              {uploadingVideo ? (<><div className="ce-upload-spin" /><span>Upload…</span></>) : (
+                <><div className="ce-photo-add-ico"><Ico.Video s={22} /></div>
+                <span className="ce-photo-add-lbl">Ajouter une vidéo</span>
+                <span className="ce-photo-add-sub">MP4, MOV, WEBM</span></>
+              )}
+            </button>
+          )}
+        </div>
+        {videoUploadError && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 8, fontWeight: 600 }}>{videoUploadError}</p>}
+      </div>
+
       {s.images.length === 0 && (
         <div className="ce-empty">
           <div className="ce-empty-ico"><Ico.Image s={28} /></div>
@@ -237,39 +301,13 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
   );
 }
 
-function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium, prestataireId }: {
+function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium }: {
   s: PrestaState;
   patch: (k: keyof PrestaState, v: unknown) => void;
   isPremium?: boolean;
   siteCategories: string[];
   allSubcats: Array<{name: string; category_name: string | null}>;
-  prestataireId: string;
 }) {
-  const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [videoUploadError, setVideoUploadError] = useState<string | null>(null);
-  const videoFileRef = useRef<HTMLInputElement>(null);
-
-  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingVideo(true);
-    setVideoUploadError(null);
-    try {
-      const form = new FormData();
-      form.append('file', file);
-      form.append('prestataire_id', prestataireId);
-      const res = await fetch('/api/upload-video', { method: 'POST', body: form });
-      const json = await res.json();
-      if (!res.ok) { setVideoUploadError(json.error ?? 'Erreur upload'); return; }
-      patch('video_url', json.url);
-    } catch {
-      setVideoUploadError('Erreur réseau — réessayez.');
-    } finally {
-      setUploadingVideo(false);
-      if (videoFileRef.current) videoFileRef.current.value = '';
-    }
-  };
-
   const toggleTag = (t: string) => {
     const has = s.tags.includes(t);
     patch('tags', has ? s.tags.filter(x => x !== t) : [...s.tags, t]);
@@ -308,32 +346,6 @@ function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium, prestatair
           </div>
           <label className="ce-lbl" style={{ marginTop: 18 }}>Téléphone <span className="ce-lbl-opt">(visible en premium)</span></label>
           <input className="ce-input" value={s.telephone} onChange={e => patch('telephone', e.target.value)} />
-          <label className="ce-lbl" style={{ marginTop: 18 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Ico.Video s={13} /> Vidéo
-            </span>
-          </label>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <input
-              className="ce-input"
-              style={{ flex: 1, marginBottom: 0 }}
-              value={s.video_url}
-              onChange={e => patch('video_url', e.target.value)}
-              placeholder="URL YouTube ou lien direct…"
-            />
-            <input ref={videoFileRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleVideoUpload} />
-            <button
-              type="button"
-              onClick={() => videoFileRef.current?.click()}
-              disabled={uploadingVideo}
-              className="ce-btn-outline"
-              style={{ flexShrink: 0, fontSize: 12, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}
-            >
-              <Ico.Video s={13} />
-              {uploadingVideo ? 'Upload…' : 'Depuis l\'ordi'}
-            </button>
-          </div>
-          {videoUploadError && <p style={{ color: 'var(--pink)', fontSize: 12, marginTop: 4 }}>{videoUploadError}</p>}
           <label className="ce-lbl" style={{ marginTop: 18 }}>Catégorie</label>
           <select className="ce-input" value={s.categorie}
             onChange={e => { patch('categorie', e.target.value); patch('tags', []); }}
@@ -655,8 +667,8 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
           </div>
           <ul className="ce-portal-nav">
             {[
-              { k: 'profil', lbl: 'Profil & Vidéo', ico: <Ico.User s={14} /> },
-              { k: 'photos', lbl: 'Photos', ico: <Ico.Image s={14} />, badge: `${state.images.length}/8` },
+              { k: 'profil', lbl: 'Profil', ico: <Ico.User s={14} /> },
+              { k: 'photos', lbl: 'Photos & Vidéo', ico: <Ico.Image s={14} />, badge: `${state.images.length}/8` },
               { k: 'dispo', lbl: 'Disponibilités', ico: <Ico.Calendar s={14} /> },
             ].map(i => (
               <li key={i.k}>
@@ -688,7 +700,7 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
           <CompletionBar s={state} />
           {tab === 'photos' && <PhotosTab s={state} patch={patch} prestataireId={prestataire.id} />}
           {tab === 'dispo' && <DispoTab s={state} patch={patch} />}
-          {tab === 'profil' && <ProfilTab s={state} patch={patch} siteCategories={siteCategories.length ? siteCategories : [prestataire.categorie]} allSubcats={siteTags} isPremium={prestataire.is_premium} prestataireId={prestataire.id} />}
+          {tab === 'profil' && <ProfilTab s={state} patch={patch} siteCategories={siteCategories.length ? siteCategories : [prestataire.categorie]} allSubcats={siteTags} isPremium={prestataire.is_premium} />}
         </main>
       </div>
 
