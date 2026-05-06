@@ -139,20 +139,25 @@ export default function PrestaCard({ presta, onSelect, isFavorited, onToggleFavo
           </svg>
         </button>
 
-        {/* Badge premium */}
-        {presta.is_premium && (
-          <div
-            className="absolute text-[10px] font-extrabold px-2 py-0.5 rounded-full"
-            style={{
-              top: 10, left: 10,
-              background: "var(--grad)",
-              color: "white",
-              letterSpacing: "0.04em",
-            }}
-          >
-            TOP
-          </div>
-        )}
+        {/* Badges top-left */}
+        <div className="absolute flex flex-col gap-1" style={{ top: 10, left: 10, zIndex: 10 }}>
+          {presta.is_premium && (
+            <div
+              className="text-[10px] font-extrabold px-2 py-0.5 rounded-full"
+              style={{ background: "var(--grad)", color: "white", letterSpacing: "0.04em" }}
+            >
+              TOP
+            </div>
+          )}
+          {(presta.reviews ?? 0) >= 10 && presta.note >= 3 && (
+            <div
+              className="text-[10px] font-extrabold px-2 py-0.5 rounded-full"
+              style={{ background: "rgba(22,163,74,0.92)", color: "white", letterSpacing: "0.04em" }}
+            >
+              ✓ Confiance
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Info Airbnb-style */}

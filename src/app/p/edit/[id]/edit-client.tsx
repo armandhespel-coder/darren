@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Prestataire } from '@/types';
 import Navbar from '@/components/Navbar';
+import PrestaCard from '@/components/PrestaCard';
 import './portal.css';
 
 const DEFAULT_TAGS = ['Mariage', 'Anniversaire', 'Corporate', 'Vinyl', 'House', 'Techno', 'Latino', 'Hip-Hop', 'Soirée étudiante', 'Cocktail', 'Brunch', 'Retro', 'Club'];
@@ -301,10 +302,12 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
   );
 }
 
-function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium }: {
+function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium, note, reviewsCount }: {
   s: PrestaState;
   patch: (k: keyof PrestaState, v: unknown) => void;
   isPremium?: boolean;
+  note: number;
+  reviewsCount: number;
   siteCategories: string[];
   allSubcats: Array<{name: string; category_name: string | null}>;
 }) {
@@ -368,28 +371,31 @@ function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium }: {
             <span style={{ fontFamily: 'var(--font-raleway)', fontWeight: 900, fontSize: '1rem', color: 'var(--dark)' }}>Aperçu carte</span>
             <span className="ce-chip">Temps réel</span>
           </div>
-          <div className="ce-mini-card" style={{ maxWidth: 200, margin: '0 auto 14px' }}>
-            <div className="ce-mc-img" style={{ backgroundImage: s.images[0] ? `url(${s.images[0]})` : 'none' }}>
-              {!s.images[0] && <div className="ce-mc-placeholder"><Ico.Image s={32} /></div>}
-              <div className="ce-mc-overlay" />
-              <div className="ce-mc-badge">{s.categorie}</div>
-            </div>
-            <div className="ce-mc-body">
-              <div className="ce-mc-row">
-                <div>
-                  <div className="ce-mc-nom">{s.nom || '—'}</div>
-                  {s.company && <div className="ce-mc-comp">{s.company}</div>}
-                </div>
-                <div className="ce-mc-prix">{s.prix || '—'}€</div>
-              </div>
-              {s.tags.length > 0 && (
-                <div className="ce-mc-tags">
-                  {s.tags.slice(0, 3).map((t, i) => <span key={t} className={i === 0 ? 'is-primary' : ''}>{t}</span>)}
-                  {s.tags.length > 3 && <span className="ce-mc-more">+{s.tags.length - 3}</span>}
-                </div>
-              )}
-              <p className="ce-mc-desc">{s.description || "Votre description s'affichera ici…"}</p>
-            </div>
+          <div style={{ marginBottom: 14, pointerEvents: 'none' }}>
+            <PrestaCard
+              presta={{
+                id: 'preview', owner_id: null, created_at: '',
+                nom: s.nom || '—',
+                company: s.company,
+                categorie: s.categorie,
+                prix: s.prix,
+                price_note: s.price_note,
+                description: s.description || null,
+                telephone: s.telephone || null,
+                images: s.images,
+                tags: s.tags,
+                is_premium: isPremium ?? false,
+                is_available: s.is_available,
+                busy_dates: s.busy_dates,
+                video_url: s.video_url || null,
+                note,
+                reviews: reviewsCount,
+              }}
+              onSelect={() => {}}
+              onContact={() => {}}
+              isFavorited={false}
+              onToggleFavorite={() => {}}
+            />
           </div>
 
           {/* Badge Confiance */}
@@ -700,7 +706,7 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
           <CompletionBar s={state} />
           {tab === 'photos' && <PhotosTab s={state} patch={patch} prestataireId={prestataire.id} />}
           {tab === 'dispo' && <DispoTab s={state} patch={patch} />}
-          {tab === 'profil' && <ProfilTab s={state} patch={patch} siteCategories={siteCategories.length ? siteCategories : [prestataire.categorie]} allSubcats={siteTags} isPremium={prestataire.is_premium} />}
+          {tab === 'profil' && <ProfilTab s={state} patch={patch} siteCategories={siteCategories.length ? siteCategories : [prestataire.categorie]} allSubcats={siteTags} isPremium={prestataire.is_premium} note={prestataire.note} reviewsCount={prestataire.reviews ?? 0} />}
         </main>
       </div>
 
