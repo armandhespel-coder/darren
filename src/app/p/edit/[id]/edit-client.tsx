@@ -106,12 +106,11 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'Erreur API');
-      const uploadRes = await fetch(json.signedUrl, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      });
-      if (!uploadRes.ok) throw new Error('Upload Supabase échoué');
+      const { createClient: sc } = await import('@/lib/supabase/client');
+      const { error: uploadErr } = await sc().storage
+        .from('presta-photos')
+        .uploadToSignedUrl(json.storagePath, json.token, file, { contentType: file.type });
+      if (uploadErr) throw new Error(uploadErr.message);
       patch('video_url', json.publicUrl);
     } catch (err: unknown) {
       setVideoUploadError(err instanceof Error ? err.message : 'Erreur upload vidéo.');

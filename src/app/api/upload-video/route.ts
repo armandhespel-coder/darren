@@ -21,5 +21,5 @@ export async function POST(req: NextRequest) {
 
   const { data: { publicUrl } } = service.storage.from("presta-photos").getPublicUrl(path);
 
-  return NextResponse.json({ signedUrl: data.signedUrl, publicUrl });
+  return NextResponse.json({ signedUrl: data.signedUrl, token: data.token, storagePath: path, publicUrl });
 }
