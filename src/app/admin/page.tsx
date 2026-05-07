@@ -166,13 +166,17 @@ function AdminVideoUpload({ value, onChange, prestataireId }: {
     if (!file) return;
     setUploading(true); setErr(null);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("prestataire_id", prestataireId);
-      const res = await fetch("/api/upload-video", { method: "POST", body: fd });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Upload échoué."); }
-      const { url } = await res.json();
-      onChange(url);
+      const res = await fetch("/api/upload-video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prestataireId, filename: file.name }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Erreur signed URL."); }
+      const { token, storagePath, publicUrl } = await res.json();
+      const { createClient: sc } = await import("@/lib/supabase/client");
+      const { error } = await sc().storage.from("presta-photos").uploadToSignedUrl(storagePath, token, file, { contentType: file.type });
+      if (error) throw new Error(error.message);
+      onChange(publicUrl);
     } catch (e) { setErr(e instanceof Error ? e.message : "Erreur upload"); }
     finally { setUploading(false); if (fileRef.current) fileRef.current.value = ""; }
   };
