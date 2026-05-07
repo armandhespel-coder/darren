@@ -213,6 +213,14 @@ export default function Navbar() {
                     >
                       ❓ Aide
                     </a>
+                    <a href="/a-propos"
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
+                      style={{ color: "var(--text)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      ℹ️ À propos
+                    </a>
                     <button
                       onClick={async () => {
                         const s = createClient();
@@ -248,11 +256,19 @@ export default function Navbar() {
                     </button>
                     <a href="/fonctionnement"
                       className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
-                      style={{ color: "var(--muted)", textDecoration: "none" }}
+                      style={{ color: "var(--muted)", textDecoration: "none", borderBottom: "1px solid var(--border)" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
                       onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                     >
                       ❓ Aide
+                    </a>
+                    <a href="/a-propos"
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all"
+                      style={{ color: "var(--muted)", textDecoration: "none" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      ℹ️ À propos
                     </a>
                   </>
                 )}

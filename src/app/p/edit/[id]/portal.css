@@ -190,3 +190,8 @@
 @media (max-width: 640px) {
   .ce-photo-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
 }
+/* Écrans tactiles : boutons toujours visibles (pas de hover) */
+@media (hover: none) {
+  .ce-photo-trash { opacity: 1; transform: translateY(0); }
+  .ce-photo-grip { opacity: 1; }
+}

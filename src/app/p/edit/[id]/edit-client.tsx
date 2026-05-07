@@ -197,26 +197,26 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
           <span style={{ fontFamily: 'var(--font-raleway)', fontWeight: 900, fontSize: '0.95rem', color: 'var(--dark)' }}>Vidéo de présentation</span>
           <span className="ce-chip" style={{ fontSize: 10 }}>facultatif</span>
         </div>
-        <input ref={videoFileRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleVideoUpload} />
+        <input id="ce-video-file" ref={videoFileRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleVideoUpload} disabled={uploadingVideo} />
         <div className="ce-photo-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
           {s.video_url && (
             <div className="ce-photo" style={{ position: 'relative' }}>
               <video src={s.video_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} muted />
-              <button className="ce-photo-trash" aria-label="Supprimer" onClick={() => patch('video_url', '')}><Ico.Trash s={13} /></button>
+              <button className="ce-photo-trash" aria-label="Supprimer la vidéo" onClick={() => patch('video_url', '')}><Ico.Trash s={13} /></button>
             </div>
           )}
           {!s.video_url && (
-            <button
+            <label
+              htmlFor="ce-video-file"
               className={`ce-photo-add${uploadingVideo ? ' is-uploading' : ''}`}
-              onClick={() => videoFileRef.current?.click()}
-              disabled={uploadingVideo}
+              style={{ cursor: uploadingVideo ? 'default' : 'pointer' }}
             >
               {uploadingVideo ? (<><div className="ce-upload-spin" /><span>Upload…</span></>) : (
                 <><div className="ce-photo-add-ico"><Ico.Video s={22} /></div>
                 <span className="ce-photo-add-lbl">Ajouter une vidéo</span>
                 <span className="ce-photo-add-sub">MP4, MOV, WEBM</span></>
               )}
-            </button>
+            </label>
           )}
         </div>
         {videoUploadError && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 8, fontWeight: 600 }}>{videoUploadError}</p>}
