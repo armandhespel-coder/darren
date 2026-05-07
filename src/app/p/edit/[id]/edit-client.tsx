@@ -168,9 +168,9 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
             onDragStart={() => setDragIdx(i)}
             onDragOver={e => { e.preventDefault(); setOverIdx(i); }}
             onDragLeave={() => setOverIdx(null)}
-            onDrop={() => { move(dragIdx!, i); setDragIdx(null); setOverIdx(null); }}
+            onDrop={e => { e.preventDefault(); move(dragIdx!, i); setDragIdx(null); setOverIdx(null); }}
             onDragEnd={() => { setDragIdx(null); setOverIdx(null); }}>
-            <img src={src} alt="" />
+            <img src={src} alt="" draggable={false} />
             {i === 0 && <span className="ce-photo-cover">Couverture</span>}
             <span className="ce-photo-num">{i + 1}</span>
             <button className="ce-photo-trash" aria-label="Supprimer" onClick={() => remove(i)}><Ico.Trash s={13} /></button>
@@ -205,6 +205,7 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
                 preload="metadata"
                 playsInline
                 muted
+                onLoadedMetadata={e => { (e.currentTarget as HTMLVideoElement).currentTime = 0.1; }}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, display: 'block' }}
               />
               {/* Overlay play icon — visible si le navigateur ne charge pas de thumbnail */}
@@ -687,23 +688,25 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
           </div>
           <ul className="ce-portal-nav">
             {[
-              { k: 'profil', lbl: 'Profil', ico: <Ico.User s={14} /> },
-              { k: 'photos', lbl: 'Photos & Vidéo', ico: <Ico.Image s={14} />, badge: `${state.images.length}/8` },
-              { k: 'dispo', lbl: 'Disponibilités', ico: <Ico.Calendar s={14} /> },
+              { k: 'profil', lbl: 'Profil', short: 'Profil', ico: <Ico.User s={14} /> },
+              { k: 'photos', lbl: 'Photos & Vidéo', short: 'Médias', ico: <Ico.Image s={14} />, badge: `${state.images.length}/8` },
+              { k: 'dispo', lbl: 'Disponibilités', short: 'Agenda', ico: <Ico.Calendar s={14} /> },
             ].map(i => (
               <li key={i.k}>
                 <button className={tab === i.k ? 'is-active' : ''} onClick={() => setTab(i.k)}>
                   <span className="ce-ico-box">{i.ico}</span>
-                  <span>{i.lbl}</span>
-                  {i.badge && <span className="ce-nav-badge">{i.badge}</span>}
+                  <span className="hidden sm:inline">{i.lbl}</span>
+                  <span className="sm:hidden">{i.short}</span>
+                  {i.badge && <span className="ce-nav-badge hidden sm:inline">{i.badge}</span>}
                 </button>
               </li>
             ))}
           </ul>
           <div style={{ padding: '12px 0' }}>
-            {dirty && <p style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>Modifications non enregistrées</p>}
             <button className="ce-grad-btn" style={{ width: '100%', height: 40 }} onClick={save} disabled={saving || !dirty}>
-              <Ico.Check s={14} /><span>{saving ? 'Enregistrement…' : 'Enregistrer'}</span>
+              <Ico.Check s={14} />
+              <span className="hidden sm:inline">{saving ? 'Enregistrement…' : 'Enregistrer'}</span>
+              <span className="sm:hidden">{saving ? '…' : 'Sauver'}</span>
             </button>
           </div>
           <div className="ce-portal-tip">

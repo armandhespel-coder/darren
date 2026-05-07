@@ -176,10 +176,15 @@
 
 /* Responsive */
 @media (max-width: 900px) {
-  .ce-portal-layout { grid-template-columns: 1fr; padding: 20px; gap: 20px; }
-  .ce-portal-rail { position: static; flex-direction: row; overflow-x: auto; }
+  .ce-portal-layout { grid-template-columns: 1fr; padding: 20px; gap: 16px; }
+  .ce-portal-rail { position: static; flex-direction: row; align-items: center; gap: 6px; flex-wrap: nowrap; }
   .ce-portal-heading, .ce-portal-tip { display: none; }
-  .ce-portal-nav { flex-direction: row; }
+  .ce-portal-nav { flex-direction: row; flex: 1; }
+  .ce-portal-nav li { flex: 1; }
+  .ce-portal-nav button { padding: 8px 6px; font-size: 10px; gap: 4px; justify-content: center; border-radius: 10px; }
+  .ce-portal-nav button .ce-ico-box { width: 22px; height: 22px; border-radius: 7px; }
+  .ce-portal-rail > div { padding: 0; flex-shrink: 0; }
+  .ce-grad-btn { padding-inline: 10px; font-size: 11px; }
   .ce-portal-top { padding: 10px 18px; }
   .ce-portal-top-center { display: none; }
   .ce-profil-grid { grid-template-columns: 1fr; }
