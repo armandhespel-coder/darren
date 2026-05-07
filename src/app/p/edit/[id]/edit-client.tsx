@@ -223,28 +223,38 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
         </div>
         <input id="ce-video-file" ref={videoFileRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleVideoUpload} disabled={uploadingVideo} />
         <div className="ce-photo-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
-          {s.video_url && (
-            <div className="ce-photo" style={{ position: 'relative' }}>
-              <video
-                src={s.video_url}
-                preload="metadata"
-                playsInline
-                muted
-                onLoadedMetadata={e => { (e.currentTarget as HTMLVideoElement).currentTime = 0.1; }}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, display: 'block' }}
-              />
-              {/* Overlay play icon — visible si le navigateur ne charge pas de thumbnail */}
-              <div style={{
-                position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(18,17,42,0.35)', borderRadius: 8, pointerEvents: 'none',
-              }}>
-                <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width={16} height={16} viewBox="0 0 24 24" fill="#1E1C3A" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          {s.video_url && (() => {
+            const vidRef = { current: null as HTMLVideoElement | null };
+            return (
+              <div className="ce-photo" style={{ position: 'relative' }}>
+                <video
+                  ref={el => { vidRef.current = el; }}
+                  src={s.video_url}
+                  preload="metadata"
+                  playsInline
+                  onLoadedMetadata={e => { (e.currentTarget as HTMLVideoElement).currentTime = 0.1; }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, display: 'block' }}
+                />
+                <div
+                  onClick={() => {
+                    const v = vidRef.current;
+                    if (!v) return;
+                    if (v.paused) { v.muted = false; v.play(); }
+                    else v.pause();
+                  }}
+                  style={{
+                    position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(18,17,42,0.25)', borderRadius: 8, cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 12px rgba(0,0,0,0.25)' }}>
+                    <svg width={18} height={18} viewBox="0 0 24 24" fill="#1E1C3A" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  </div>
                 </div>
+                <button className="ce-photo-trash" aria-label="Supprimer la vidéo" onClick={e => { e.stopPropagation(); patch('video_url', ''); }}><Ico.Trash s={13} /></button>
               </div>
-              <button className="ce-photo-trash" aria-label="Supprimer la vidéo" onClick={() => patch('video_url', '')}><Ico.Trash s={13} /></button>
-            </div>
-          )}
+            );
+          })()}
           {!s.video_url && (
             <label
               htmlFor="ce-video-file"
