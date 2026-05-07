@@ -200,7 +200,22 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
         <div className="ce-photo-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
           {s.video_url && (
             <div className="ce-photo" style={{ position: 'relative' }}>
-              <video src={s.video_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} muted />
+              <video
+                src={s.video_url}
+                preload="metadata"
+                playsInline
+                muted
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, display: 'block' }}
+              />
+              {/* Overlay play icon — visible si le navigateur ne charge pas de thumbnail */}
+              <div style={{
+                position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(18,17,42,0.35)', borderRadius: 8, pointerEvents: 'none',
+              }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width={16} height={16} viewBox="0 0 24 24" fill="#1E1C3A" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+              </div>
               <button className="ce-photo-trash" aria-label="Supprimer la vidéo" onClick={() => patch('video_url', '')}><Ico.Trash s={13} /></button>
             </div>
           )}
