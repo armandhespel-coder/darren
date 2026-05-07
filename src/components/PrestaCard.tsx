@@ -30,16 +30,23 @@ function IconChevRight() {
 
 export default function PrestaCard({ presta, onSelect, isFavorited, onToggleFavorite }: Props) {
   const [imgIdx, setImgIdx] = useState(0);
-  const images = (presta.images ?? []).filter(Boolean);
-  const hasMultiple = images.length > 1;
+  const photos = (presta.images ?? []).filter(Boolean);
+  type MediaItem = { type: 'photo'; url: string } | { type: 'video'; url: string };
+  const mediaItems: MediaItem[] = [
+    ...photos.map(url => ({ type: 'photo' as const, url })),
+    ...(presta.video_url ? [{ type: 'video' as const, url: presta.video_url }] : []),
+  ];
+  const images = photos; // kept for dots/counter compat
+  const hasMultiple = mediaItems.length > 1;
+  const current = mediaItems[imgIdx] ?? mediaItems[0];
 
   const prev = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setImgIdx(i => (i - 1 + images.length) % images.length);
+    setImgIdx(i => (i - 1 + mediaItems.length) % mediaItems.length);
   };
   const next = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setImgIdx(i => (i + 1) % images.length);
+    setImgIdx(i => (i + 1) % mediaItems.length);
   };
 
   return (
@@ -49,9 +56,25 @@ export default function PrestaCard({ presta, onSelect, isFavorited, onToggleFavo
     >
       {/* Image */}
       <div className="relative overflow-hidden rounded-xl" style={{ aspectRatio: "4/3" }}>
-        {images[imgIdx] ? (
+        {current?.type === 'video' ? (
+          <div className="relative w-full h-full">
+            <video
+              src={current.url}
+              preload="metadata"
+              muted
+              playsInline
+              onLoadedMetadata={e => { (e.currentTarget as HTMLVideoElement).currentTime = 0.1; }}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+            />
+            <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.18)" }}>
+              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.9)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width={14} height={14} viewBox="0 0 24 24" fill="#1E1C3A" aria-hidden><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </div>
+            </div>
+          </div>
+        ) : current?.type === 'photo' ? (
           <img
-            src={images[imgIdx]}
+            src={current.url}
             alt={presta.nom}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
             loading="lazy"
@@ -101,7 +124,7 @@ export default function PrestaCard({ presta, onSelect, isFavorited, onToggleFavo
             </button>
             {/* Dots */}
             <div className="absolute flex gap-1 items-center" style={{ bottom: 8, left: "50%", transform: "translateX(-50%)", zIndex: 10 }}>
-              {images.map((_, i) => (
+              {mediaItems.map((_, i) => (
                 <button
                   key={i}
                   aria-label={`Photo ${i + 1}`}
