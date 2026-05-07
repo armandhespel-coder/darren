@@ -270,7 +270,12 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
   };
 
   const avgNote = reviews.length ? reviews.reduce((a, r) => a + r.note, 0) / reviews.length : 0;
-  const images = p.images?.length ? p.images : ["https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80"];
+  const photos = p.images?.length ? p.images : ["https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80"];
+  const mediaItems: Array<{ type: 'photo' | 'video'; url: string }> = [
+    ...photos.map(url => ({ type: 'photo' as const, url })),
+    ...(p.video_url ? [{ type: 'video' as const, url: p.video_url }] : []),
+  ];
+  const images = photos;
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
@@ -285,13 +290,26 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
             {/* Main image with nav arrows */}
             <div className="rounded-2xl overflow-hidden aspect-video relative"
               style={{ background: "var(--dark2)" }}>
-              <img src={images[activeImg]} alt={p.nom} className="w-full h-full object-cover" />
+              {mediaItems[activeImg]?.type === 'video' ? (
+                <video
+                  key={mediaItems[activeImg].url}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-contain"
+                  style={{ background: "#000" }}
+                >
+                  <source src={mediaItems[activeImg].url} />
+                </video>
+              ) : (
+                <img src={mediaItems[activeImg]?.url ?? images[0]} alt={p.nom} className="w-full h-full object-cover" />
+              )}
 
               {/* Arrows */}
-              {images.length > 1 && (
+              {mediaItems.length > 1 && (
                 <>
                   <button
-                    onClick={() => setActiveImg(i => (i - 1 + images.length) % images.length)}
+                    onClick={() => setActiveImg(i => (i - 1 + mediaItems.length) % mediaItems.length)}
                     className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-xl cursor-pointer transition-all"
                     style={{ width: 36, height: 36, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.15)", color: "white" }}
                     aria-label="Photo précédente"
@@ -301,7 +319,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                     </svg>
                   </button>
                   <button
-                    onClick={() => setActiveImg(i => (i + 1) % images.length)}
+                    onClick={() => setActiveImg(i => (i + 1) % mediaItems.length)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-xl cursor-pointer transition-all"
                     style={{ width: 36, height: 36, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.15)", color: "white" }}
                     aria-label="Photo suivante"
@@ -328,46 +346,36 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
               )}
 
               {/* Image counter */}
-              {images.length > 1 && (
+              {mediaItems.length > 1 && (
                 <span className="absolute bottom-4 right-4 text-xs font-bold px-2.5 py-1 rounded-full text-white"
                   style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
-                  {activeImg + 1} / {images.length}
+                  {activeImg + 1} / {mediaItems.length}
                 </span>
               )}
             </div>
 
-            {/* Thumbnails */}
-            {images.length > 1 && (
+            {/* Thumbnails (photos + vidéo) */}
+            {mediaItems.length > 1 && (
               <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
-                {images.map((img, i) => (
+                {mediaItems.map((item, i) => (
                   <button key={i} onClick={() => setActiveImg(i)}
-                    className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden transition-all"
+                    className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden transition-all relative"
                     style={{ border: activeImg === i ? "2.5px solid var(--blue2)" : "2px solid var(--border)" }}>
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    {item.type === 'video' ? (
+                      <>
+                        <video src={item.url} preload="metadata" muted playsInline
+                          onLoadedMetadata={e => { (e.currentTarget as HTMLVideoElement).currentTime = 0.1; }}
+                          className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 flex items-center justify-center"
+                          style={{ background: "rgba(0,0,0,0.35)" }}>
+                          <svg width={14} height={14} viewBox="0 0 24 24" fill="white" aria-hidden><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        </div>
+                      </>
+                    ) : (
+                      <img src={item.url} alt="" className="w-full h-full object-cover" />
+                    )}
                   </button>
                 ))}
-              </div>
-            )}
-
-            {/* Vidéo */}
-            {p.video_url && (
-              <div className="mt-4 rounded-2xl overflow-hidden"
-                style={{ background: "var(--dark2)", border: "1px solid var(--border)" }}>
-                {p.video_url.includes("youtube.com") || p.video_url.includes("youtu.be") ? (
-                  <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
-                    <iframe
-                      src={p.video_url.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/")}
-                      title="Vidéo prestataire"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
-                    />
-                  </div>
-                ) : (
-                  <video controls className="w-full" style={{ maxHeight: 400 }}>
-                    <source src={p.video_url} />
-                  </video>
-                )}
               </div>
             )}
 

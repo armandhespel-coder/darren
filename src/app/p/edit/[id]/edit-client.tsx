@@ -89,6 +89,13 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const touchFromRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const prevent = (e: TouchEvent) => { if (touchFromRef.current !== null) e.preventDefault(); };
+    document.addEventListener('touchmove', prevent, { passive: false });
+    return () => document.removeEventListener('touchmove', prevent);
+  }, []);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [videoUploadError, setVideoUploadError] = useState<string | null>(null);
   const videoFileRef = useRef<HTMLInputElement>(null);
@@ -163,14 +170,32 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
       <div className="ce-photo-grid">
         {s.images.map((src, i) => (
           <div key={src + i}
+            data-photo-idx={i}
             className={`ce-photo${dragIdx === i ? ' is-drag' : ''}${overIdx === i && dragIdx !== null && dragIdx !== i ? ' is-over' : ''}`}
             draggable
-            onDragStart={() => setDragIdx(i)}
+            onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(i)); setDragIdx(i); }}
             onDragOver={e => { e.preventDefault(); setOverIdx(i); }}
             onDragLeave={() => setOverIdx(null)}
             onDrop={e => { e.preventDefault(); move(dragIdx!, i); setDragIdx(null); setOverIdx(null); }}
-            onDragEnd={() => { setDragIdx(null); setOverIdx(null); }}>
-            <img src={src} alt="" draggable={false} />
+            onDragEnd={() => { setDragIdx(null); setOverIdx(null); }}
+            onTouchStart={() => { touchFromRef.current = i; setDragIdx(i); }}
+            onTouchMove={e => {
+              if (touchFromRef.current === null) return;
+              const touch = e.touches[0];
+              let node: Element | null = document.elementFromPoint(touch.clientX, touch.clientY);
+              while (node && !node.getAttribute('data-photo-idx')) node = node.parentElement;
+              if (node) {
+                const toIdx = Number(node.getAttribute('data-photo-idx'));
+                if (!isNaN(toIdx) && toIdx !== touchFromRef.current) setOverIdx(toIdx);
+              }
+            }}
+            onTouchEnd={() => {
+              if (touchFromRef.current !== null && overIdx !== null && touchFromRef.current !== overIdx) {
+                move(touchFromRef.current, overIdx);
+              }
+              touchFromRef.current = null; setDragIdx(null); setOverIdx(null);
+            }}>
+            <img src={src} alt="" style={{ pointerEvents: 'none' }} />
             {i === 0 && <span className="ce-photo-cover">Couverture</span>}
             <span className="ce-photo-num">{i + 1}</span>
             <button className="ce-photo-trash" aria-label="Supprimer" onClick={() => remove(i)}><Ico.Trash s={13} /></button>
