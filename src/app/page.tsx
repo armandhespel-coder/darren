@@ -516,10 +516,9 @@ export default function HomePage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 anim-up" style={{ animationDelay: "0.2s" }}>
+          <div className="grid grid-cols-3 gap-2 anim-up" style={{ animationDelay: "0.2s" }}>
             {[
               [String(categoryCount), "Catégories"],
-              [loading ? "..." : String(prestataires.length) + "+", "Prestataires"],
               ["Belgique", "Zone couverte"],
               ["100%", "Certifiés"],
             ].map(([val, label]) => (

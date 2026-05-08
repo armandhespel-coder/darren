@@ -31,11 +31,19 @@ function ChevIcon({ dir }: { dir: "left" | "right" }) {
   );
 }
 
+const DAY_LABELS = ["L", "M", "M", "J", "V", "S", "D"];
+const PRESETS = [
+  { label: "Lun–Ven", days: [0, 1, 2, 3, 4] },
+  { label: "Sam–Dim", days: [5, 6] },
+  { label: "Tous les jours", days: [0, 1, 2, 3, 4, 5, 6] },
+];
+
 function EditableCalendar({ prestataire: p }: { prestataire: Prestataire }) {
   const [monthOffset, setMonthOffset] = useState(0);
   const [busyDates, setBusyDates] = useState<string[]>(p.busy_dates ?? []);
   const [isAvailable, setIsAvailable] = useState(p.is_available);
   const [saving, setSaving] = useState(false);
+  const [quickDays, setQuickDays] = useState<Set<number>>(new Set());
 
   const today = new Date();
   const base = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
@@ -48,23 +56,48 @@ function EditableCalendar({ prestataire: p }: { prestataire: Prestataire }) {
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
+  const saveToDb = async (newArr: string[]) => {
+    setSaving(true);
+    await createClient().from("prestataires").update({ busy_dates: newArr }).eq("id", p.id);
+    setSaving(false);
+  };
+
   const toggleDate = async (dateStr: string) => {
     const next = new Set(busySet);
-    if (next.has(dateStr)) next.delete(dateStr);
-    else next.add(dateStr);
+    if (next.has(dateStr)) next.delete(dateStr); else next.add(dateStr);
     const nextArr = [...next];
     setBusyDates(nextArr);
-    setSaving(true);
-    const supabase = createClient();
-    await supabase.from("prestataires").update({ busy_dates: nextArr }).eq("id", p.id);
-    setSaving(false);
+    await saveToDb(nextArr);
   };
 
   const toggleAvailable = async () => {
     const next = !isAvailable;
     setIsAvailable(next);
-    const supabase = createClient();
-    await supabase.from("prestataires").update({ is_available: next }).eq("id", p.id);
+    await createClient().from("prestataires").update({ is_available: next }).eq("id", p.id);
+  };
+
+  const toggleQuickDay = (d: number) => {
+    setQuickDays(prev => {
+      const next = new Set(prev);
+      if (next.has(d)) next.delete(d); else next.add(d);
+      return next;
+    });
+  };
+
+  const applyQuickRange = async (busy: boolean) => {
+    if (quickDays.size === 0) return;
+    const next = new Set(busySet);
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      const dow = new Date(dateStr).getDay();
+      const mapped = dow === 0 ? 6 : dow - 1;
+      if (quickDays.has(mapped)) {
+        if (busy) next.add(dateStr); else next.delete(dateStr);
+      }
+    }
+    const nextArr = [...next];
+    setBusyDates(nextArr);
+    await saveToDb(nextArr);
   };
 
   return (
@@ -87,11 +120,64 @@ function EditableCalendar({ prestataire: p }: { prestataire: Prestataire }) {
           }} />
           {isAvailable ? "Disponible — cliquer pour changer" : "Agenda chargé — cliquer pour changer"}
         </button>
-        {saving && (
-          <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>
-            Sauvegarde...
-          </span>
-        )}
+        {saving && <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Sauvegarde...</span>}
+      </div>
+
+      {/* Sélection rapide par plage */}
+      <div className="mb-4 p-3 rounded-xl" style={{ background: "var(--bg)", border: "1px solid var(--border)" }}>
+        <p className="text-[10px] font-extrabold uppercase tracking-widest mb-2" style={{ color: "var(--muted)" }}>
+          Sélection rapide — <span className="capitalize">{monthName}</span>
+        </p>
+        <div className="flex gap-1.5 flex-wrap mb-2">
+          {PRESETS.map(preset => (
+            <button
+              key={preset.label}
+              onClick={() => setQuickDays(new Set(preset.days))}
+              className="text-xs font-bold px-3 py-1 rounded-full cursor-pointer transition-all"
+              style={{
+                background: preset.days.length === quickDays.size && preset.days.every(d => quickDays.has(d)) ? "var(--blue2)" : "white",
+                color: preset.days.length === quickDays.size && preset.days.every(d => quickDays.has(d)) ? "white" : "var(--text)",
+                border: "1.5px solid var(--border)",
+              }}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-1 mb-3">
+          {DAY_LABELS.map((lbl, i) => (
+            <button
+              key={i}
+              onClick={() => toggleQuickDay(i)}
+              className="flex-1 rounded-lg text-[11px] font-extrabold py-1 cursor-pointer transition-all"
+              style={{
+                background: quickDays.has(i) ? "rgba(74,108,247,0.15)" : "white",
+                color: quickDays.has(i) ? "var(--blue2)" : "var(--muted)",
+                border: `1.5px solid ${quickDays.has(i) ? "rgba(74,108,247,0.4)" : "var(--border)"}`,
+              }}
+            >
+              {lbl}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => applyQuickRange(true)}
+            disabled={quickDays.size === 0}
+            className="flex-1 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer disabled:opacity-40 transition-all"
+            style={{ background: "rgba(251,146,60,0.12)", color: "#ea580c", border: "1.5px solid rgba(251,146,60,0.35)" }}
+          >
+            Bloquer ces jours
+          </button>
+          <button
+            onClick={() => applyQuickRange(false)}
+            disabled={quickDays.size === 0}
+            className="flex-1 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer disabled:opacity-40 transition-all"
+            style={{ background: "rgba(74,222,128,0.1)", color: "#16a34a", border: "1.5px solid rgba(74,222,128,0.35)" }}
+          >
+            Libérer ces jours
+          </button>
+        </div>
       </div>
 
       <div style={{ border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
@@ -118,14 +204,14 @@ function EditableCalendar({ prestataire: p }: { prestataire: Prestataire }) {
 
         <div style={{ padding: "12px 16px 16px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 6 }}>
-            {["L","M","M","J","V","S","D"].map((d, i) => (
+            {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
               <div key={i} style={{ textAlign: "center", fontSize: 11, fontWeight: 700, color: "var(--muted)", padding: "4px 0" }}>{d}</div>
             ))}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
             {cells.map((d, i) => {
               if (d === null) return <div key={i} />;
-              const dateStr = `${base.getFullYear()}-${String(base.getMonth()+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+              const dateStr = `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
               const isBusy = busySet.has(dateStr);
               const isToday = base.getFullYear() === today.getFullYear() && base.getMonth() === today.getMonth() && d === today.getDate();
               const isPast = new Date(dateStr) < new Date(today.toDateString());
@@ -176,8 +262,8 @@ export default function DashboardClient({ prestataire: p, userEmail }: Props) {
   const [showCalendar, setShowCalendar] = useState(false);
   const [isVisible, setIsVisible] = useState(p.is_visible !== false);
   const [togglingVisibility, setTogglingVisibility] = useState(false);
+  const [premiumReqState, setPremiumReqState] = useState<"idle" | "loading" | "done" | "error">("idle");
 
-  // Category / subcategory editor
   const [dbCategories, setDbCategories] = useState<Array<{ name: string }>>([]);
   const [dbSubcats, setDbSubcats] = useState<Array<{ name: string; category_name: string | null }>>([]);
   const [editCat, setEditCat] = useState(p.categorie);
@@ -215,6 +301,20 @@ export default function DashboardClient({ prestataire: p, userEmail }: Props) {
     setTogglingVisibility(false);
   };
 
+  const requestPremium = async () => {
+    setPremiumReqState("loading");
+    try {
+      const res = await fetch("/api/premium-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nom: p.nom, email: userEmail, prestataire_id: p.id }),
+      });
+      setPremiumReqState(res.ok ? "done" : "error");
+    } catch {
+      setPremiumReqState("error");
+    }
+  };
+
   const { done, total, pct } = completionScore(p);
 
   const stats = [
@@ -231,14 +331,14 @@ export default function DashboardClient({ prestataire: p, userEmail }: Props) {
         <div className="mb-8">
           <h1 className="font-black text-3xl mb-1" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
             Bonjour{" "}
-            <span style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-              {p.nom.split(" ")[0]} 👋
+            <span style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", fontWeight: 900 }}>
+              {p.nom} 👋
             </span>
           </h1>
           <p className="text-sm font-semibold" style={{ color: "var(--muted)" }}>{userEmail}</p>
         </div>
 
-        {/* Visibility toggle — prominent */}
+        {/* Visibility toggle */}
         <div
           className="flex items-center justify-between gap-4 mb-4 p-4 rounded-2xl flex-wrap"
           style={{
@@ -479,7 +579,7 @@ export default function DashboardClient({ prestataire: p, userEmail }: Props) {
                 <div className="font-extrabold text-xs" style={{ color: "var(--dark)" }}>{p.nom}</div>
                 {p.company && <div className="text-[10px]" style={{ color: "var(--muted)" }}>{p.company}</div>}
                 <div className="font-black text-sm mt-0.5" style={{ background: "var(--grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                  {p.prix} €{p.price_note && <span className="text-[10px] font-semibold" style={{ WebkitTextFillColor: "var(--muted)" }}> {p.price_note}</span>}
+                  {p.prix}€{p.price_note && <span className="text-[10px] font-semibold" style={{ WebkitTextFillColor: "var(--muted)" }}> {p.price_note}</span>}
                 </div>
               </div>
             </div>
@@ -519,9 +619,26 @@ export default function DashboardClient({ prestataire: p, userEmail }: Props) {
                 Mieux référencié · Leads sérieux · <strong>Mise en avant</strong> dans les résultats.
               </p>
               {!p.is_premium && (
-                <p className="text-[10px] font-bold mt-1" style={{ color: "#7c3aed" }}>
-                  Contactez-nous pour activer Premium →
-                </p>
+                <div className="mt-2">
+                  {premiumReqState === "done" ? (
+                    <p className="text-[10px] font-extrabold" style={{ color: "#16a34a" }}>
+                      ✅ Demande envoyée ! On revient vers vous très rapidement.
+                    </p>
+                  ) : premiumReqState === "error" ? (
+                    <p className="text-[10px] font-extrabold" style={{ color: "#dc2626" }}>
+                      ❌ Erreur — réessayez ou contactez-nous.
+                    </p>
+                  ) : (
+                    <button
+                      onClick={requestPremium}
+                      disabled={premiumReqState === "loading"}
+                      className="w-full py-2 rounded-lg text-[11px] font-extrabold cursor-pointer disabled:opacity-60 transition-all"
+                      style={{ background: "linear-gradient(135deg,#7c3aed,#4A6CF7)", color: "white", border: "none" }}
+                    >
+                      {premiumReqState === "loading" ? "Envoi en cours..." : "⭐ Demander le passage Premium →"}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </div>
