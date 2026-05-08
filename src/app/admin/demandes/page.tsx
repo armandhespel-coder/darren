@@ -292,6 +292,34 @@ export default function AdminDemandesPage() {
                 </div>
 
                 <div className="mt-5">
+                  {/* Transmettre la demande originale en 1 clic */}
+                  <button
+                    onClick={async () => {
+                      setReplySending(true);
+                      setReplyResult(null);
+                      try {
+                        const res = await fetch("/api/admin/forward-email", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            to: active.email,
+                            subject: active.prestataire_nom
+                              ? `Votre demande pour ${active.prestataire_nom} — Connect Event`
+                              : "Votre demande — Connect Event",
+                            body: active.contenu,
+                          }),
+                        });
+                        setReplyResult(res.ok ? "ok" : "err");
+                      } catch { setReplyResult("err"); }
+                      setReplySending(false);
+                    }}
+                    disabled={replySending}
+                    className="w-full px-4 py-2.5 rounded-xl text-sm font-extrabold cursor-pointer disabled:opacity-50 mb-4"
+                    style={{ background: "rgba(74,108,247,0.08)", border: "1.5px solid rgba(74,108,247,0.2)", color: "var(--blue2)" }}
+                  >
+                    {replySending ? "Envoi…" : "📤 Transmettre la demande par mail"}
+                  </button>
+
                   <div className="text-[10px] font-extrabold uppercase tracking-wider mb-2" style={{ color: "var(--muted)" }}>
                     Répondre à {active.nom}
                   </div>
@@ -312,7 +340,7 @@ export default function AdminDemandesPage() {
                       className="px-5 py-2.5 rounded-full text-sm font-extrabold text-white cursor-pointer disabled:opacity-50"
                       style={{ background: "var(--grad2)" }}
                     >
-                      {replySending ? "Envoi…" : "↩ Envoyer"}
+                      {replySending ? "Envoi…" : "↩ Envoyer ma réponse"}
                     </button>
                     {active.telephone && (
                       <a href={`tel:${active.telephone}`}
