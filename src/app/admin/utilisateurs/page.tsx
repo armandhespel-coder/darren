@@ -31,10 +31,6 @@ export default function AdminUsersPage() {
     .filter((u) => u.role !== "client")
     .filter((u) => `${u.email} ${u.role}`.toLowerCase().includes(search.toLowerCase()));
 
-  const roleCount = {
-    prestataire: users.filter((u) => u.role === "pro").length,
-    admin: users.filter((u) => u.role === "admin").length,
-  };
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)" }}>
@@ -71,24 +67,6 @@ export default function AdminUsersPage() {
           <p className="text-sm font-semibold" style={{ color: "var(--muted)" }}>
             Comptes inscrits sur la plateforme
           </p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-6" style={{ maxWidth: 360 }}>
-          {[
-            { label: "Prestataires", value: roleCount.prestataire, icon: "🎵", color: "#7c3aed", bg: "rgba(124,58,237,0.08)" },
-            { label: "Admins", value: roleCount.admin, icon: "🔐", color: "#dc2626", bg: "rgba(220,38,38,0.08)" },
-          ].map((s) => (
-            <div key={s.label} className="rounded-2xl p-5"
-              style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-2"
-                style={{ background: s.bg }}>
-                {s.icon}
-              </div>
-              <div className="font-black text-2xl" style={{ color: s.color }}>{s.value}</div>
-              <div className="text-xs font-semibold" style={{ color: "var(--muted)" }}>{s.label}</div>
-            </div>
-          ))}
         </div>
 
         {/* Table */}

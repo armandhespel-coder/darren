@@ -34,7 +34,7 @@ export default function AdminDemandesPage() {
   const [replyText, setReplyText] = useState("");
   const [replySending, setReplySending] = useState(false);
   const [replyResult, setReplyResult] = useState<"ok" | "err" | null>(null);
-  const [fwModal, setFwModal] = useState<{ to: string; subject: string; body: string } | null>(null);
+  const [fwModal, setFwModal] = useState<{ to: string; subject: string; body: string; clientNom: string; clientEmail: string; clientTel: string | null; prestataireName: string } | null>(null);
 
   const load = useCallback(async () => {
     const supabase = createClient();
@@ -296,11 +296,15 @@ export default function AdminDemandesPage() {
                   {/* Transmettre — ouvre modal de prévisualisation */}
                   <button
                     onClick={() => setFwModal({
-                      to: active.email,
+                      to: "",
                       subject: active.prestataire_nom
-                        ? `Votre demande pour ${active.prestataire_nom} — Connect Event`
-                        : "Votre demande — Connect Event",
+                        ? `Nouvelle demande client pour ${active.prestataire_nom} — Connect Event`
+                        : "Nouvelle demande client — Connect Event",
                       body: active.contenu,
+                      clientNom: active.nom,
+                      clientEmail: active.email,
+                      clientTel: active.telephone ?? null,
+                      prestataireName: active.prestataire_nom ?? "",
                     })}
                     className="w-full px-4 py-2.5 rounded-xl text-sm font-extrabold cursor-pointer mb-4"
                     style={{ background: "rgba(74,108,247,0.08)", border: "1.5px solid rgba(74,108,247,0.2)", color: "var(--blue2)" }}
@@ -414,7 +418,7 @@ export default function AdminDemandesPage() {
                     const res = await fetch("/api/admin/forward-email", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ to: fwModal.to.trim(), subject: fwModal.subject, body: fwModal.body }),
+                      body: JSON.stringify({ to: fwModal.to.trim(), subject: fwModal.subject, body: fwModal.body, clientNom: fwModal.clientNom, clientEmail: fwModal.clientEmail, clientTel: fwModal.clientTel, prestataireName: fwModal.prestataireName }),
                     });
                     setReplyResult(res.ok ? "ok" : "err");
                     if (res.ok) setFwModal(null);
