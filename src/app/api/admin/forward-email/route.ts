@@ -47,11 +47,7 @@ export async function POST(req: NextRequest) {
         <span style="font-size:10px;font-weight:800;color:#9999B3;text-transform:uppercase;letter-spacing:0.06em;">Contact client</span>
       </td></tr>
       <tr><td>
-        <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#12112A;">👤 ${clientNom ?? "—"}</p>
-        <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#4A6CF7;">
-          <a href="mailto:${clientEmail ?? ""}" style="color:#4A6CF7;text-decoration:none;">${clientEmail ?? "—"}</a>
-        </p>
-        ${clientTel ? `<p style="margin:0;font-size:13px;font-weight:600;color:#12112A;">📞 <a href="tel:${clientTel}" style="color:#12112A;text-decoration:none;">${clientTel}</a></p>` : ""}
+        <p style="margin:0;font-size:13px;font-weight:700;color:#12112A;">👤 ${clientNom ?? "—"}</p>
       </td></tr>
     </table>
 

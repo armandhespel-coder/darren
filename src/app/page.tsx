@@ -129,6 +129,7 @@ export default function HomePage() {
     supabase
       .from("prestataires")
       .select("*")
+      .eq("is_visible", true)
       .order("is_premium", { ascending: false })
       .then(({ data }) => {
         setPrestataires((data as Prestataire[]) ?? []);
