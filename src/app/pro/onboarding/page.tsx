@@ -223,11 +223,15 @@ export default function OnboardingPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
-                      Prix indicatif (€)
+                      Prix indicatif
                     </label>
-                    <input type="number" className={inputCls} style={inputStyle} value={form.prix}
-                      onChange={(e) => up("prix", e.target.value)} onFocus={focusIn} onBlur={focusOut}
-                      placeholder="850" />
+                    <div className="flex items-center rounded-xl overflow-hidden" style={{ border: "1.5px solid var(--border)", background: "var(--bg)" }}>
+                      <input type="number" value={form.prix}
+                        onChange={(e) => up("prix", e.target.value)} onFocus={focusIn} onBlur={focusOut}
+                        placeholder="850"
+                        style={{ flex: 1, border: "none", outline: "none", background: "transparent", padding: "12px 14px", fontSize: 14, fontWeight: 700, color: "var(--text)" }} />
+                      <span style={{ padding: "0 14px", fontSize: 15, fontWeight: 800, color: "var(--blue2)", borderLeft: "1.5px solid var(--border)", background: "rgba(74,108,247,0.06)", alignSelf: "stretch", display: "flex", alignItems: "center" }}>€</span>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>

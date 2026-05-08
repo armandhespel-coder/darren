@@ -142,22 +142,6 @@ export default function Navbar() {
           >
             🏠 Espace Pro
           </button>}
-          {/* Mon espace — pour les pros */}
-          {userIsPrestataire && <a
-            href="/pro/dashboard"
-            className="hidden sm:flex items-center gap-1.5 text-white text-xs font-extrabold px-4 rounded-full transition-all duration-200 whitespace-nowrap"
-            style={{ height: 40, background: "var(--grad2)", boxShadow: "0 4px 14px rgba(74,108,247,0.25)", textDecoration: "none" }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-1px)";
-              (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 8px 22px rgba(74,108,247,0.35)";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLAnchorElement).style.transform = "";
-              (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 4px 14px rgba(74,108,247,0.25)";
-            }}
-          >
-            🏠 Mon espace
-          </a>}
 
           {/* Devenir prestataire — caché pour les pros */}
           {!userIsPrestataire && <button
