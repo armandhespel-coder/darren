@@ -14,6 +14,7 @@ interface Demande {
   lu: boolean;
   created_at: string;
   prestataire_nom?: string;
+  prestataire_email?: string;
 }
 
 function timeAgo(date: string) {
@@ -50,15 +51,26 @@ export default function AdminDemandesPage() {
 
     const prestaIds = [...new Set(data.map((d: Demande) => d.prestataire_id).filter(Boolean))] as string[];
     const { data: prestas } = prestaIds.length
-      ? await supabase.from("prestataires").select("id, nom").in("id", prestaIds)
+      ? await supabase.from("prestataires").select("id, nom, owner_id").in("id", prestaIds)
       : { data: [] };
 
-    const prestaMap: Record<string, string> = {};
-    (prestas ?? []).forEach((p: { id: string; nom: string }) => { prestaMap[p.id] = p.nom; });
+    const ownerIds = [...new Set((prestas ?? []).map((p: { owner_id: string | null }) => p.owner_id).filter(Boolean))] as string[];
+    const { data: profiles } = ownerIds.length
+      ? await supabase.from("profiles").select("id, email").in("id", ownerIds)
+      : { data: [] };
+
+    const profileEmailMap: Record<string, string> = {};
+    (profiles ?? []).forEach((p: { id: string; email: string }) => { profileEmailMap[p.id] = p.email; });
+
+    const prestaMap: Record<string, { nom: string; email: string }> = {};
+    (prestas ?? []).forEach((p: { id: string; nom: string; owner_id: string | null }) => {
+      prestaMap[p.id] = { nom: p.nom, email: p.owner_id ? (profileEmailMap[p.owner_id] ?? "") : "" };
+    });
 
     const enriched = data.map((d: Demande) => ({
       ...d,
-      prestataire_nom: d.prestataire_id ? (prestaMap[d.prestataire_id] ?? "") : "",
+      prestataire_nom: d.prestataire_id ? (prestaMap[d.prestataire_id]?.nom ?? "") : "",
+      prestataire_email: d.prestataire_id ? (prestaMap[d.prestataire_id]?.email ?? "") : "",
     }));
 
     setDemandes(enriched);
@@ -293,10 +305,10 @@ export default function AdminDemandesPage() {
                 </div>
 
                 <div className="mt-5">
-                  {/* Transmettre — ouvre modal de prévisualisation */}
-                  <button
+                  {/* Transmettre — uniquement pour les demandes clients (pas premium) */}
+                  {!active.contenu.startsWith("⭐ DEMANDE PREMIUM") && <button
                     onClick={() => setFwModal({
-                      to: "",
+                      to: active.prestataire_email ?? "",
                       subject: active.prestataire_nom
                         ? `Nouvelle demande client pour ${active.prestataire_nom} — Connect Event`
                         : "Nouvelle demande client — Connect Event",
@@ -310,7 +322,7 @@ export default function AdminDemandesPage() {
                     style={{ background: "rgba(74,108,247,0.08)", border: "1.5px solid rgba(74,108,247,0.2)", color: "var(--blue2)" }}
                   >
                     📤 Transmettre par mail…
-                  </button>
+                  </button>}
 
                   <div className="text-[10px] font-extrabold uppercase tracking-wider mb-2" style={{ color: "var(--muted)" }}>
                     Répondre à {active.nom}
