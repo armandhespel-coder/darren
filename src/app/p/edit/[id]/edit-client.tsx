@@ -288,6 +288,7 @@ function PhotosTab({ s, patch, prestataireId }: { s: PrestaState; patch: (k: key
 
 function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, v: unknown) => void }) {
   const [monthOffset, setMonthOffset] = useState(0);
+  const [customDays, setCustomDays] = useState<Set<number>>(new Set()); // 0=Lun…6=Dim (JS: 1=Mon→0, …, 0=Sun→6)
   const today = new Date();
   const base = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
   const monthName = base.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
@@ -303,11 +304,14 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
   };
 
   // Apply a preset: mark/unmark by weekday (0=Mon…6=Sun, JS: 0=Sun so we map)
+  // JS getDay(): 0=Sun,1=Mon,…,6=Sat → mapped to index: Mon=0,Tue=1,Wed=2,Thu=3,Fri=4,Sat=5,Sun=6
+  const jsToIdx = (dow: number) => (dow === 0 ? 6 : dow - 1);
+
   const applyPreset = (action: 'weekdays' | 'weekend' | 'all' | 'clear') => {
     const next = new Set(busySet);
     for (let d = 1; d <= daysInMonth; d++) {
       const dt = new Date(base.getFullYear(), base.getMonth(), d);
-      const dow = dt.getDay(); // 0=Sun,1=Mon,…,6=Sat
+      const dow = dt.getDay();
       const dateStr = `${base.getFullYear()}-${String(base.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       if (action === 'weekdays' && dow >= 1 && dow <= 5) next.add(dateStr);
       else if (action === 'weekend' && (dow === 0 || dow === 6)) next.add(dateStr);
@@ -315,6 +319,25 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
       else if (action === 'clear') next.delete(dateStr);
     }
     patch('busy_dates', [...next]);
+  };
+
+  const applyCustom = (block: boolean) => {
+    if (customDays.size === 0) return;
+    const next = new Set(busySet);
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dt = new Date(base.getFullYear(), base.getMonth(), d);
+      const idx = jsToIdx(dt.getDay());
+      if (!customDays.has(idx)) continue;
+      const dateStr = `${base.getFullYear()}-${String(base.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      block ? next.add(dateStr) : next.delete(dateStr);
+    }
+    patch('busy_dates', [...next]);
+  };
+
+  const toggleCustomDay = (idx: number) => {
+    const next = new Set(customDays);
+    next.has(idx) ? next.delete(idx) : next.add(idx);
+    setCustomDays(next);
   };
 
   const cells: (number | null)[] = [];
@@ -362,6 +385,46 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
         {presetBtn('Tout libérer', 'clear')}
       </div>
 
+      {/* Custom days picker */}
+      <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 10, border: '1.5px solid var(--border2)', background: 'var(--ce-bg)' }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', marginBottom: 8 }}>Jours personnalisés ce mois :</div>
+        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
+          {['L','M','M','J','V','S','D'].map((lbl, idx) => (
+            <button
+              key={idx}
+              onClick={() => toggleCustomDay(idx)}
+              style={{
+                width: 32, height: 32, borderRadius: 8, border: '1.5px solid var(--border2)',
+                background: customDays.has(idx) ? 'var(--blue2)' : 'white',
+                color: customDays.has(idx) ? 'white' : 'var(--dark)',
+                fontSize: 12, fontWeight: 800, cursor: 'pointer',
+              }}
+            >{lbl}</button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            onClick={() => applyCustom(true)}
+            disabled={customDays.size === 0}
+            style={{
+              flex: 1, padding: '6px 0', borderRadius: 8, border: 'none',
+              background: customDays.size === 0 ? 'rgba(74,108,247,0.05)' : 'rgba(74,108,247,0.12)',
+              color: 'var(--blue2)', fontSize: 11, fontWeight: 800,
+              cursor: customDays.size === 0 ? 'default' : 'pointer', opacity: customDays.size === 0 ? 0.5 : 1,
+            }}
+          >Bloquer ces jours</button>
+          <button
+            onClick={() => applyCustom(false)}
+            disabled={customDays.size === 0}
+            style={{
+              flex: 1, padding: '6px 0', borderRadius: 8, border: '1.5px solid var(--border2)',
+              background: 'transparent', color: 'var(--muted)', fontSize: 11, fontWeight: 800,
+              cursor: customDays.size === 0 ? 'default' : 'pointer', opacity: customDays.size === 0 ? 0.5 : 1,
+            }}
+          >Libérer ces jours</button>
+        </div>
+      </div>
+
       <div className="ce-cal">
         <div className="ce-cal-hd">
           <button className="ce-cal-nav" onClick={() => setMonthOffset(o => o - 1)}><Ico.Chev dir="left" s={14} /></button>
@@ -393,7 +456,7 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
   );
 }
 
-function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium, note, reviewsCount }: {
+function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium, note, reviewsCount, onRequestPremium, premiumSent, premiumLoading }: {
   s: PrestaState;
   patch: (k: keyof PrestaState, v: unknown) => void;
   isPremium?: boolean;
@@ -401,6 +464,9 @@ function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium, note, revi
   reviewsCount: number;
   siteCategories: string[];
   allSubcats: Array<{name: string; category_name: string | null}>;
+  onRequestPremium?: () => void;
+  premiumSent?: boolean;
+  premiumLoading?: boolean;
 }) {
   const toggleTag = (t: string) => {
     const has = s.tags.includes(t);
@@ -514,7 +580,24 @@ function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium, note, revi
             <p style={{ margin: 0, fontSize: 10, color: 'var(--muted)', lineHeight: 1.5, fontWeight: 600 }}>
               Mieux référencié · Leads sérieux · <strong>Mise en avant</strong>.
             </p>
-            {!isPremium && (
+            {!isPremium && onRequestPremium && (
+              <button
+                onClick={onRequestPremium}
+                disabled={premiumSent || premiumLoading}
+                style={{
+                  marginTop: 8, width: '100%', padding: '7px 0', borderRadius: 9, border: 'none',
+                  background: premiumSent ? 'rgba(124,58,237,0.08)' : 'linear-gradient(135deg, #7c3aed, #4A6CF7)',
+                  color: premiumSent ? '#7c3aed' : 'white',
+                  fontSize: 11, fontWeight: 800, cursor: premiumSent ? 'default' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                  opacity: premiumLoading ? 0.7 : 1,
+                }}
+              >
+                <Ico.Star s={11} />
+                {premiumSent ? 'Demande envoyée ✓' : 'Devenir Premium'}
+              </button>
+            )}
+            {!isPremium && !onRequestPremium && (
               <p style={{ margin: '4px 0 0', fontSize: 10, fontWeight: 700, color: '#7c3aed' }}>
                 Contactez-nous pour activer Premium →
               </p>
@@ -849,30 +932,6 @@ export default function EditClient({
                   <span className="sm:hidden">{state.is_visible ? 'Visible' : 'Masqué'}</span>
                 </button>
 
-                {/* Premium request */}
-                {!prestataire.is_premium && (
-                  <button
-                    onClick={requestPremium}
-                    disabled={premiumSent || premiumLoading}
-                    style={{
-                      width: '100%', height: 36, borderRadius: 10, border: 'none',
-                      background: premiumSent ? 'rgba(124,58,237,0.08)' : 'linear-gradient(135deg, #7c3aed, #4A6CF7)',
-                      color: premiumSent ? '#7c3aed' : 'white',
-                      fontSize: 11, fontWeight: 800, cursor: premiumSent ? 'default' : 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                      opacity: premiumLoading ? 0.7 : 1,
-                    }}
-                  >
-                    <Ico.Star s={11} />
-                    <span className="hidden sm:inline">{premiumSent ? 'Demande envoyée ✓' : 'Devenir Premium'}</span>
-                    <span className="sm:hidden">{premiumSent ? 'Envoyé ✓' : 'Premium'}</span>
-                  </button>
-                )}
-                {prestataire.is_premium && (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '6px 0', fontSize: 11, fontWeight: 800, color: '#7c3aed' }}>
-                    <Ico.Star s={11} /> <span className="hidden sm:inline">Badge Premium actif</span>
-                  </div>
-                )}
               </>
             )}
           </div>
@@ -890,7 +949,7 @@ export default function EditClient({
           <CompletionBar s={state} />
           {tab === 'photos' && <PhotosTab s={state} patch={patch} prestataireId={prestataire.id} />}
           {tab === 'dispo' && <DispoTab s={state} patch={patch} />}
-          {tab === 'profil' && <ProfilTab s={state} patch={patch} siteCategories={siteCategories.length ? siteCategories : [prestataire.categorie]} allSubcats={siteTags} isPremium={prestataire.is_premium} note={prestataire.note} reviewsCount={prestataire.reviews ?? 0} />}
+          {tab === 'profil' && <ProfilTab s={state} patch={patch} siteCategories={siteCategories.length ? siteCategories : [prestataire.categorie]} allSubcats={siteTags} isPremium={prestataire.is_premium} note={prestataire.note} reviewsCount={prestataire.reviews ?? 0} onRequestPremium={isOwner ? requestPremium : undefined} premiumSent={premiumSent} premiumLoading={premiumLoading} />}
         </main>
       </div>
 
