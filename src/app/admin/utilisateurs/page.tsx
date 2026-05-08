@@ -27,14 +27,12 @@ export default function AdminUsersPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const filtered = users.filter((u) =>
-    `${u.email} ${u.role}`.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = users
+    .filter((u) => u.role !== "client")
+    .filter((u) => `${u.email} ${u.role}`.toLowerCase().includes(search.toLowerCase()));
 
   const roleCount = {
-    total: users.length,
     prestataire: users.filter((u) => u.role === "pro").length,
-    client: users.filter((u) => u.role === "client").length,
     admin: users.filter((u) => u.role === "admin").length,
   };
 
@@ -76,11 +74,9 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 gap-4 mb-6" style={{ maxWidth: 360 }}>
           {[
-            { label: "Total", value: roleCount.total, icon: "👥", color: "var(--blue2)", bg: "rgba(74,108,247,0.08)" },
             { label: "Prestataires", value: roleCount.prestataire, icon: "🎵", color: "#7c3aed", bg: "rgba(124,58,237,0.08)" },
-            { label: "Clients", value: roleCount.client, icon: "👤", color: "#16a34a", bg: "rgba(22,163,74,0.08)" },
             { label: "Admins", value: roleCount.admin, icon: "🔐", color: "#dc2626", bg: "rgba(220,38,38,0.08)" },
           ].map((s) => (
             <div key={s.label} className="rounded-2xl p-5"

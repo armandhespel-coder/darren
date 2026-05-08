@@ -34,6 +34,7 @@ export default function AdminDemandesPage() {
   const [replyText, setReplyText] = useState("");
   const [replySending, setReplySending] = useState(false);
   const [replyResult, setReplyResult] = useState<"ok" | "err" | null>(null);
+  const [fwModal, setFwModal] = useState<{ to: string; subject: string; body: string } | null>(null);
 
   const load = useCallback(async () => {
     const supabase = createClient();
@@ -292,32 +293,19 @@ export default function AdminDemandesPage() {
                 </div>
 
                 <div className="mt-5">
-                  {/* Transmettre la demande originale en 1 clic */}
+                  {/* Transmettre — ouvre modal de prévisualisation */}
                   <button
-                    onClick={async () => {
-                      setReplySending(true);
-                      setReplyResult(null);
-                      try {
-                        const res = await fetch("/api/admin/forward-email", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            to: active.email,
-                            subject: active.prestataire_nom
-                              ? `Votre demande pour ${active.prestataire_nom} — Connect Event`
-                              : "Votre demande — Connect Event",
-                            body: active.contenu,
-                          }),
-                        });
-                        setReplyResult(res.ok ? "ok" : "err");
-                      } catch { setReplyResult("err"); }
-                      setReplySending(false);
-                    }}
-                    disabled={replySending}
-                    className="w-full px-4 py-2.5 rounded-xl text-sm font-extrabold cursor-pointer disabled:opacity-50 mb-4"
+                    onClick={() => setFwModal({
+                      to: active.email,
+                      subject: active.prestataire_nom
+                        ? `Votre demande pour ${active.prestataire_nom} — Connect Event`
+                        : "Votre demande — Connect Event",
+                      body: active.contenu,
+                    })}
+                    className="w-full px-4 py-2.5 rounded-xl text-sm font-extrabold cursor-pointer mb-4"
                     style={{ background: "rgba(74,108,247,0.08)", border: "1.5px solid rgba(74,108,247,0.2)", color: "var(--blue2)" }}
                   >
-                    {replySending ? "Envoi…" : "📤 Transmettre la demande par mail"}
+                    📤 Transmettre par mail…
                   </button>
 
                   <div className="text-[10px] font-extrabold uppercase tracking-wider mb-2" style={{ color: "var(--muted)" }}>
@@ -370,6 +358,75 @@ export default function AdminDemandesPage() {
           )}
         </div>
       </div>
+
+      {/* Modal prévisualisation forward */}
+      {fwModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(18,17,42,0.55)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
+          onClick={e => { if (e.target === e.currentTarget) setFwModal(null); }}>
+          <div style={{ background: "white", borderRadius: 20, padding: 28, width: "100%", maxWidth: 520, boxShadow: "0 24px 80px rgba(74,108,247,0.22)" }}>
+            <div style={{ fontFamily: "var(--font-raleway)", fontWeight: 900, fontSize: 17, color: "var(--dark)", marginBottom: 20 }}>
+              📤 Transmettre par mail
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 5 }}>Destinataire</label>
+                <input
+                  value={fwModal.to}
+                  onChange={e => setFwModal(f => f ? { ...f, to: e.target.value } : f)}
+                  style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid var(--border)", fontSize: 13, fontWeight: 600, outline: "none", boxSizing: "border-box", color: "var(--dark)" }}
+                  onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
+                  onBlur={e => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 5 }}>Objet</label>
+                <input
+                  value={fwModal.subject}
+                  onChange={e => setFwModal(f => f ? { ...f, subject: e.target.value } : f)}
+                  style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid var(--border)", fontSize: 13, fontWeight: 600, outline: "none", boxSizing: "border-box", color: "var(--dark)" }}
+                  onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
+                  onBlur={e => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 5 }}>Message</label>
+                <textarea
+                  rows={6}
+                  value={fwModal.body}
+                  onChange={e => setFwModal(f => f ? { ...f, body: e.target.value } : f)}
+                  style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid var(--border)", fontSize: 13, fontWeight: 600, outline: "none", resize: "vertical", boxSizing: "border-box", color: "var(--dark)", fontFamily: "inherit" }}
+                  onFocus={e => (e.target.style.borderColor = "var(--blue2)")}
+                  onBlur={e => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+              <button
+                onClick={() => setFwModal(null)}
+                style={{ flex: 1, padding: "10px 0", borderRadius: 12, border: "1.5px solid var(--border)", background: "var(--bg)", color: "var(--muted)", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
+              >Annuler</button>
+              <button
+                disabled={replySending || !fwModal.to.trim() || !fwModal.body.trim()}
+                onClick={async () => {
+                  setReplySending(true);
+                  setReplyResult(null);
+                  try {
+                    const res = await fetch("/api/admin/forward-email", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ to: fwModal.to.trim(), subject: fwModal.subject, body: fwModal.body }),
+                    });
+                    setReplyResult(res.ok ? "ok" : "err");
+                    if (res.ok) setFwModal(null);
+                  } catch { setReplyResult("err"); }
+                  setReplySending(false);
+                }}
+                style={{ flex: 2, padding: "10px 0", borderRadius: 12, border: "none", background: "var(--grad2)", color: "white", fontSize: 13, fontWeight: 800, cursor: "pointer", opacity: replySending ? 0.7 : 1 }}
+              >{replySending ? "Envoi…" : "✉️ Envoyer"}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

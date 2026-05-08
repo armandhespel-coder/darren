@@ -172,10 +172,11 @@ export default function Navbar() {
                 border: showMenu ? "1.5px solid rgba(74,108,247,0.35)" : "1.5px solid var(--border)",
               }}
             >
-              <svg width={16} height={12} viewBox="0 0 16 12" fill="none" aria-hidden="true">
-                <rect x="0" y="0" width="16" height="2" rx="1" fill={showMenu ? "var(--blue2)" : "var(--muted)"} />
-                <rect x="0" y="5" width="16" height="2" rx="1" fill={showMenu ? "var(--blue2)" : "var(--muted)"} />
-                <rect x="0" y="10" width="16" height="2" rx="1" fill={showMenu ? "var(--blue2)" : "var(--muted)"} />
+              <svg width={16} height={12} viewBox="0 0 16 12" aria-hidden="true"
+                style={{ color: showMenu ? "var(--blue2)" : "var(--muted)", display: "block" }}>
+                <rect x="0" y="0" width="16" height="2" rx="1" fill="currentColor" />
+                <rect x="0" y="5" width="16" height="2" rx="1" fill="currentColor" />
+                <rect x="0" y="10" width="16" height="2" rx="1" fill="currentColor" />
               </svg>
             </button>
 
