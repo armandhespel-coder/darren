@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#F7F8FC;padding:40px 20px;">
 <tr><td align="center">
 <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(74,108,247,0.1);">
-<tr><td style="background:linear-gradient(135deg,#4A6CF7,#D93FB5);padding:28px 36px;">
-<span style="color:white;font-weight:900;font-size:20px;">Connect Event — Demande reçue ✅</span>
+<tr><td bgcolor="#4A6CF7" style="background-color:#4A6CF7;background:linear-gradient(135deg,#4A6CF7,#D93FB5);padding:28px 36px;">
+<span style="color:white;font-weight:900;font-size:20px;font-family:Arial,sans-serif;">Connect Event — Demande reçue</span>
 </td></tr>
 <tr><td style="padding:36px;">
 <p style="font-size:16px;color:#12112A;font-weight:800;margin:0 0 12px;">Bonjour ${sender_name.trim()},</p>
