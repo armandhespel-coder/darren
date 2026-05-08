@@ -165,20 +165,18 @@ export default function Navbar() {
             <button
               onClick={() => setShowMenu(m => !m)}
               aria-label="Menu"
-              className="flex flex-col items-center justify-center gap-[5px] cursor-pointer rounded-xl transition-all"
+              className="flex items-center justify-center cursor-pointer rounded-xl transition-all"
               style={{
                 width: 40, height: 40,
                 background: showMenu ? "rgba(74,108,247,0.08)" : "var(--bg2)",
                 border: showMenu ? "1.5px solid rgba(74,108,247,0.35)" : "1.5px solid var(--border)",
               }}
             >
-              {[0, 1, 2].map(i => (
-                <span key={i} style={{
-                  width: 16, height: 2,
-                  background: showMenu ? "var(--blue2)" : "var(--muted)",
-                  borderRadius: 2, display: "block", transition: "background 0.2s",
-                }} />
-              ))}
+              <svg width={16} height={12} viewBox="0 0 16 12" fill="none" aria-hidden="true">
+                <rect x="0" y="0" width="16" height="2" rx="1" fill={showMenu ? "var(--blue2)" : "var(--muted)"} />
+                <rect x="0" y="5" width="16" height="2" rx="1" fill={showMenu ? "var(--blue2)" : "var(--muted)"} />
+                <rect x="0" y="10" width="16" height="2" rx="1" fill={showMenu ? "var(--blue2)" : "var(--muted)"} />
+              </svg>
             </button>
 
             {showMenu && (

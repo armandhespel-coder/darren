@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { Resend } from "resend";
 
 const DARREN = "yagan_darren@hotmail.com";
 
@@ -10,6 +11,11 @@ export async function POST(req: NextRequest) {
 
   const { to, subject, body } = await req.json();
   if (!to || !body) return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
+
+  if (!process.env.RESEND_API_KEY) {
+    console.error("[forward-email] RESEND_API_KEY manquante");
+    return NextResponse.json({ error: "Configuration email manquante" }, { status: 500 });
+  }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://connect-event.be";
 
@@ -49,24 +55,18 @@ export async function POST(req: NextRequest) {
 </body>
 </html>`;
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Connect Event <contact@connect-event.be>",
-      reply_to: DARREN,
-      to: [to],
-      subject: subject || "Votre demande — Connect Event",
-      html,
-    }),
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const { error } = await resend.emails.send({
+    from: "Connect Event <contact@connect-event.be>",
+    replyTo: DARREN,
+    to: [to],
+    subject: subject || "Votre demande — Connect Event",
+    html,
   });
 
-  if (!res.ok) {
-    const err = await res.json();
-    return NextResponse.json({ error: err }, { status: 502 });
+  if (error) {
+    console.error("[forward-email] Resend error:", error);
+    return NextResponse.json({ error: error.message }, { status: 502 });
   }
 
   return NextResponse.json({ ok: true });
