@@ -259,7 +259,7 @@ function EditableCalendar({ prestataire: p }: { prestataire: Prestataire }) {
 }
 
 export default function DashboardClient({ prestataire: p, userEmail }: Props) {
-  const [showCalendar, setShowCalendar] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(true);
   const [isVisible, setIsVisible] = useState(p.is_visible !== false);
   const [togglingVisibility, setTogglingVisibility] = useState(false);
   const [premiumReqState, setPremiumReqState] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -485,41 +485,43 @@ export default function DashboardClient({ prestataire: p, userEmail }: Props) {
               </div>
             </div>
 
-            {/* Premium CTA — colonne principale, visible uniquement si non premium */}
-            {!p.is_premium && (
-              <div className="rounded-2xl p-5"
-                style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.07), rgba(74,108,247,0.07))", border: "1.5px solid rgba(124,58,237,0.25)", boxShadow: "var(--shadow2)" }}>
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">⭐</span>
-                  <div className="flex-1">
-                    <h2 className="font-black text-base mb-0.5" style={{ color: "#7c3aed", fontFamily: "var(--font-raleway)" }}>
-                      Passez Premium
-                    </h2>
-                    <p className="text-xs font-semibold mb-3" style={{ color: "var(--muted)", lineHeight: 1.6 }}>
-                      Badge <strong>TOP</strong> · Mise en avant dans les résultats · Affichage de votre téléphone
+            {/* Premium CTA — toujours visible */}
+            <div className="rounded-2xl p-5"
+              style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.07), rgba(74,108,247,0.07))", border: "1.5px solid rgba(124,58,237,0.25)", boxShadow: "var(--shadow2)" }}>
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">⭐</span>
+                <div className="flex-1">
+                  <h2 className="font-black text-base mb-0.5" style={{ color: "#7c3aed", fontFamily: "var(--font-raleway)" }}>
+                    {p.is_premium ? "Premium — Actif ✅" : "Passez Premium"}
+                  </h2>
+                  <p className="text-xs font-semibold mb-3" style={{ color: "var(--muted)", lineHeight: 1.6 }}>
+                    Badge <strong>TOP</strong> · Mise en avant dans les résultats · Affichage de votre téléphone
+                  </p>
+                  {p.is_premium ? (
+                    <p className="text-sm font-extrabold" style={{ color: "#7c3aed" }}>
+                      Votre badge TOP est actif sur votre fiche.
                     </p>
-                    {premiumReqState === "done" ? (
-                      <p className="text-sm font-extrabold" style={{ color: "#16a34a" }}>
-                        ✅ Demande envoyée ! On revient vers vous très rapidement.
-                      </p>
-                    ) : premiumReqState === "error" ? (
-                      <p className="text-sm font-extrabold" style={{ color: "#dc2626" }}>
-                        ❌ Erreur — réessayez ou contactez-nous.
-                      </p>
-                    ) : (
-                      <button
-                        onClick={requestPremium}
-                        disabled={premiumReqState === "loading"}
-                        className="w-full py-2.5 rounded-xl text-sm font-extrabold cursor-pointer disabled:opacity-60 transition-all"
-                        style={{ background: "linear-gradient(135deg,#7c3aed,#4A6CF7)", color: "white", border: "none" }}
-                      >
-                        {premiumReqState === "loading" ? "Envoi en cours..." : "⭐ Demander le passage Premium →"}
-                      </button>
-                    )}
-                  </div>
+                  ) : premiumReqState === "done" ? (
+                    <p className="text-sm font-extrabold" style={{ color: "#16a34a" }}>
+                      ✅ Demande envoyée ! On revient vers vous très rapidement.
+                    </p>
+                  ) : premiumReqState === "error" ? (
+                    <p className="text-sm font-extrabold" style={{ color: "#dc2626" }}>
+                      ❌ Erreur — réessayez ou contactez-nous.
+                    </p>
+                  ) : (
+                    <button
+                      onClick={requestPremium}
+                      disabled={premiumReqState === "loading"}
+                      className="w-full py-2.5 rounded-xl text-sm font-extrabold cursor-pointer disabled:opacity-60 transition-all"
+                      style={{ background: "linear-gradient(135deg,#7c3aed,#4A6CF7)", color: "white", border: "none" }}
+                    >
+                      {premiumReqState === "loading" ? "Envoi en cours..." : "⭐ Demander le passage Premium →"}
+                    </button>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Quick actions */}
             <div className="rounded-2xl p-6"

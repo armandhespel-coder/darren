@@ -386,10 +386,11 @@ function ProfilTab({ s, patch, siteCategories, allSubcats, isPremium, note, revi
             placeholder="Parlez de votre style, vos références, votre zone d'intervention…" />
           <div className="ce-form-grid">
             <div>
-              <label className="ce-lbl">Prix indicatif <span className="ce-lbl-opt">(€)</span></label>
-              <div className="ce-input-prefix">
-                <Ico.Euro s={14} />
-                <input type="number" className="ce-input" value={s.prix || ''} onChange={e => patch('prix', Number(e.target.value) || 0)} placeholder="850" />
+              <label className="ce-lbl">Prix indicatif</label>
+              <div style={{ display: "flex", alignItems: "stretch", border: "1.5px solid var(--border2)", borderRadius: 12, overflow: "hidden", background: "var(--ce-bg)" }}>
+                <input type="number" value={s.prix || ''} onChange={e => patch('prix', Number(e.target.value) || 0)} placeholder="850"
+                  style={{ flex: 1, border: "none", outline: "none", background: "transparent", padding: "0 14px", height: 44, fontSize: 14, fontWeight: 600, color: "var(--ce-text)" }} />
+                <span style={{ padding: "0 14px", fontWeight: 800, fontSize: 15, color: "var(--blue2)", borderLeft: "1.5px solid var(--border2)", background: "rgba(74,108,247,0.06)", display: "flex", alignItems: "center" }}>€</span>
               </div>
             </div>
             <div>
