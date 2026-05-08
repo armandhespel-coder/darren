@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import EditClient from "@/app/p/edit/[id]/edit-client";
+import DashboardClient from "./dashboard-client";
 import Navbar from "@/components/Navbar";
 
 export default async function ProDashboardPage() {
@@ -42,5 +42,5 @@ export default async function ProDashboardPage() {
     );
   }
 
-  return <EditClient prestataire={prestataire} />;
+  return <DashboardClient prestataire={prestataire} userEmail={user.email ?? ""} />;
 }
