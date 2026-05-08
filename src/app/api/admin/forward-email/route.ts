@@ -34,10 +34,12 @@ export async function POST(req: NextRequest) {
   </td></tr>
 
   <tr><td style="padding:32px 36px 24px;">
-    <p style="font-size:16px;color:#12112A;font-weight:800;margin:0 0 8px;">
-      🎯 Un client vous contacte via Connect Event
+    <p style="font-size:16px;color:#12112A;font-weight:800;margin:0 0 12px;">
+      Bonjour${prestataireName ? ` <strong>${prestataireName}</strong>` : ""},
     </p>
-    ${prestataireName ? `<p style="font-size:13px;color:#6B6A87;font-weight:600;margin:0 0 24px;">Pour la fiche : <strong style="color:#12112A;">${prestataireName}</strong></p>` : '<p style="margin:0 0 24px;"></p>'}
+    <p style="font-size:14px;color:#2C2B4B;font-weight:600;line-height:1.8;margin:0 0 24px;">
+      Un contact a vu votre profil sur <strong>Connect Event</strong> et souhaite faire appel à vos services. Voici ses coordonnées ainsi que son message — nous vous invitons à le recontacter directement.
+    </p>
 
     <!-- Infos client -->
     <table width="100%" cellpadding="0" cellspacing="0" style="background:#F7F8FC;border-radius:12px;padding:16px 20px;margin-bottom:24px;">
