@@ -20,7 +20,9 @@ const Ico = {
   Trash: ({ s = 14 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>,
   Drag: ({ s = 14 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" aria-hidden><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>,
   Sparkle: ({ s = 14 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5z"/></svg>,
-  Euro: ({ s = 14 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M18 7a6 6 0 100 10M3 10h9M3 14h9"/></svg>,
+  Eye: ({ s = 14 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  EyeOff: ({ s = 14 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>,
+  Star: ({ s = 14 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" aria-hidden><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
   Chev: ({ s = 14, dir = 'down' }: { s?: number; dir?: string }) => {
     const rot: Record<string, number> = { down: 0, up: 180, left: 90, right: -90 };
     return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" style={{ transform: `rotate(${rot[dir]}deg)` }} aria-hidden><polyline points="6 9 12 15 18 9"/></svg>;
@@ -32,7 +34,7 @@ interface PrestaState {
   nom: string; company: string; description: string; tags: string[];
   categorie: string;
   prix: number; price_note: string; telephone: string;
-  is_available: boolean; images: string[]; busy_dates: string[];
+  is_available: boolean; is_visible: boolean; images: string[]; busy_dates: string[];
   video_url: string;
 }
 
@@ -47,6 +49,7 @@ function fromDB(p: Prestataire): PrestaState {
     price_note: p.price_note ?? '',
     telephone: p.telephone ?? '',
     is_available: p.is_available,
+    is_visible: p.is_visible ?? true,
     images: p.images ?? [],
     busy_dates: p.busy_dates ?? [],
     video_url: p.video_url ?? '',
@@ -299,9 +302,37 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
     patch('busy_dates', [...next]);
   };
 
+  // Apply a preset: mark/unmark by weekday (0=Mon…6=Sun, JS: 0=Sun so we map)
+  const applyPreset = (action: 'weekdays' | 'weekend' | 'all' | 'clear') => {
+    const next = new Set(busySet);
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dt = new Date(base.getFullYear(), base.getMonth(), d);
+      const dow = dt.getDay(); // 0=Sun,1=Mon,…,6=Sat
+      const dateStr = `${base.getFullYear()}-${String(base.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      if (action === 'weekdays' && dow >= 1 && dow <= 5) next.add(dateStr);
+      else if (action === 'weekend' && (dow === 0 || dow === 6)) next.add(dateStr);
+      else if (action === 'all') next.add(dateStr);
+      else if (action === 'clear') next.delete(dateStr);
+    }
+    patch('busy_dates', [...next]);
+  };
+
   const cells: (number | null)[] = [];
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  const presetBtn = (label: string, action: 'weekdays' | 'weekend' | 'all' | 'clear') => (
+    <button
+      key={action}
+      onClick={() => applyPreset(action)}
+      style={{
+        padding: '5px 10px', borderRadius: 8, border: '1.5px solid var(--border2)',
+        background: action === 'clear' ? 'transparent' : 'rgba(74,108,247,0.06)',
+        color: action === 'clear' ? 'var(--muted)' : 'var(--blue2)',
+        fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+      }}
+    >{label}</button>
+  );
 
   return (
     <section className="ce-tab">
@@ -321,6 +352,16 @@ function DispoTab({ s, patch }: { s: PrestaState; patch: (k: keyof PrestaState, 
           <span className="ce-switch-thumb" />
         </button>
       </div>
+
+      {/* Presets */}
+      <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', marginRight: 2 }}>Ce mois :</span>
+        {presetBtn('Lun–Ven', 'weekdays')}
+        {presetBtn('Sam–Dim', 'weekend')}
+        {presetBtn('Tout occuper', 'all')}
+        {presetBtn('Tout libérer', 'clear')}
+      </div>
+
       <div className="ce-cal">
         <div className="ce-cal-hd">
           <button className="ce-cal-nav" onClick={() => setMonthOffset(o => o - 1)}><Ico.Chev dir="left" s={14} /></button>
@@ -593,7 +634,19 @@ function ProAuthCard({ tokenId, prestataireId }: { tokenId: string; prestataireI
   );
 }
 
-export default function EditClient({ prestataire, tokenId, claimable }: { prestataire: Prestataire; tokenId?: string; claimable?: boolean }) {
+export default function EditClient({
+  prestataire,
+  tokenId,
+  claimable,
+  isOwner,
+  userEmail,
+}: {
+  prestataire: Prestataire;
+  tokenId?: string;
+  claimable?: boolean;
+  isOwner?: boolean;
+  userEmail?: string;
+}) {
   const [tab, setTab] = useState('profil');
   const [state, setState] = useState<PrestaState>(() => fromDB(prestataire));
   const [dirty, setDirty] = useState(false);
@@ -602,6 +655,9 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
   const [siteTags, setSiteTags] = useState<Array<{name: string; category_name: string | null}>>([]);
   const [siteCategories, setSiteCategories] = useState<string[]>([]);
   const [claimStatus, setClaimStatus] = useState<'loading' | 'needsAuth' | 'claiming' | 'done'>('done');
+  const [premiumSent, setPremiumSent] = useState(false);
+  const [premiumLoading, setPremiumLoading] = useState(false);
+  const [togglingVisibility, setTogglingVisibility] = useState(false);
 
   useEffect(() => {
     if (!claimable) return;
@@ -703,6 +759,7 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
         price_note: state.price_note || null,
         telephone: state.telephone || null,
         is_available: state.is_available,
+        is_visible: state.is_visible,
         images: state.images,
         busy_dates: state.busy_dates,
         video_url: state.video_url || null,
@@ -713,6 +770,33 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
     else { setDirty(false); showToast('Profil enregistré ✓'); }
   };
 
+  const toggleVisibility = async () => {
+    const newVal = !state.is_visible;
+    setTogglingVisibility(true);
+    const res = await fetch(`/api/prestataires/${prestataire.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_visible: newVal }),
+    });
+    setTogglingVisibility(false);
+    if (res.ok) {
+      setState(p => ({ ...p, is_visible: newVal }));
+      showToast(newVal ? 'Profil visible ✓' : 'Profil masqué');
+    }
+  };
+
+  const requestPremium = async () => {
+    setPremiumLoading(true);
+    await fetch('/api/premium-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nom: state.nom, email: userEmail ?? '', prestataire_id: prestataire.id }),
+    });
+    setPremiumLoading(false);
+    setPremiumSent(true);
+    showToast('Demande envoyée ✓');
+  };
+
   return (
     <div className="ce-root">
       <Navbar />
@@ -720,7 +804,7 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
         <nav className="ce-portal-rail">
           <div className="ce-portal-heading">
             <div className="ce-portal-heading-sub">Bienvenue</div>
-            <div className="ce-portal-heading-name">{state.nom.split(' ')[0]} 👋</div>
+            <div className="ce-portal-heading-name"><strong>{state.nom.split(' ')[0]}</strong> 👋</div>
           </div>
           <ul className="ce-portal-nav">
             {[
@@ -738,12 +822,59 @@ export default function EditClient({ prestataire, tokenId, claimable }: { presta
               </li>
             ))}
           </ul>
-          <div style={{ padding: '12px 0' }}>
+          <div style={{ padding: '12px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <button className="ce-grad-btn" style={{ width: '100%', height: 40 }} onClick={save} disabled={saving || !dirty}>
               <Ico.Check s={14} />
               <span className="hidden sm:inline">{saving ? 'Enregistrement…' : 'Enregistrer'}</span>
               <span className="sm:hidden">{saving ? '…' : 'Sauver'}</span>
             </button>
+
+            {isOwner && (
+              <>
+                {/* Visibility toggle */}
+                <button
+                  onClick={toggleVisibility}
+                  disabled={togglingVisibility}
+                  style={{
+                    width: '100%', height: 36, borderRadius: 10, border: '1.5px solid var(--border2)',
+                    background: state.is_visible ? 'rgba(22,163,74,0.07)' : 'rgba(239,68,68,0.07)',
+                    color: state.is_visible ? '#16a34a' : '#dc2626',
+                    fontSize: 11, fontWeight: 800, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    opacity: togglingVisibility ? 0.6 : 1,
+                  }}
+                >
+                  {state.is_visible ? <Ico.Eye s={12} /> : <Ico.EyeOff s={12} />}
+                  <span className="hidden sm:inline">{state.is_visible ? 'Profil visible' : 'Profil masqué'}</span>
+                  <span className="sm:hidden">{state.is_visible ? 'Visible' : 'Masqué'}</span>
+                </button>
+
+                {/* Premium request */}
+                {!prestataire.is_premium && (
+                  <button
+                    onClick={requestPremium}
+                    disabled={premiumSent || premiumLoading}
+                    style={{
+                      width: '100%', height: 36, borderRadius: 10, border: 'none',
+                      background: premiumSent ? 'rgba(124,58,237,0.08)' : 'linear-gradient(135deg, #7c3aed, #4A6CF7)',
+                      color: premiumSent ? '#7c3aed' : 'white',
+                      fontSize: 11, fontWeight: 800, cursor: premiumSent ? 'default' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      opacity: premiumLoading ? 0.7 : 1,
+                    }}
+                  >
+                    <Ico.Star s={11} />
+                    <span className="hidden sm:inline">{premiumSent ? 'Demande envoyée ✓' : 'Devenir Premium'}</span>
+                    <span className="sm:hidden">{premiumSent ? 'Envoyé ✓' : 'Premium'}</span>
+                  </button>
+                )}
+                {prestataire.is_premium && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '6px 0', fontSize: 11, fontWeight: 800, color: '#7c3aed' }}>
+                    <Ico.Star s={11} /> <span className="hidden sm:inline">Badge Premium actif</span>
+                  </div>
+                )}
+              </>
+            )}
           </div>
           <div className="ce-portal-tip">
             <div className="ce-portal-tip-ico"><Ico.Sparkle s={13} /></div>
