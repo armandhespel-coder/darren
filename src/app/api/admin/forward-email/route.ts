@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     <div style="border-top:1px solid #E5E7EB;padding-top:20px;">
       <p style="font-size:12px;color:#9CA3AF;margin:0;font-weight:600;">
-        Pour répondre à ce client, répondez directement à cet email ou contactez
+        Pour donner suite, contactez Darren :
         <a href="mailto:${DARREN}" style="color:#4A6CF7;font-weight:700;">${DARREN}</a>
       </p>
     </div>
