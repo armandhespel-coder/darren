@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { Resend } from "resend";
 
-const DARREN = "yagan_darren@hotmail.com";
+const DARREN = "connect.eventbelgium@gmail.com";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
