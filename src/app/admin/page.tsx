@@ -374,6 +374,12 @@ export default function AdminPage() {
 
   const resetForm = () => { setForm(emptyForm(categories)); setEditId(null); };
 
+  const toggleVisible = async (p: Prestataire) => {
+    const next = !(p.is_visible !== false);
+    const { error } = await supabase.from("prestataires").update({ is_visible: next }).eq("id", p.id);
+    if (!error) setPrestataires(ps => ps.map(x => x.id === p.id ? { ...x, is_visible: next } : x));
+  };
+
   const filtered = prestataires.filter(p =>
     `${p.nom} ${p.categorie}`.toLowerCase().includes(search.toLowerCase())
   );
@@ -899,7 +905,7 @@ export default function AdminPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr style={{ background: "var(--bg)", borderBottom: "1px solid var(--border)" }}>
-                      {["Nom", "Catégorie", "Prix", "Premium", "Dispo", "Actions"].map(h => (
+                      {["Nom", "Catégorie", "Prix", "Premium", "Dispo", "Visible", "Actions"].map(h => (
                         <th key={h} className="text-left px-5 py-3 text-[10px] font-extrabold uppercase tracking-widest"
                           style={{ color: "var(--muted)" }}>
                           {h}
@@ -954,6 +960,19 @@ export default function AdminPage() {
                             }}>
                             {p.is_available ? "Dispo" : "Limité"}
                           </span>
+                        </td>
+                        <td className="px-5 py-3 text-center">
+                          <button
+                            onClick={() => toggleVisible(p)}
+                            title={p.is_visible !== false ? "Masquer" : "Rendre visible"}
+                            className="text-[11px] font-extrabold px-2.5 py-1 rounded-full cursor-pointer transition-all"
+                            style={{
+                              background: p.is_visible !== false ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
+                              color: p.is_visible !== false ? "#16a34a" : "#dc2626",
+                              border: `1px solid ${p.is_visible !== false ? "rgba(34,197,94,0.25)" : "rgba(239,68,68,0.25)"}`,
+                            }}>
+                            {p.is_visible !== false ? "👁 Visible" : "🚫 Masqué"}
+                          </button>
                         </td>
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2">
