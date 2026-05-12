@@ -15,7 +15,13 @@ export async function POST(req: NextRequest) {
   const service = createServiceClient();
 
   // Garantir que le profil existe avec le bon rôle
-  await service.from("profiles").upsert({ id: user.id, role: "pro", email: user.email ?? "" }, { onConflict: "id" });
+  const { error: profileErr } = await service
+    .from("profiles")
+    .upsert({ id: user.id, role: "pro", email: user.email ?? "" }, { onConflict: "id" });
+  if (profileErr) {
+    console.error("[pro/onboarding] profile upsert:", profileErr);
+    return NextResponse.json({ error: "Erreur création profil: " + profileErr.message }, { status: 500 });
+  }
 
   const { error } = await service.from("prestataires").insert({
     owner_id: user.id,
