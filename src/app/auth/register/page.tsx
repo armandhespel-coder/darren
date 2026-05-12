@@ -25,7 +25,7 @@ function RegisterForm() {
       email,
       password,
       options: {
-        data: { role: "client" },
+        data: { role: isPro ? "pro" : "client" },
         emailRedirectTo: `${window.location.origin}/auth/callback${redirectNext ? `?next=${encodeURIComponent(redirectNext)}` : ""}`,
       },
     });

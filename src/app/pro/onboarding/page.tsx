@@ -15,7 +15,7 @@ export default function OnboardingPage() {
   const [dbSubcats, setDbSubcats] = useState<Array<{ name: string; category_name: string | null }>>([]);
 
   const [form, setForm] = useState({
-    nom: "", company: "", categorie: "",
+    nom: "", company: "", categorie: "", email: "",
     description: "", prix: "", price_note: "", subcategorie: "",
   });
 
@@ -70,6 +70,7 @@ export default function OnboardingPage() {
       note: 0,
       is_available: true,
       is_premium: false,
+      email: form.email.trim() || null,
       telephone: null,
     });
     setSaving(false);
@@ -109,7 +110,7 @@ export default function OnboardingPage() {
           ))}
         </div>
 
-        <div className="rounded-2xl p-8"
+        <div className="rounded-2xl p-5 sm:p-8"
           style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
 
           {step === 1 && (
@@ -139,6 +140,14 @@ export default function OnboardingPage() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
+                    Email de contact *
+                  </label>
+                  <input type="email" className={inputCls} style={inputStyle} value={form.email}
+                    onChange={(e) => up("email", e.target.value)} onFocus={focusIn} onBlur={focusOut}
+                    placeholder="vous@exemple.com" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
                     Catégorie
                   </label>
                   <select className={inputCls} style={{ ...inputStyle, appearance: "none" }} value={form.categorie}
@@ -147,7 +156,7 @@ export default function OnboardingPage() {
                   </select>
                 </div>
                 {error && <p className="text-red-500 text-xs font-semibold">{error}</p>}
-                <button onClick={() => { if (!form.nom.trim()) { setError("Le nom est obligatoire."); return; } setError(""); setStep(2); }}
+                <button onClick={() => { if (!form.nom.trim()) { setError("Le nom est obligatoire."); return; } if (!form.email.trim()) { setError("L'email de contact est obligatoire."); return; } setError(""); setStep(2); }}
                   className="w-full py-3 rounded-xl font-extrabold text-sm text-white cursor-pointer mt-1"
                   style={{ background: "var(--grad)" }}>
                   Suivant →
@@ -220,7 +229,7 @@ export default function OnboardingPage() {
                 Indiquez un prix indicatif pour attirer les bons clients.
               </p>
               <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
                       Prix indicatif
