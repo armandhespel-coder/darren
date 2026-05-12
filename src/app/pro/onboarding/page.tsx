@@ -50,31 +50,17 @@ export default function OnboardingPage() {
   const up = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const handleSubmit = async () => {
-    if (!userId) return;
     if (!form.nom.trim()) { setError("Le nom est obligatoire."); return; }
     setSaving(true);
     setError("");
-    const supabase = createClient();
     const tags = form.subcategorie ? [form.subcategorie] : [];
-    const { error } = await supabase.from("prestataires").insert({
-      owner_id: userId,
-      nom: form.nom.trim(),
-      company: form.company.trim() || null,
-      categorie: form.categorie,
-      continent: "Europe",
-      description: form.description.trim() || null,
-      prix: Number(form.prix) || 0,
-      price_note: form.price_note.trim() || null,
-      tags,
-      images: [],
-      note: 0,
-      is_available: true,
-      is_premium: false,
-      email: form.email.trim() || null,
-      telephone: null,
+    const res = await fetch("/api/pro/onboarding", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...form, tags }),
     });
     setSaving(false);
-    if (error) { setError(error.message); return; }
+    if (!res.ok) { const d = await res.json(); setError(d.error ?? "Erreur lors de la création."); return; }
     router.push("/pro/dashboard");
   };
 
