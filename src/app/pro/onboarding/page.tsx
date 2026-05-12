@@ -24,6 +24,7 @@ export default function OnboardingPage() {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) { router.push("/auth/login"); return; }
       setUserId(data.user.id);
+      if (data.user.email) setForm(f => ({ ...f, email: data.user.email! }));
       const { data: p } = await supabase.from("prestataires").select("id").eq("owner_id", data.user.id).single();
       if (p) { router.push("/pro/dashboard"); return; }
       const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
@@ -140,14 +141,6 @@ export default function OnboardingPage() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
-                    Email de contact *
-                  </label>
-                  <input type="email" className={inputCls} style={inputStyle} value={form.email}
-                    onChange={(e) => up("email", e.target.value)} onFocus={focusIn} onBlur={focusOut}
-                    placeholder="vous@exemple.com" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "var(--blue2)" }}>
                     Catégorie
                   </label>
                   <select className={inputCls} style={{ ...inputStyle, appearance: "none" }} value={form.categorie}
@@ -156,7 +149,7 @@ export default function OnboardingPage() {
                   </select>
                 </div>
                 {error && <p className="text-red-500 text-xs font-semibold">{error}</p>}
-                <button onClick={() => { if (!form.nom.trim()) { setError("Le nom est obligatoire."); return; } if (!form.email.trim()) { setError("L'email de contact est obligatoire."); return; } setError(""); setStep(2); }}
+                <button onClick={() => { if (!form.nom.trim()) { setError("Le nom est obligatoire."); return; } setError(""); setStep(2); }}
                   className="w-full py-3 rounded-xl font-extrabold text-sm text-white cursor-pointer mt-1"
                   style={{ background: "var(--grad)" }}>
                   Suivant →

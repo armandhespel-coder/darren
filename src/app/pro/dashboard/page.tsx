@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import EditClient from "@/app/p/edit/[id]/edit-client";
 import Navbar from "@/components/Navbar";
+import ContactEquipe from "./contact-equipe";
 
 export default async function ProDashboardPage() {
   const supabase = await createClient();
@@ -27,13 +28,11 @@ export default async function ProDashboardPage() {
             Espace Prestataire
           </h1>
           <p style={{ color: "var(--muted)", fontSize: 15, lineHeight: 1.7, marginBottom: 32 }}>
-            Cet espace est réservé aux prestataires inscrits sur Connect Event.<br /><br />
-            Pour créer votre profil prestataire, vous devez recevoir un lien d&apos;invitation de notre équipe.
+            Envoyez-nous un message pour rejoindre Connect Event en tant que prestataire.
           </p>
-          <a href="mailto:contact@connect-event.be"
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 28px", borderRadius: 14, background: "var(--grad)", color: "white", fontWeight: 800, fontSize: 14, textDecoration: "none" }}>
-            Contacter l&apos;équipe →
-          </a>
+          <div style={{ textAlign: "left", background: "white", borderRadius: 20, padding: "28px 32px", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
+            <ContactEquipe userEmail={user.email ?? ""} />
+          </div>
           <div style={{ marginTop: 24 }}>
             <a href="/" style={{ color: "var(--muted)", fontSize: 13, textDecoration: "none" }}>← Retour à l&apos;accueil</a>
           </div>
