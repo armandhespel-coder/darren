@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY);
   const { error } = await resend.emails.send({
     from: "Connect Event <contact@connect-event.be>",
-    to: process.env.CONTACT_EMAIL ?? "connect.eventbelgium@gmail.com",
+    to: ["connect.eventbelgium@gmail.com", "armand.hespel@hotmail.com"],
     replyTo: email,
     subject: `[Contact] Message de ${name} — Connect Event`,
     html: `

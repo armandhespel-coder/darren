@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
       from: "Connect Event <contact@connect-event.be>",
-      to: "connect.eventbelgium@gmail.com",
+      to: ["connect.eventbelgium@gmail.com", "armand.hespel@hotmail.com"],
       replyTo: email,
       subject: `[Demande Pro] ${email} — Connect Event`,
       html: `<p><strong>${email}</strong> souhaite rejoindre Connect Event en tant que prestataire.</p>

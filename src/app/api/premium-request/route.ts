@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
       from: "Connect Event <contact@connect-event.be>",
-      to: "connect.eventbelgium@gmail.com",
+      to: ["connect.eventbelgium@gmail.com", "armand.hespel@hotmail.com"],
       subject: `[Demande Premium] ${nom} — Connect Event`,
       html: `<p>${nom} (${email}) souhaite passer en Premium.<br/>Prestataire ID : ${prestataire_id ?? "—"}</p>`,
     }).catch(err => console.error("[premium-request] Resend notify error:", err));
