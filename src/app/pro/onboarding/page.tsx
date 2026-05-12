@@ -27,8 +27,7 @@ export default function OnboardingPage() {
       if (data.user.email) setForm(f => ({ ...f, email: data.user.email! }));
       const { data: p } = await supabase.from("prestataires").select("id").eq("owner_id", data.user.id).single();
       if (p) { router.push("/pro/dashboard"); return; }
-      const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
-      if (profile?.role !== "pro") { router.push("/"); return; }
+      // Pas de check role ici — race condition après claim/register peut donner "client" momentanément
     });
   }, [router]);
 
