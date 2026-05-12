@@ -6,11 +6,13 @@ import { useRouter } from "next/navigation";
 
 interface Demande {
   id: string;
-  sender_id: string;
-  content: string;
-  read: boolean;
+  prestataire_id: string | null;
+  nom: string;
+  email: string;
+  telephone: string | null;
+  contenu: string;
+  lu: boolean;
   created_at: string;
-  sender_email?: string;
 }
 
 function timeAgo(date: string) {
@@ -23,67 +25,46 @@ function timeAgo(date: string) {
 
 export default function DemandesPage() {
   const router = useRouter();
-  const [userId, setUserId] = useState<string | null>(null);
   const [demandes, setDemandes] = useState<Demande[]>([]);
   const [active, setActive] = useState<Demande | null>(null);
   const [loading, setLoading] = useState(true);
-  const [reply, setReply] = useState("");
-  const [sending, setSending] = useState(false);
 
   const load = useCallback(async (uid: string) => {
     const supabase = createClient();
+
+    // Récupérer le prestataire du pro
+    const { data: presta } = await supabase
+      .from("prestataires")
+      .select("id")
+      .eq("owner_id", uid)
+      .single();
+
+    if (!presta) { setLoading(false); return; }
+
+    // Lire les demandes pour ce prestataire
     const { data } = await supabase
-      .from("messages")
+      .from("demandes")
       .select("*")
-      .eq("receiver_id", uid)
+      .eq("prestataire_id", presta.id)
       .order("created_at", { ascending: false });
 
     if (!data?.length) { setLoading(false); return; }
 
-    // Enrichir avec l'email des expéditeurs
-    const senderIds = [...new Set(data.map((m) => m.sender_id))];
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, email")
-      .in("id", senderIds);
-    const profileMap: Record<string, string> = {};
-    (profiles ?? []).forEach((p) => { profileMap[p.id] = p.email; });
-
-    const enriched = data.map((m) => ({ ...m, sender_email: profileMap[m.sender_id] ?? "Client inconnu" }));
-    setDemandes(enriched);
-    setActive(enriched[0]);
+    setDemandes(data);
+    setActive(data[0]);
     setLoading(false);
 
-    // Marquer comme lu
-    await supabase.from("messages").update({ read: true }).eq("receiver_id", uid).eq("read", false);
+    // Marquer comme lues
+    await supabase.from("demandes").update({ lu: true }).eq("prestataire_id", presta.id).eq("lu", false);
   }, []);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) { router.push("/auth/login?next=/pro/demandes"); return; }
-      setUserId(data.user.id);
       load(data.user.id);
     });
   }, [load, router]);
-
-  const handleReply = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!reply.trim() || !active || !userId) return;
-    setSending(true);
-    await fetch("/api/messages/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        prestataire_id: null,
-        receiver_id: active.sender_id,
-        content: reply.trim(),
-      }),
-    });
-    setSending(false);
-    setReply("");
-    if (userId) load(userId);
-  };
 
   if (loading) {
     return (
@@ -103,7 +84,7 @@ export default function DemandesPage() {
           borderBottom: "1px solid var(--border)",
           height: 64,
         }}>
-        <a href="/pro/dashboard"><img src="/logo.png" alt="Connect Event" className="h-24 w-auto object-contain" /></a>
+        <a href="/pro/dashboard"><img src="/logo.png" alt="Connect Event" className="h-10 w-auto object-contain" /></a>
         <h1 className="font-black text-lg" style={{ color: "var(--dark)", fontFamily: "var(--font-raleway)" }}>
           Mes demandes
         </h1>
@@ -142,20 +123,20 @@ export default function DemandesPage() {
                 }}>
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 text-white"
                   style={{ background: "var(--grad)" }}>
-                  {(d.sender_email?.[0] ?? "?").toUpperCase()}
+                  {d.nom[0].toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-extrabold text-xs truncate" style={{ color: "var(--dark)" }}>
-                      {d.sender_email}
+                      {d.nom}
                     </span>
                     <span className="text-[10px] flex-shrink-0" style={{ color: "var(--muted)" }}>
                       {timeAgo(d.created_at)}
                     </span>
                   </div>
-                  <p className="text-xs truncate mt-0.5" style={{ color: "var(--muted)" }}>{d.content}</p>
+                  <p className="text-xs truncate mt-0.5" style={{ color: "var(--muted)" }}>{d.contenu}</p>
                 </div>
-                {!d.read && (
+                {!d.lu && (
                   <span className="w-2 h-2 rounded-full flex-shrink-0 mt-1" style={{ background: "var(--blue2)" }} />
                 )}
               </button>
@@ -170,34 +151,44 @@ export default function DemandesPage() {
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white"
                     style={{ background: "var(--grad)" }}>
-                    {(active.sender_email?.[0] ?? "?").toUpperCase()}
+                    {active.nom[0].toUpperCase()}
                   </div>
                   <div>
-                    <div className="font-extrabold text-sm" style={{ color: "var(--dark)" }}>{active.sender_email}</div>
+                    <div className="font-extrabold text-sm" style={{ color: "var(--dark)" }}>{active.nom}</div>
                     <div className="text-[11px]" style={{ color: "var(--muted)" }}>{timeAgo(active.created_at)}</div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex-1 px-6 py-5">
-                <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>{active.content}</p>
-              </div>
+              <div className="flex-1 px-6 py-5 flex flex-col gap-4">
+                <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>{active.contenu}</p>
 
-              <form onSubmit={handleReply} className="flex gap-3 p-4"
-                style={{ borderTop: "1px solid var(--border)" }}>
-                <input value={reply} onChange={(e) => setReply(e.target.value)}
-                  placeholder="Répondre à ce client..."
-                  className="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none"
-                  style={{ background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text)" }}
-                  onFocus={(e) => (e.target.style.borderColor = "var(--blue2)")}
-                  onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
-                />
-                <button type="submit" disabled={sending || !reply.trim()}
-                  className="px-5 rounded-xl font-extrabold text-sm text-white disabled:opacity-50 cursor-pointer"
-                  style={{ background: "var(--grad)" }}>
-                  {sending ? "..." : "Répondre"}
-                </button>
-              </form>
+                {/* Coordonnées pour répondre */}
+                <div className="rounded-xl p-4 flex flex-col gap-2"
+                  style={{ background: "var(--bg)", border: "1px solid var(--border)" }}>
+                  <p className="text-[10px] font-extrabold uppercase tracking-widest mb-1" style={{ color: "var(--blue2)" }}>
+                    Coordonnées du client
+                  </p>
+                  <a href={`mailto:${active.email}`}
+                    className="text-sm font-bold flex items-center gap-2"
+                    style={{ color: "var(--blue2)" }}>
+                    ✉️ {active.email}
+                  </a>
+                  {active.telephone && (
+                    <a href={`tel:${active.telephone}`}
+                      className="text-sm font-bold flex items-center gap-2"
+                      style={{ color: "var(--blue2)" }}>
+                      📞 {active.telephone}
+                    </a>
+                  )}
+                </div>
+
+                <a href={`mailto:${active.email}?subject=Réponse à votre demande — Connect Event`}
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-extrabold text-sm text-white"
+                  style={{ background: "var(--grad)", boxShadow: "0 4px 14px rgba(217,63,181,0.3)" }}>
+                  ✉️ Répondre par email
+                </a>
+              </div>
             </div>
           )}
         </div>

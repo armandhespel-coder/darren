@@ -46,5 +46,13 @@ export async function POST(req: Request) {
     .single();
 
   if (error) return Response.json({ error: error.message }, { status: 500 });
+
+  // Mettre à jour la note moyenne du prestataire
+  const { data: allAvis } = await supabase.from('reviews').select('note').eq('prestataire_id', prestataire_id);
+  if (allAvis && allAvis.length > 0) {
+    const avg = allAvis.reduce((s: number, r: { note: number }) => s + r.note, 0) / allAvis.length;
+    await supabase.from('prestataires').update({ note: Math.round(avg * 10) / 10 }).eq('id', prestataire_id);
+  }
+
   return Response.json({ review: data }, { status: 201 });
 }

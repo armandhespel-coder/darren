@@ -94,7 +94,7 @@ export default function Navbar() {
       >
         {/* Logo */}
         <a href="/" className="flex items-center gap-2 flex-shrink-0">
-          <img src="/logo.png" alt="Connect Event" className="h-32 md:h-40 w-auto object-contain" />
+          <img src="/logo.png" alt="Connect Event" className="h-10 md:h-12 w-auto object-contain" />
         </a>
 
         {/* Desktop nav links */}
