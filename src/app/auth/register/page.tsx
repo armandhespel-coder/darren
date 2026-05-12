@@ -21,7 +21,7 @@ function RegisterForm() {
     setError("");
     const supabase = createClient();
     const redirectNext = nextParam || (isPro ? "/pro/onboarding" : "");
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -32,6 +32,9 @@ function RegisterForm() {
     if (error) {
       setError(error.message);
       setLoading(false);
+    } else if (data.session) {
+      // Confirmation email désactivée → session directe
+      router.push(isPro ? "/pro/onboarding" : (nextParam || "/"));
     } else {
       setSuccess(true);
       setTimeout(() => router.push("/auth/login"), 2500);

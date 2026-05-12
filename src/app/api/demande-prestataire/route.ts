@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export async function POST(req: NextRequest) {
   const { nom, company, categorie, continent, description, tags, prix, price_note, email } = await req.json();
@@ -57,5 +58,20 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Sauvegarder dans demandes pour visibilité admin
+  try {
+    const service = createServiceClient();
+    await service.from("demandes").insert({
+      prestataire_id: null,
+      nom: company ? `${nom} (${company})` : nom,
+      email: email ?? "",
+      contenu: `[Nouveau Prestataire] Catégorie: ${categorie} | Zone: ${continent}${description ? `\n\n${description}` : ""}${tags?.length ? `\n\nTags: ${tags.join(", ")}` : ""}${prix ? `\n\nPrix: ${prix}€ ${price_note ?? ""}` : ""}`,
+      lu: false,
+    });
+  } catch (e) {
+    console.error("[demande-prestataire] insert error:", e);
+  }
+
   return NextResponse.json({ success: true });
 }
