@@ -29,10 +29,12 @@ export default async function ClaimPage({ params }: { params: Promise<{ token: s
 
   const isInvite = !tokenData.prestataire_id;
 
+  const ADMIN_EMAILS = ["armand.hespel@hotmail.com", "yagan_darren@hotmail.com"];
+
   // Si l'utilisateur est déjà connecté
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
+  if (user && !ADMIN_EMAILS.includes(user.email ?? "")) {
     if (isInvite) {
       // Lien d'invitation : passer en pro + rediriger vers onboarding
       await service.from("profiles").update({ role: "pro" }).eq("id", user.id);
