@@ -224,6 +224,7 @@ export default function AdminPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteSending, setInviteSending] = useState(false);
   const [inviteResult, setInviteResult] = useState<"ok" | "err" | null>(null);
+  const [inviteError, setInviteError] = useState<string>("");
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [availableSpecialites, setAvailableSpecialites] = useState<string[]>([]);
 
@@ -361,9 +362,15 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ to: inviteEmail, claimLink: createdLink }),
       });
-      setInviteResult(res.ok ? "ok" : "err");
-      if (res.ok) setTimeout(() => { setInviteOpen(false); setInviteEmail(""); }, 1500);
-    } catch { setInviteResult("err"); }
+      if (res.ok) {
+        setInviteResult("ok");
+        setTimeout(() => { setInviteOpen(false); setInviteEmail(""); }, 1500);
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setInviteError(JSON.stringify(body?.error ?? body));
+        setInviteResult("err");
+      }
+    } catch (e) { setInviteError(String(e)); setInviteResult("err"); }
     setInviteSending(false);
   };
 
@@ -421,7 +428,7 @@ export default function AdminPage() {
                 Le prestataire recevra l&apos;invitation avec le lien pour créer son compte.
               </div>
               {inviteResult === "ok" && <p className="text-sm font-extrabold text-center" style={{ color: "#16a34a" }}>✓ Invitation envoyée !</p>}
-              {inviteResult === "err" && <p className="text-sm font-extrabold text-center" style={{ color: "#dc2626" }}>Erreur lors de l&apos;envoi.</p>}
+              {inviteResult === "err" && <p className="text-sm font-bold text-center" style={{ color: "#dc2626" }}>Erreur : {inviteError || "inconnu"}</p>}
             </div>
             <div className="flex items-center justify-end gap-3 px-6 py-4" style={{ borderTop: "1px solid var(--border)" }}>
               <button onClick={() => setInviteOpen(false)} className="text-sm font-bold px-4 py-2 rounded-full cursor-pointer"
