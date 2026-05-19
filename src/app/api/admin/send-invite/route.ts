@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
 
         <!-- Header -->
         <tr>
-          <td style="background:linear-gradient(135deg,#4A6CF7,#D93FB5);padding:28px 36px;">
-            <span style="color:white;font-weight:900;font-size:20px;letter-spacing:-0.02em;">Connect Event</span>
+          <td style="background:#4A6CF7;background:linear-gradient(135deg,#4A6CF7,#D93FB5);padding:28px 36px;">
+            <span style="color:#ffffff;font-weight:900;font-size:20px;letter-spacing:-0.02em;">Connect Event</span>
           </td>
         </tr>
 
@@ -49,8 +49,8 @@ export async function POST(req: NextRequest) {
             </div>
 
             <div style="text-align:center;margin:28px 0;">
-              <a href="${claimLink}" style="display:inline-block;background:linear-gradient(135deg,#2D9FE8,#7B3FDB,#D93FB5);color:white;text-decoration:none;font-weight:800;font-size:15px;padding:16px 36px;border-radius:12px;box-shadow:0 6px 22px rgba(217,63,181,0.35);">
-                ✨ Créer mon profil prestataire
+              <a href="${claimLink}" style="display:inline-block;background:#7B3FDB;background:linear-gradient(135deg,#2D9FE8,#7B3FDB,#D93FB5);color:#ffffff;text-decoration:none;font-weight:800;font-size:15px;padding:16px 36px;border-radius:12px;">
+                Créer mon profil prestataire
               </a>
             </div>
 
