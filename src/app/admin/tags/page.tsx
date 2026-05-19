@@ -49,7 +49,7 @@ export default function AdminTagsPage() {
     setSaving(true);
     const supabase = createClient();
     const { error } = await supabase.from("site_subcategories").insert({ name, category_name: selectedCat || null });
-    if (error) flash("err", error.message);
+    if (error) flash("err", error.code === "23505" ? `La sous-catégorie « ${name} » existe déjà.` : error.message);
     else { flash("ok", `Sous-catégorie « ${name} » ajoutée.`); setInput(""); load(); }
     setSaving(false);
   };
