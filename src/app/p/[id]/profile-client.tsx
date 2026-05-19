@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Prestataire, Review } from "@/types";
 import Navbar from "@/components/Navbar";
@@ -175,6 +175,7 @@ function DispoCalendar({ prestataire: p }: { prestataire: Prestataire }) {
 
 export default function ProfileClient({ prestataire: p }: { prestataire: Prestataire }) {
   const [activeImg, setActiveImg] = useState(0);
+  const thumbsRef = useRef<HTMLDivElement>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [bookingMsg, setBookingMsg] = useState("");
   const [bookingDate, setBookingDate] = useState("");
@@ -211,6 +212,12 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
       .then(d => { setReviews(d.reviews ?? []); setLoadingReviews(false); })
       .catch(() => setLoadingReviews(false));
   }, [p.id]);
+
+  useEffect(() => {
+    if (!thumbsRef.current) return;
+    const btn = thumbsRef.current.children[activeImg] as HTMLElement | undefined;
+    btn?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [activeImg]);
 
   const dateUnavailable = !!(bookingDate && (p.busy_dates ?? []).includes(bookingDate));
 
@@ -338,14 +345,32 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
 
             {/* Thumbnails */}
             {images.length > 1 && (
-              <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
-                {images.map((img, i) => (
-                  <button key={i} onClick={() => setActiveImg(i)}
-                    className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden transition-all"
-                    style={{ border: activeImg === i ? "2.5px solid var(--blue2)" : "2px solid var(--border)" }}>
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
+              <div className="flex items-center gap-1 mt-3">
+                <button
+                  onClick={() => setActiveImg(i => (i - 1 + images.length) % images.length)}
+                  className="flex-shrink-0 flex items-center justify-center rounded-lg"
+                  style={{ width: 30, height: 30, background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--dark2)" }}
+                  aria-label="Photo précédente"
+                >
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <div ref={thumbsRef} className="flex gap-2 overflow-x-auto pb-1 flex-1" style={{ scrollbarWidth: "none" }}>
+                  {images.map((img, i) => (
+                    <button key={i} onClick={() => setActiveImg(i)}
+                      className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden transition-all"
+                      style={{ border: activeImg === i ? "2.5px solid var(--blue2)" : "2px solid var(--border)" }}>
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setActiveImg(i => (i + 1) % images.length)}
+                  className="flex-shrink-0 flex items-center justify-center rounded-lg"
+                  style={{ width: 30, height: 30, background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--dark2)" }}
+                  aria-label="Photo suivante"
+                >
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
               </div>
             )}
 
@@ -364,7 +389,7 @@ export default function ProfileClient({ prestataire: p }: { prestataire: Prestat
                     />
                   </div>
                 ) : (
-                  <video controls className="w-full" style={{ maxHeight: 400 }}>
+                  <video controls className="w-full" style={{ maxHeight: 400 }} poster={images[0]}>
                     <source src={p.video_url} />
                   </video>
                 )}
