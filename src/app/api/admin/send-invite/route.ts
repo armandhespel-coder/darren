@@ -481,7 +481,7 @@ export async function POST(req: NextRequest) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "Connect Event <contact@connect-event.be>",
+      from: "Connect Event <onboarding@resend.dev>",
       to: [to],
       subject: "Votre invitation prestataire — Connect-Event.be",
       html,
